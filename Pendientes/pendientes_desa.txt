@@ -1,9 +1,10 @@
 Pendientes Taller
 --------------------------------------
 
-JF - Alto - Poner IS NULL en vista de mecánicos por OT repetidas.
+OK - JF - Alto - Poner IS NULL en vista de mecánicos por OT repetidas.
 JF - Medio - Construir parametros generales (poner ruta upload archivos).
 JF - Bajo - Verificar observaciones.
 JF - Medio - Mostrar archivos en la OT.
 DA - Medio - Validar Códigos. (Validar en mantenedor de Producto, Trabajo, Mantencion Programada, Proveedor que el código en modificación y creación no exista previamente)
 DA - Medio - Poner observacion en Movimiento (Stock). (Agregar la columna en BD y en la pantalla al agregar un Stock)
+JF - Bajo - Mejorar manejo de log (Cambiar printStackTrace por guardar traza en log)
