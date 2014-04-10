@@ -1,0 +1,7 @@
+Pendientes Taller
+Alto - Poner IS NULL en vista de mecánicos por OT repetidas.
+Medio - Construir parametros generales (poner ruta upload archivos).
+Bajo - Verificar observaciones.
+Medio - Mostrar archivos en la OT.
+Medio - Validar Códigos en Producto, Trabajo, Mantencion Programada, Proveedor.
+Medio - Poner observacion en Movimiento (Stock).
