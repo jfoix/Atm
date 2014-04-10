@@ -1,0 +1,9 @@
+<datasources> 
+    <local-tx-datasource> 
+        <jndi-name>jboss/datasources/ATMDS</jndi-name> 
+        <connection-url>jdbc:mysql://localhost:3306/atm_taller</connection-url> 
+        <driver-class>com.mysql.jdbc.Driver</driver-class> 
+        <user-name>root</user-name> 
+        <password></password> 
+    </local-tx-datasource> 
+</datasources> 
