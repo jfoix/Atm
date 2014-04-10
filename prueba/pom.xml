@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>1.0.0</modelVersion>
+	<groupId>cl.jfoix.taller</groupId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>war</packaging>
+	<name>Administrador de Taller</name>
+	<url>http://127.0.0.1:8080/ATM</url>
+	<repositories>
+    	<repository>  
+    		<id>prime-repo</id>  
+    		<name>PrimeFaces Maven Repository</name>  
+    		<url>http://repository.primefaces.org</url>  
+    		<layout>default</layout>  
+		</repository>
+	</repositories>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<javaee6.with.tools.version>1.0.0.Final</javaee6.with.tools.version>
+		<org.springframework.version>3.0.5.RELEASE</org.springframework.version>
+		
+		<jasper.version>4.8.0</jasper.version>
+	  	<commons.digester.version>2.1</commons.digester.version>
+	  	<commons.collections.version>3.2.1</commons.collections.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>  
+			<!-- JBoss distributes a complete set of Java EE 6 APIs including a Bill 
+				of Materials (BOM). A BOM specifies the versions of a "stack" (or a collection) 
+				of artifacts. We use this here so that we always get the correct versions 
+				of artifacts. Here we use the jboss-javaee-6.0-with tools stack (you can 
+				read this as the JBoss stack of the Java EE 6 APIs, with some extras tools 
+				for your project, such as Arquillian for testing) -->
+			<dependency>
+				<groupId>org.jboss.bom</groupId>
+				<artifactId>jboss-javaee-6.0-with-tools</artifactId>
+				<version>${javaee6.with.tools.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+		<dependency>
+		    <groupId>commons-io</groupId>
+		    <artifactId>commons-io</artifactId>
+		    <version>1.4</version>
+		</dependency>
+		<dependency>
+		    <groupId>commons-fileupload</groupId>
+		    <artifactId>commons-fileupload</artifactId>
+		    <version>1.2.2</version>
+		</dependency>
+
+		<!-- First declare the APIs we depend on and need for compilation. All 
+			of them are provided by JBoss AS 7 -->
+
+		<!-- Import the CDI API, we use provided scope as the API is included in 
+			JBoss AS 7 -->
+		<dependency>
+			<groupId>javax.enterprise</groupId>
+			<artifactId>cdi-api</artifactId>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>javax.inject</artifactId>
+					<groupId>javax.inject</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- Import the Common Annotations API (JSR-250), we use provided scope 
+			as the API is included in JBoss AS 7 -->
+		<dependency>
+			<groupId>org.jboss.spec.javax.annotation</groupId>
+			<artifactId>jboss-annotations-api_1.1_spec</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Import the JAX-RS API, we use provided scope as the API is included 
+			in JBoss AS 7 -->
+		<dependency>
+			<groupId>org.jboss.spec.javax.ws.rs</groupId>
+			<artifactId>jboss-jaxrs-api_1.1_spec</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Import the JPA API, we use provided scope as the API is included in 
+			JBoss AS 7 -->
+		<dependency>
+			<groupId>org.hibernate.javax.persistence</groupId>
+			<artifactId>hibernate-jpa-2.0-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Import the EJB API, we use provided scope as the API is included in 
+			JBoss AS 7 -->
+		<dependency>
+			<groupId>org.jboss.spec.javax.ejb</groupId>
+			<artifactId>jboss-ejb-api_3.1_spec</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- JSR-303 (Bean Validation) Implementation -->
+		<!-- Provides portable constraints such as @Email -->
+		<!-- Hibernate Validator is shipped in JBoss AS 7 -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>4.2.0.Final</version>
+			<scope>provided</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- Import the JSF API, we use provided scope as the API is included in 
+			JBoss AS 7 -->
+		<dependency>
+			<groupId>org.jboss.spec.javax.faces</groupId>
+			<artifactId>jboss-jsf-api_2.1_spec</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- Import the Servlet API, we use provided scope as the API is included 
+			in JBoss AS 7 -->
+		<dependency>
+			<groupId>org.jboss.spec.javax.servlet</groupId>
+			<artifactId>jboss-servlet-api_3.0_spec</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<!-- Import the Atmosphere framework for a4j:push -->
+		<dependency>
+			<groupId>org.atmosphere</groupId>
+			<artifactId>atmosphere-runtime</artifactId>
+			<version>2.0.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- Now we declare any tools needed -->
+
+		<!-- Annotation processor to generate the JPA 2.0 metamodel classes for 
+			typesafe criteria queries -->
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-jpamodelgen</artifactId>
+			<version>1.2.0.Final</version>
+			<!-- <scope>provided</scope> -->
+		</dependency>
+
+		<dependency>
+		    <groupId>org.hibernate</groupId>	
+		    <artifactId>hibernate-core</artifactId>
+<!-- 		    <version>4.1.8.Final</version> -->
+		    <version>3.6.6.Final</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- The rewrite library allows us to do url rewriting - used here for 
+			rewriting mobile devices to mobile specific views -->
+		<dependency>
+			<groupId>org.ocpsoft.rewrite</groupId>
+			<artifactId>rewrite-servlet</artifactId>
+			<version>2.0.3.Final</version>
+		</dependency>
+
+		<!-- The cdi integration allows for CDI injection into the rewrite configuration 
+			class -->
+		<dependency>
+			<groupId>org.ocpsoft.rewrite</groupId>
+			<artifactId>rewrite-integration-cdi</artifactId>
+			<version>2.0.3.Final</version>
+		</dependency>
+
+		<!-- Needed for running tests (you may also use TestNG) -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Optional, but highly recommended -->
+		<!-- Arquillian allows you to test enterprise code such as EJBs and Transactional(JTA) 
+			JPA from JUnit/TestNG -->
+		<dependency>
+			<groupId>org.jboss.arquillian.junit</groupId>
+			<artifactId>arquillian-junit-container</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.arquillian.protocol</groupId>
+			<artifactId>arquillian-protocol-servlet</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>${org.springframework.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<version>${org.springframework.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${org.springframework.version}</version>
+		</dependency>
+		
+		<dependency>
+	        <groupId>org.springframework</groupId>
+	        <artifactId>spring-webmvc</artifactId>
+	        <version>${org.springframework.version}</version>
+	    </dependency>
+		
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-expression</artifactId>
+			<version>${org.springframework.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-core</artifactId>
+			<version>3.1.2.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-web</artifactId>
+			<version>3.1.2.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-config</artifactId>
+			<version>3.1.2.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-ldap</artifactId>
+			<version>3.1.2.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.ldap</groupId>
+			<artifactId>spring-ldap-core</artifactId>
+			<version>1.3.1.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.ldap</groupId>
+			<artifactId>spring-ldap-core-tiger</artifactId>
+			<version>1.3.1.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.ldap</groupId>
+			<artifactId>spring-ldap-odm</artifactId>
+			<version>1.3.1.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.ldap</groupId>
+			<artifactId>spring-ldap-ldif-core</artifactId>
+			<version>1.3.1.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.ldap</groupId>
+			<artifactId>spring-ldap-ldif-batch</artifactId>
+			<version>1.3.1.RELEASE</version>
+		</dependency>
+		
+		<dependency>
+	        <groupId>org.codehaus.groovy</groupId>
+	        <artifactId>groovy-all</artifactId>
+	        <version>1.7.0</version>
+    	</dependency>
+		
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<version>${jasper.version}</version>
+	    	<type>jar</type>
+	    	<scope>compile</scope>
+	    	<exclusions>
+	    		<exclusion>
+	    			<artifactId>commons-collections</artifactId>
+	    			<groupId>commons-collections</groupId>
+	    		</exclusion>
+	    		<exclusion>
+	    			<artifactId>commons-beanutils</artifactId>
+	    			<groupId>commons-beanutils</groupId>
+	    		</exclusion>
+<!-- 	    		<exclusion> -->
+<!-- 	    			<artifactId>commons-digester</artifactId> -->
+<!-- 	    			<groupId>commons-digester</groupId> -->
+<!-- 	    		</exclusion> -->
+	    		<exclusion>
+	    			<artifactId>commons-logging</artifactId>
+	    			<groupId>commons-logging</groupId>
+	    		</exclusion>
+	            <exclusion>
+	                <artifactId>xml-apis</artifactId>
+	                <groupId>xml-apis</groupId>
+	            </exclusion>
+	            <exclusion>
+	                <artifactId>xercesImpl</artifactId>
+	                <groupId>xerces</groupId>
+	            </exclusion>
+	            <exclusion>
+	                <artifactId>xmlbeans</artifactId>
+	                <groupId>org.apache.xmlbeans</groupId>
+	            </exclusion>
+	            <exclusion>
+	                <artifactId>xmlParserAPIs</artifactId>
+	                <groupId>xerces</groupId>
+	            </exclusion>
+	    	</exclusions>
+		</dependency>
+		<!-- Agregaremos la dependencia de primfaces -->
+	    <dependency>  
+	        <groupId>org.primefaces</groupId>  
+	        <artifactId>primefaces</artifactId>  
+	        <version>4.0</version>  
+	    </dependency>
+	    <dependency>
+			<groupId>org.primefaces.themes</groupId>
+			<artifactId>smoothness</artifactId>
+			<version>1.0.10</version>
+		</dependency>
+		<dependency>
+			<groupId>org.primefaces.themes</groupId>
+			<artifactId>redmond</artifactId>
+			<version>1.0.10</version>
+		</dependency>
+	    <dependency>
+	    	<groupId>com.thoughtworks.xstream</groupId>
+	    	<artifactId>xstream</artifactId>
+	    	<version>1.4.4</version>
+	    </dependency>
+	</dependencies>
+
+	<build>
+		<!-- Maven will append the version to the finalName (which is the name 
+			given to the generated war, and hence the context root) -->
+		<finalName>${project.artifactId}</finalName>
+		<plugins>
+			<!-- Compiler plugin enforces Java 1.6 compatibility and activates annotation 
+				processors -->
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.1</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.1.1</version>
+				<configuration>
+					<!-- Java EE 6 doesn't require web.xml, Maven needs to catch up! -->
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+					<archive>
+						<manifestEntries>
+							<Dependencies>com.google.guava,org.slf4j</Dependencies>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<!-- The JBoss AS plugin deploys your war to a local JBoss AS container -->
+			<!-- To use, run: mvn package jboss-as:deploy -->
+			<plugin>
+				<groupId>org.jboss.as.plugins</groupId>
+				<artifactId>jboss-as-maven-plugin</artifactId>
+				<version>7.1.1.Final</version>
+			</plugin>
+			<!-- Configure the JBoss Maven deploy plugin -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jboss-maven-plugin</artifactId>
+				<version>1.5.0</version>
+				<configuration>
+					<!-- Link the plugin to your local install via OS environment variable 
+						JBOSS_HOME -->
+					<jbossHome>C:\Users\Owner\Desktop\UE\jboss-6.1.0.Final</jbossHome>
+					<!-- Your JBoss domain (optional) -->
+					<serverName>default</serverName>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+		<profile>
+			<!-- The default profile skips all tests, though you can tune it to run 
+				just unit tests based on a custom pattern -->
+			<!-- Seperate profiles are provided for running all tests, including Arquillian 
+				tests that execute in the specified container -->
+			<id>default</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>2.10</version>
+						<configuration>
+							<skip>true</skip>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+		<profile>
+			<!-- An optional Arquillian testing profile that executes tests in your 
+				JBoss AS instance -->
+			<!-- This profile will start a new JBoss AS instance, and execute the 
+				test, shutting it down when done -->
+			<!-- Run with: mvn clean test -Parq-jbossas-managed -->
+			<id>arq-jbossas-managed</id>
+			<dependencies>
+				<dependency>
+					<groupId>org.jboss.as</groupId>
+					<artifactId>jboss-as-arquillian-container-managed</artifactId>
+					<scope>test</scope>
+				</dependency>
+			</dependencies>
+		</profile>
+
+		<profile>
+			<!-- An optional Arquillian testing profile that executes tests in a remote 
+				JBoss AS instance -->
+			<!-- Run with: mvn clean test -Parq-jbossas-remote -->
+			<id>arq-jbossas-remote</id>
+			<dependencies>
+				<dependency>
+					<groupId>org.jboss.as</groupId>
+					<artifactId>jboss-as-arquillian-container-remote</artifactId>
+					<scope>test</scope>
+					<exclusions>
+						<exclusion>
+							<artifactId>google-collections</artifactId>
+							<groupId>com.google.collections</groupId>
+						</exclusion>
+					</exclusions>
+				</dependency>
+			</dependencies>
+		</profile>
+
+		<profile>
+			<!-- When built in OpenShift the 'openshift' profile will be used when 
+				invoking mvn. -->
+			<!-- Use this profile for any OpenShift specific customization your app 
+				will need. -->
+			<!-- By default that is to put the resulting archive into the 'deployments' 
+				folder. -->
+			<!-- http://maven.apache.org/guides/mini/guide-building-for-different-environments.html -->
+			<id>openshift</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-war-plugin</artifactId>
+						<configuration>
+							<outputDirectory>deployments</outputDirectory>
+							<warName>ROOT</warName>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+
+	</profiles>
+	<organization>
+		<name>JFOIX</name>
+		<url>www.jfoix.cl</url>
+	</organization>
+	<artifactId>ATM</artifactId>
+	<description>Adiministrador de Taller Mecánico</description>
+</project>
