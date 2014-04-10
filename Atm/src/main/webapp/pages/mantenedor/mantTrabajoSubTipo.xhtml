@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="body">
+		<h:form id="frm">
+			<p:fieldset legend="B&uacute;squeda">
+				<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
+		            <h:outputLabel value="Descripci&oacute;n Sub-Tipo" />
+		            <h:outputLabel value=":" />  
+		            <p:inputText value="#{trabajoSubTipoMB.subTipoDesc}" />
+		            
+		            <h:outputText value="Trabajo Tipo" />
+			    	<h:outputText value=":" />
+			    	<p:selectOneMenu value="#{trabajoSubTipoMB.idTrabajoTipo}">
+			    		<f:selectItem itemValue="-1" itemLabel="Todos"/>
+			    		<f:selectItems value="#{trabajoSubTipoMB.trabajoTipos}" var="wt" itemLabel="#{wt.descripcion}" itemValue="#{wt.idTrabajoTipo}" />
+			    	</p:selectOneMenu>
+		            <p:commandButton 
+		            	value="Buscar" 
+		            	update="dttSubTypes"
+		            	process="pniBusqueda"
+		            	icon="ui-icon-search" 
+		            	action="#{trabajoSubTipoMB.buscarTrabajosSubTipo}" />  
+		        </h:panelGrid>
+	        </p:fieldset>
+			<div align="left">
+				<h:panelGrid columns="4">
+					<p:commandButton 
+						update=":frm:pgiSubTypeInfo"
+						oncomplete="PF('diaSubType').show();"
+						action="#{trabajoSubTipoMB.nuevoTrabajoSubTipo}"
+						icon="ui-icon-plus"
+						process="@this"
+						value="Agregar Sub-Tipo"/>
+				</h:panelGrid>
+			</div>
+			<p:dataTable var="subType" value="#{trabajoSubTipoMB.subTipos}" id="dttSubTypes" emptyMessage="Sin informaci&oacute;n">
+				<p:columnGroup type="header">  
+		            <p:row>  
+		                <p:column headerText="Descripci&oacute;n Sub-Tipo" />
+		                <p:column headerText="Tipo Trabajo" />
+		                <p:column colspan="2" headerText="Acciones" />  
+		            </p:row>  
+		        </p:columnGroup>  
+		        <p:column>  
+		            <h:outputText value="#{subType.descripcion}" />  
+		        </p:column>
+		        <p:column>  
+		            <h:outputText value="#{subType.trabajoTipo.descripcion}" />  
+		        </p:column>  
+		        <p:column style="width:30px; text-align:center">  
+	                <p:commandButton update=":frm:pgiSubTypeInfo" process="@this" oncomplete="PF('diaSubType').show()" icon="ui-icon-pencil" title="Editar" alt="Editar">  
+		                <f:setPropertyActionListener value="#{subType}" target="#{trabajoSubTipoMB.trabajoSubTipo}" />  
+		            </p:commandButton>
+				</p:column> 
+		        <p:column style="width:30px; text-align:center">
+		            <p:commandButton process="@this" update="dttSubTypes" action="#{trabajoSubTipoMB.eliminarTrabajoSubTipo}"  icon="ui-icon-closethick" title="Eliminar" alt="Eliminar">  
+		                <p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el Sub-Tipo?" icon="ui-icon-alert" />
+		                <f:setPropertyActionListener value="#{subType}" target="#{trabajoSubTipoMB.trabajoSubTipo}" />    
+		            </p:commandButton>  
+		        </p:column> 
+		    </p:dataTable>
+		    
+		    <p:confirmDialog global="true" closeOnEscape="true">  
+		        <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+		        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+		    </p:confirmDialog>
+		    <p:dialog id="diaSubType" header="Datos Sub-Tipo" widgetVar="diaSubType" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="3" cellpadding="4" id="pgiSubTypeInfo">
+			    	<h:outputText value="Descripci&oacute;n Sub-Tipo" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{trabajoSubTipoMB.trabajoSubTipo.descripcion}" />
+			    	
+			    	<h:outputText value="Trabajo Tipo" />
+			    	<h:outputText value=":" />
+			    	<p:selectOneMenu value="#{trabajoSubTipoMB.trabajoSubTipo.trabajoTipo.idTrabajoTipo}">
+			    		<f:selectItem itemValue="-1" itemLabel="Seleccione"/>
+			    		<f:selectItems value="#{trabajoSubTipoMB.trabajoTipos}" var="wt" itemLabel="#{wt.descripcion}" itemValue="#{wt.idTrabajoTipo}" />
+			    	</p:selectOneMenu>
+			    </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			action="#{trabajoSubTipoMB.guardarTrabajoSubTipo}"
+			    			process="@this, pgiSubTypeInfo"
+			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaSubType').hide(); }"
+			    			update=":frm:dttSubTypes"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaSubType').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>    
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

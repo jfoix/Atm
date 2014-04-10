@@ -1,0 +1,55 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:c="http://java.sun.com/jstl/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	template="/templates/login.xhtml">
+<ui:define name="body">
+		<h:form id="loginForm">
+				<div align="center">
+					<br /><br /><br /><br /><br />
+					<br /><br /><br /><br /><br />
+					<br /><br /><br /><br /><br />
+					<p:panel styleClass="fondoLogin">
+					<table> 
+						<tbody>
+							<tr> 
+								<td style="color:#fff">
+									<h:outputText value="#{msg['login.nombreUsuario']}" /><br/>
+									<h:inputText id="username" value="#{authenticationBean.username}" style="#{errorcheck.getErrorStyle('loginForm:username')}" maxlength="50" required="true" requiredMessage="#{msg['login.mensajeErrorUsuario']}"/>			 
+								</td>
+								<td style="color:#fff">
+									<h:outputText value="#{msg['login.claveUsuario']}" /><br />
+									<h:inputSecret id="password" styleClass="pass" value="#{authenticationBean.password}" style="#{errorcheck.getErrorStyle('loginForm:password')}" maxlength="50" 
+									required="true" requiredMessage="#{msg['login.mensajeErrorClaveUsuario']}"/>
+								</td>
+							</tr>
+							<tr><!-- onclick="$('.pass').val(hex_sha256($('.pass').val()));" -->
+								<td colspan="2" align="center">
+									<p:commandButton
+										value="#{msg['login.btnIgresar']}"
+										process="@this,username,password"
+										ajax="false"
+										type="submit"
+										action="#{authenticationBean.login}" />
+								</td> 
+							</tr> 
+						</tbody>
+						<thead>
+							<tr>
+								<td colspan="2"></td>
+							</tr>
+							<tr>
+								<td colspan="2">
+									<h:messages showSummary="true" showDetail="false" style="#{errorcheck.errorMessagesStyle}" />
+								</td>
+							</tr>
+						</thead>
+					</table>
+					</p:panel>
+				</div>
+		</h:form>
+</ui:define>
+</ui:composition>

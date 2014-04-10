@@ -1,0 +1,169 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="body">
+		<h:form id="frm">
+			<h:panelGrid columns="1" cellspacing="3" width="100%">
+				<p:fieldset legend="B&uacute;squeda">
+					<h:panelGrid columns="7" cellspacing="3" id="pniBusqueda">  
+			            <h:outputLabel value="Nro OT" />
+			            <h:outputLabel value=":" />  
+			            <p:inputText value="#{trabajoMecanicoMB.idOTBusq}" />
+			            
+			            <h:outputLabel value="Estado Trabajo" />
+			            <h:outputLabel value=":" />  
+			            <p:selectOneMenu value="#{trabajoMecanicoMB.idEstadoOTBusq}">
+			            	<f:selectItem itemValue="-1" itemLabel="Todos"/>
+			            	<f:selectItems value="#{trabajoMecanicoMB.estadosTrabajo}" var="est" itemLabel="#{est.descripcion}" itemValue="#{est.idEstadoTrabajo}" />
+			            </p:selectOneMenu>
+			            <h:outputLabel value="" />
+			            
+			            <h:outputLabel value="Fecha Trabajo" />
+			            <h:outputLabel value=":" />  
+			            <p:calendar value="#{trabajoMecanicoMB.fechBusq}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
+			            <h:outputLabel value="" /><h:outputLabel value="" />
+			            <h:outputLabel value="" /><h:outputLabel value="" />
+			              
+			            <p:commandButton value="Buscar" update="dttTrabajos" icon="ui-icon-search" process="pniBusqueda" action="#{trabajoMecanicoMB.buscarTrabajos}" />  
+			        </h:panelGrid>
+		        </p:fieldset>
+				<p:dataTable var="trabajo" value="#{trabajoMecanicoMB.trabajos}" id="dttTrabajos" emptyMessage="Sin datos">
+					<p:columnGroup type="header">  
+			            <p:row>  
+			                <p:column headerText="OT" />
+			                <p:column headerText="Fecha OT" />
+			                <p:column headerText="Trabajo" />
+			                <p:column headerText="Estado Trabajo" />
+			                <p:column headerText="Productos" />
+			                <p:column colspan="2" headerText="Acciones" />  
+			            </p:row>  
+			        </p:columnGroup>  
+			        <p:column>  
+			            <h:outputText value="#{trabajo.ordenTrabajo.orden.idOrden}" />  
+			        </p:column>
+			        <p:column>  
+			            <h:outputText value="#{trabajo.ordenTrabajo.orden.fechaOrden}">
+			            	<f:convertDateTime pattern="dd/MM/yyyy" />
+			            </h:outputText>  
+			        </p:column>
+			        <p:column>  
+			            <h:outputText value="#{trabajo.ordenTrabajo.trabajo.codigo} - #{trabajo.ordenTrabajo.trabajo.descripcion}" />  
+			        </p:column>
+			        <p:column>  
+			            <h:outputText value="#{trabajo.ordenTrabajo.ultimoEstado.estadoTrabajo.descripcion}" />  
+			        </p:column>  
+			        <p:column>
+			        	<p:dataList value="#{trabajo.ordenTrabajo.ordenTrabajoProductos}" var="producto" itemType="disc" emptyMessage="Sin productos">
+							<h:outputText value="#{producto.producto.codigo} - #{producto.producto.descripcion}, Cantidad: #{producto.cantidad} #{producto.tieneStock ? '' : '(SIN STOCK)'}" styleClass="#{producto.tieneStock ? '' : 'sinStockMec'}" />
+						</p:dataList>
+			        </p:column>
+			        <p:column style="width:150px; text-align:center">  
+		                <p:commandButton oncomplete="PF('diaEstadoTrabajo').show()" action="#{trabajoMecanicoMB.seleccionarCambioEstado}" process="@this" update=":frm:somEstadoTrabajo" icon="ui-icon-transferthick-e-w" value="Cambiar Estado" title="Cambiar Estado" alt="Cambiar Estado" disabled="#{trabajo.ordenTrabajo.fechaTermino ne null}">
+		                	<f:setPropertyActionListener target="#{trabajoMecanicoMB.trabajo}" value="#{trabajo}" />  
+			            </p:commandButton>
+					</p:column> 
+					<p:column style="width:175px; text-align:center">
+			            <p:commandButton icon="ui-icon-pencil" action="#{trabajoMecanicoMB.nuevaSolicitud}" update=":frm:pniBusquedaProducto,:frm:dttProductos,:frm:pngProductosSolicitud" oncomplete="PF('diaSolicitud').show()" value="Solicitar Repuesto" title="Solicitar Repuesto" alt="Solicitar Repuesto" disabled="#{trabajo.ordenTrabajo.fechaTermino ne null}">
+			            	<f:setPropertyActionListener target="#{trabajoMecanicoMB.trabajo}" value="#{trabajo}" />  
+			            </p:commandButton>  
+			        </p:column>
+			    </p:dataTable>
+			</h:panelGrid>
+		    <p:dialog header="Cambiar Estado Trabajo" widgetVar="diaEstadoTrabajo" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+		    	<h:panelGrid columns="3">
+		    		<h:outputText value="Estado Trabajo:" />
+		    		<p:selectOneMenu value="#{trabajoMecanicoMB.idEstadoTrabajo}" id="somEstadoTrabajo">
+		    			<f:selectItems value="#{trabajoMecanicoMB.estadosTrabajo}" var="et" itemLabel="#{et.descripcion}" itemValue="#{et.idEstadoTrabajo}" />
+		    		</p:selectOneMenu>
+		    	</h:panelGrid>
+	    		<f:facet name="footer">
+	    			<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			actionListener="#{trabajoMecanicoMB.guardarEstadoOrdenTrabajo}"
+			    			oncomplete="PF('diaEstadoTrabajo').hide();"
+			    			update=":frm:dttTrabajos"
+			    			process="@this,somEstadoTrabajo"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaEstadoTrabajo').hide();"
+			    			value="Cancelar" />
+		    		</div>
+	    		</f:facet>
+		    </p:dialog>
+		    <p:dialog header="Ingresar Solicitud" widgetVar="diaSolicitud" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+				<h:panelGrid columns="2" styleClass="tableUp">
+			    	<p:fieldset legend="B&uacute;squeda">
+						<h:panelGrid columns="3" cellpadding="5" id="pniBusquedaProducto">  
+				            <h:outputLabel value="C&oacute;digo Producto" />
+				            <h:outputLabel value=":" />  
+				            <p:inputText value="#{trabajoMecanicoMB.codProductoBusq}" />
+				            <h:outputLabel value="Descripci&oacute;n Producto" />
+				            <h:outputLabel value=":" />  
+				            <p:inputText value="#{trabajoMecanicoMB.descProductoBusq}" />  
+				        </h:panelGrid>
+			            <p:commandButton value="Buscar" 
+			            	update="dttProductos" 
+			            	process="@this,pniBusquedaProducto" action="#{trabajoMecanicoMB.buscarProductos}" icon="ui-icon-search" />  
+				        <p:dataTable
+				        	id="dttProductos" 
+				        	value="#{trabajoMecanicoMB.productos}" var="producto" emptyMessage="Sin productos">
+				        	<p:column style="width:30px; text-align:center">
+				        		<p:selectBooleanCheckbox value="#{producto.seleccionado}" />
+				        	</p:column>
+				        	<p:column headerText="C&oacute;digo" style="width:70px; text-align:center">
+				        		<h:outputText value="#{producto.codigo}" />
+				        	</p:column>
+				        	<p:column headerText="Descripci&oacute;n">
+				        		<h:outputText value="#{producto.descripcion}" />
+				        	</p:column>
+				        </p:dataTable>
+			        </p:fieldset>
+			        <p:fieldset legend="Productos Solicitud">
+			        	<h:panelGrid id="pngProductosSolicitud" cellspacing="3">
+							<p:dataTable
+					        	id="dttProductosSolicitud" 
+					        	value="#{trabajoMecanicoMB.productosSolicitud}" var="producto" emptyMessage="Sin productos">
+					        	<p:column headerText="C&oacute;digo" style="width:70px; text-align:center">
+					        		<h:outputText value="#{producto.producto.codigo}" />
+					        	</p:column>
+					        	<p:column headerText="Descripci&oacute;n">
+					        		<h:outputText value="#{producto.producto.descripcion}" />
+					        	</p:column>
+					        	<p:column headerText="Cantidad" style="width:70px; text-align:center">
+					        		<p:inputText value="#{producto.cantidad}" style="width:40px; text-align:right" />
+					        	</p:column>
+					        </p:dataTable>
+					        <h:outputText value="Observaci&oacute;n" />
+					        <p:inputTextarea cols="70" rows="5" value="#{trabajoMecanicoMB.solicitud.observacion}"></p:inputTextarea>
+						</h:panelGrid>
+					</p:fieldset>
+			        <p:commandButton process="@this,dttProductos" value="Agregar Productos" action="#{trabajoMecanicoMB.agregarProductos}" update="dttProductos,dttProductosSolicitud" />
+		        </h:panelGrid>
+				<f:facet name="footer">
+					<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			actionListener="#{trabajoMecanicoMB.guardarSolicitud}"
+			    			oncomplete="PF('diaSolicitud').hide();"
+			    			update="@none"
+			    			process="@this,pngProductosSolicitud"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaSolicitud').hide();"
+			    			value="Cancelar" />
+		    		</div>
+				</f:facet>
+		    </p:dialog>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

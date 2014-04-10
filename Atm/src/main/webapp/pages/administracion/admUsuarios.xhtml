@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="body">
+		<h:form id="frm">
+			<p:fragment autoUpdate="true">
+				<p:fieldset legend="B&uacute;squeda">
+					<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
+			            <h:outputLabel value="Nombre Usuario" />
+			            <h:outputLabel value=":" />  
+			            <p:inputText value="#{usuarioMB.nombreUsuario}" />
+			            <h:outputLabel value="Estado" />
+			            <h:outputLabel value=":" />  
+			            <p:selectOneMenu value="#{usuarioMB.estadoUsuario}">
+			            	<f:selectItem itemValue="-1" itemLabel="Todos"/>
+			            	<f:selectItem itemValue="0" itemLabel="Activo"/>
+			            	<f:selectItem itemValue="1" itemLabel="Inactivo"/>
+			            </p:selectOneMenu>  
+			            <p:commandButton value="Buscar" update="dttUsers" action="#{usuarioMB.buscarUsuarios}" process="pniBusqueda" icon="ui-icon-search" />  
+			        </h:panelGrid>
+		        </p:fieldset>
+			</p:fragment>
+			<div align="left">
+				<h:panelGrid columns="4">
+					<p:commandButton 
+						update=":dialogs:pgiUserInfo,:dialogs:flsPerfiles"
+						oncomplete="PF('diaUser').show();"
+						action="#{usuarioMB.nuevoUsuario}"
+						icon="ui-icon-plus"
+						process="@this"
+						value="Agregar Usuario"/>
+				</h:panelGrid>
+			</div>
+			<p:dataTable var="user" value="#{usuarioMB.usuarios}" id="dttUsers">
+				<p:columnGroup type="header">  
+		            <p:row>  
+		                <p:column headerText="Nombre Usuario" />
+		                <p:column headerText="Estado" />
+		                <p:column colspan="3" headerText="Acciones" />  
+		            </p:row>  
+		        </p:columnGroup>  
+		        <p:column>  
+		            <h:outputText value="#{user.nombreUsuario}" />  
+		        </p:column>  
+		        <p:column>  
+		            <h:outputText value="#{user.estado.description}" />
+		        </p:column>
+		        <p:column style="width:30px; text-align:center">  
+	                <p:commandButton update=":dialogs:pgiUserInfo,:dialogs:flsPerfiles" action="#{usuarioMB.seleccionarUsuario}" oncomplete="PF('diaUser').show()" icon="ui-icon-pencil" title="Editar" alt="Editar">  
+		                <f:setPropertyActionListener value="#{user}" target="#{usuarioMB.usuario}" />  
+		            </p:commandButton>
+				</p:column> 
+				<p:column style="width:30px; text-align:center">
+		            <p:commandButton update="dttUsers" action="#{usuarioMB.cambiarEstado}"  icon="ui-icon-transferthick-e-w" title="Cambiar Estado" alt="Cambiar Estado">  
+		                <f:setPropertyActionListener value="#{user}" target="#{usuarioMB.usuario}" />  
+		            </p:commandButton>  
+		        </p:column>
+		        <p:column style="width:30px; text-align:center">
+		            <p:commandButton update="dttUsers" action="#{usuarioMB.eliminarUsuario}"  icon="ui-icon-close" title="Eliminar" alt="Eliminar">  
+		                <p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el usuario?" icon="ui-icon-alert" />
+		                <f:setPropertyActionListener value="#{user}" target="#{usuarioMB.usuario}" />    
+		            </p:commandButton>  
+		        </p:column> 
+		    </p:dataTable>
+		    
+		    <p:confirmDialog global="true">  
+		        <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+		        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+		    </p:confirmDialog>
+		</h:form>
+		<h:form id="dialogs">
+			<p:growl id="gwlUser" showDetail="true" life="5000" />  
+		    <p:dialog id="diaUser" header="Datos Usuario" widgetVar="diaUser" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="3" cellpadding="4" id="pgiUserInfo">
+			    	<h:outputText value="Nombre Usuario" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{usuarioMB.usuario.nombreUsuario}" disabled="#{usuarioMB.actualizarUsuario}" />
+			    	
+			    	<h:outputText value="Clave" />
+			    	<h:outputText value=":" />
+			    	<p:password value="#{usuarioMB.usuario.clave}" redisplay="true" />
+			    	
+			    	<h:outputText value="Repetir Clave" />
+			    	<h:outputText value=":" />
+			    	<p:password value="#{usuarioMB.usuario.claveRep}" redisplay="true" />
+			    	
+			    	<h:outputText value="Persona RUT" />
+			    	<h:outputText value=":" />
+			    	<h:panelGrid columns="2" cellpadding="1" cellspacing="0">
+				    	<p:inputText value="#{usuarioMB.usuario.persona.rut}" id="iptRut" />
+				    	<p:commandButton process="@this,iptRut" icon="ui-icon-search" action="#{usuarioMB.buscarPersona}" update="personaNombre" />
+			    	</h:panelGrid>
+			    	
+			    	<h:outputText value="Persona Nombre Completo" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{usuarioMB.usuario.persona.nombres} #{usuarioMB.usuario.persona.apellidos}" id="personaNombre" readonly="true" disabled="true" style="width:200px" />
+			    	
+			    </h:panelGrid>
+			    <br />
+			    <p:fieldset legend="Perfiles" id="flsPerfiles">
+			    	<h:panelGrid columns="3">
+			    		<h:outputText value="Perfiles" />
+			    		<h:outputText value=":" />
+			    		<p:selectOneMenu value="#{usuarioMB.perfilId}">
+			    			<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+			    			<f:selectItems value="#{usuarioMB.perfiles}" var="perfil" itemLabel="#{perfil.descripcion}" itemValue="#{perfil.idPerfil}" />
+			    			<p:ajax listener="#{usuarioMB.buscarPermisosPerfil}" update="pklPermisos" process="@this,pklPermisos" event="change" />
+			    		</p:selectOneMenu>
+			    	</h:panelGrid>
+			    	<br />
+			    	<p:pickList 
+			    		addAllLabel="Agregar Todos"
+			    		addLabel="Agregar"
+			    		removeAllLabel="Quitar Todos"
+			    		removeLabel="Quitar"
+			    		id="pklPermisos" 
+			    		value="#{usuarioMB.permisos}" 
+			    		converter="PermisoConverter" 
+			    		var="permiso" 
+			    		itemValue="#{permiso}"
+			    		itemLabel="#{permiso.descripcion}">
+			    		<f:facet name="sourceCaption">Disponibles</f:facet>  
+        				<f:facet name="targetCaption">Agregados</f:facet>  
+			    	</p:pickList>
+			    </p:fieldset>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			actionListener="#{usuarioMB.guardarUsuario}"
+			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaUser').hide(); }"
+			    			update=":frm:dttUsers"
+			    			process="@this,pgiUserInfo,flsPerfiles"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaUser').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>    
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

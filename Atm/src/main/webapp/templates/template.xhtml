@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<h:head>
+	<link href="#{request.contextPath}/resources/images/tool.ico" rel="shortcut icon" />
+	<h:outputStylesheet library="css" name="default.css"></h:outputStylesheet>
+	<h:outputScript library="js" name="util.js"></h:outputScript>
+	<h:outputScript library="js" name="calendar_es.js"></h:outputScript>
+	<p:outputPanel style="display:none"></p:outputPanel>
+	<title>.: ATM :.</title>
+</h:head>
+<h:body> 
+	<ui:insert name="header">
+		<div id="header" class="ui-panel ui-widget ui-header">
+			<div class="ui-panel-titlebar ui-widget-header ui-helper-clearfix">
+				<div class="ui-panel-title">ATM v1.0.0 &copy;jfoix.cl</div>
+			</div>
+			<h:form>
+				<p:menubar style="margin:2px">
+			        <p:submenu label="Servicios" icon="ui-icon-wrench" rendered="#{authenticationBean.tieneRol('ROLE_OT')}">
+		                <p:menuitem value="Crear OT" url="/pages/taller/crearOT.jsf" />
+			            <p:menuitem value="Administrar OT" url="/pages/taller/adminOT.jsf" />
+			        </p:submenu>
+			        <p:submenu label="Mec&aacute;nico" icon="ui-icon-wrench" rendered="#{authenticationBean.tieneRol('ROLE_TRABAJO')}">
+		                <p:menuitem value="Trabajos" url="/pages/mecanico/trabajos.jsf" ajax="false" />
+			        </p:submenu>
+			        <p:submenu label="Consultas" icon="ui-icon-search" rendered="#{authenticationBean.tieneRol('ROLE_CONSULTAS')}">
+		                <p:menuitem value="Consultar Veh&iacute;culos" url="#" />
+			            <p:menuitem value="Consultar Stock" url="#" />
+			            <p:menuitem value="Consultar Mantenciones" url="#" />
+			        </p:submenu>
+			        <p:submenu label="Mantenedores" icon="ui-icon-note" rendered="#{authenticationBean.tieneRol('ROLE_ADM_PARAM')}">
+		                <p:menuitem value="Marcas" url="/pages/mantenedor/mantMarca.jsf" />
+		                <p:menuitem value="Productos" url="/pages/mantenedor/mantProducto.jsf" />
+						<p:separator />
+		                <p:menuitem value="Trabajo Tipo" url="/pages/mantenedor/mantTrabajoTipo.jsf" />
+		                <p:menuitem value="Trabajo Sub-Tipo" url="/pages/mantenedor/mantTrabajoSubTipo.jsf" />
+		                <p:menuitem value="Trabajo" url="/pages/mantenedor/mantTrabajo.jsf" />
+		                <p:menuitem value="Mant. Programadas" url="/pages/mantenedor/mantMantencionProgramada.jsf" />
+		                <p:separator />
+		                <p:menuitem value="Bodega" url="/pages/mantenedor/mantBodega.jsf" />
+		                <p:menuitem value="Proveedor" url="/pages/mantenedor/mantProveedor.jsf" />
+			        </p:submenu>
+			        <p:submenu label="Administraci&oacute;n" icon="ui-icon-suitcase" rendered="#{authenticationBean.tieneRol('ROLE_ADM_PARAM') or authenticationBean.tieneRol('ROLE_ADM_STOCK') or authenticationBean.tieneRol('ROLE_ADM_PERSONAL') or authenticationBean.tieneRol('ROLE_ADM_USUARIOS')}">
+			            <p:menuitem value="Personas" url="/pages/administracion/admPersonas.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_PERSONAL')}" />
+			            <p:menuitem value="Usuarios" url="/pages/administracion/admUsuarios.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_USUARIOS')}" />
+		                <p:separator />
+		                <p:menuitem value="Stock" url="/pages/administracion/admStock.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_STOCK')}" />
+		                <p:menuitem value="Solicitud Repuestos" url="/pages/administracion/admSolicitudRepuesto.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_STOCK')}" />
+			            <p:separator />
+			            <p:menuitem value="Par&aacute;metros" url="#" rendered="#{authenticationBean.tieneRol('ROLE_ADM_PARAM')}" />
+			        </p:submenu>
+			        <p:menuitem value="Cerrar Sesi&oacute;n" icon="ui-icon-power" action="#{authenticationBean.logout}" ajax="false" immediate="true" />  
+				</p:menubar>
+			</h:form>
+		</div>
+	</ui:insert>
+	<div id="content">
+		<ui:insert name="body"></ui:insert>
+	</div>
+	<ui:insert name="footer">
+		<div id="footer" class="ui-panel ui-widget ui-footer">
+			<div class="ui-panel-titlebar ui-widget-header ui-helper-clearfix">
+				<span class="ui-panel-title">ATM v1.0.0 &copy;jfoix.cl</span>
+			</div>
+		</div>
+	</ui:insert>
+	<p:ajaxStatus onstart="PF('statusDialog').show();" onsuccess="PF('statusDialog').hide();"/>  
+              
+	<p:dialog modal="true" widgetVar="statusDialog" showHeader="false" draggable="false" resizable="false" closable="false" width="120">  
+	    Cargando... <p:graphicImage library="images" name="loading.gif" />
+	</p:dialog>
+	
+	<p:growl id="gwlGlobal" autoUpdate="true" showDetail="true" life="3000" />
+</h:body>
+</html>

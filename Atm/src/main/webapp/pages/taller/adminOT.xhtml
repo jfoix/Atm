@@ -1,0 +1,796 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="body">
+		<h:form id="frm">
+			<h:panelGrid id="pngWorkOrderSearch" cellspacing="3">
+				<p:fieldset legend="B&uacute;squeda">  
+	    			<h:panelGrid columns="6" id="pngSearchOrders">
+	    				<h:outputText value="Nro. OT" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.filtroBusqueda.idOrden}" onkeypress="return validateNumbers(event)" />  
+	    				
+	    				<h:outputText value="Mec&aacute;nico" />
+	    				<h:outputText value="" />
+	    				<p:selectOneMenu value="#{admOTMB.filtroBusqueda.idMecanico}">
+	    					<f:selectItem itemValue="" itemLabel="Todos"/>
+	    					<f:selectItems value="#{admOTMB.mecanicos}" var="mec" itemLabel="#{mec.persona.nombres}" itemValue="#{mec.nombreUsuario}" />
+	    				</p:selectOneMenu>
+	    				
+	    				<h:outputText value="Fecha Desde" />
+	    				<h:outputText value=":" />
+	    				<p:calendar value="#{admOTMB.filtroBusqueda.fechaInicio}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
+	    				
+	    				<h:outputText value="Fecha Hasta" />
+	    				<h:outputText value=":" />
+	    				<p:calendar value="#{admOTMB.filtroBusqueda.fechaTermino}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
+	    				
+	    				<h:outputText value="Estado" />
+	    				<h:outputText value=":" />
+	    				<p:selectOneMenu value="#{admOTMB.filtroBusqueda.idEstado}">
+	    					<f:selectItem itemValue="-1" itemLabel="Todos"/>
+	    					<f:selectItem itemValue="1" itemLabel="Ingresadas"/>
+	    					<f:selectItem itemValue="2" itemLabel="Taller"/>
+	    					<f:selectItem itemValue="3" itemLabel="DyP"/>
+	    					<f:selectItem itemValue="4" itemLabel="Tercero"/>
+	    				</p:selectOneMenu>
+	    				
+	    				<h:outputText value="Patente" />
+	    				<h:outputText value=":" />
+	    				<p:inputMask value="#{admOTMB.filtroBusqueda.patente}" mask="aa-**-99" styleClass="uppercase" />
+	    				
+	    				<p:commandButton 
+	    					value="Buscar" 
+	    					icon="ui-icon-search" 
+	    					process="pngSearchOrders" 
+	    					action="#{admOTMB.buscarOrdenes}" 
+	    					update="dttWorks" />
+	    			</h:panelGrid>
+	    		</p:fieldset>
+	    		<p:dataTable id="dttWorks" emptyMessage="Sin trabajos asociados" value="#{admOTMB.ordenes}" var="order">
+					<p:columnGroup type="header">  
+			            <p:row>  
+			                <p:column headerText="Nro. OT" />
+			                <p:column headerText="Estado OT" />
+			                <p:column headerText="Fecha OT" />
+			                <p:column headerText="# Trabajos Pendientes" />
+			                <p:column headerText="# Trabajos En Proceso" />
+			                <p:column headerText="# Trabajos Finalizados" />
+			                <p:column headerText="# Trabajos Cancelados" />
+			                <p:column headerText="Cliente" />
+			                <p:column headerText="Patente" />
+			                <p:column headerText="Documento" />
+			                <p:column colspan="3" headerText="Acciones" />  
+			            </p:row>  
+			        </p:columnGroup>  
+			        <p:column>  
+			            <h:outputText value="#{order.idOrden}" />  
+			        </p:column>  
+			        <p:column>  
+			            <h:outputText value="#{order.ultimoOrdenEstado.estadoOrden.descripcion}" />  
+			        </p:column>  		  
+			        <p:column>  
+			            <h:outputText value="#{order.fechaOrden}">
+			            	<f:convertDateTime pattern="dd/MM/yyyy" />
+			            </h:outputText>  
+			        </p:column>
+			        <p:column>
+			        	<div align="right"> 
+			            	<h:outputText value="#{order.trabajosPendientes}" />
+			            </div>  
+			        </p:column>
+			        <p:column>
+			            <div align="right">
+			            	<h:outputText value="#{order.trabajosEnProceso}" />
+			            </div>  
+			        </p:column>
+			        <p:column>
+			        	<div align="right">
+			            	<h:outputText value="#{order.trabajosTerminados}" />
+			            </div>  
+			        </p:column>
+			        <p:column>
+			        	<div align="right">
+			            	<h:outputText value="#{order.trabajosCancelados}" />
+			            </div>  
+			        </p:column>
+			        <p:column>  
+			            <p:commandLink
+			            	process="@this"
+			            	oncomplete="PF('diaCliente').show()"
+			            	update=":frm:pngCliente" 
+			            	value="#{order.vehiculoOrden.cliente.nombreCliente}">
+			            	<f:setPropertyActionListener target="#{admOTMB.orden}" value="#{order}" />
+			            </p:commandLink>  
+			        </p:column>
+			        <p:column>
+			            <div align="center">
+			            	<p:commandLink
+			            		process="@this"
+				            	oncomplete="PF('diaVehiculo').show()"
+				            	update=":frm:pngVehiculo" 
+			            		value="#{order.vehiculoOrden.vehiculo.patente}">
+				            	<f:setPropertyActionListener target="#{admOTMB.orden}" value="#{order}" /> 
+		            		</p:commandLink>
+			            </div>  
+			        </p:column>
+			        <p:column>
+			            <div align="center">
+			            	<p:commandLink value="Imprimir"/>
+			            </div>  
+			        </p:column>
+			        <p:column style="width:30px; text-align:center">  
+		                <p:commandButton icon="ui-icon-pencil" process="@this" title="Editar Trabajos" alt="Editar Trabajos" action="#{admOTMB.abrirEditarTrabajo}" update=":frm:pngWorks" oncomplete="PF('diaTrabajosOT').show();">
+		                	<f:setPropertyActionListener value="#{order}" target="#{admOTMB.orden}" />  
+			            </p:commandButton>
+					</p:column> 
+					<p:column style="width:30px; text-align:center">  
+		                <p:commandButton icon="ui-icon-transferthick-e-w" process="@this" title="Cambiar Estado OT" alt="Cambiar Estado OT" update=":frm:pngStatusOrder" action="#{admOTMB.abrirCambioEstadoOrden}" oncomplete="PF('diaStatusOrder').show();">
+		                	<f:setPropertyActionListener value="#{order}" target="#{admOTMB.orden}" />  
+			            </p:commandButton>
+					</p:column>
+			        <p:column style="width:30px; text-align:center">  
+		                <p:commandButton
+		                	process="@this" 
+		                	update="dttWorks"
+		                	action="#{admOTMB.eliminarOrden}"
+		                	icon="ui-icon-closethick" title="Eliminar" alt="Eliminar">
+		                	<p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar la orden seleccionada?" icon="ui-icon-alert" />
+		                	<f:setPropertyActionListener value="#{order}" target="#{admOTMB.orden}" />  
+			            </p:commandButton>
+					</p:column>
+			    </p:dataTable>
+			    <p:confirmDialog global="true" id="confirmDialog" widgetVar="confirmDialog">  
+			        <p:commandButton value="Aceptar" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+			        <p:commandButton value="Cancelar" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+			    </p:confirmDialog>
+    		</h:panelGrid>
+			<h:panelGroup id="pngStatusOrder">
+				<p:dialog id="diaStatusOrder" header="Cambiar Estado OT #{admOTMB.orden.idOrden}" widgetVar="diaStatusOrder" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+					<div align="center">
+						<h:panelGroup id="pniEstadoOT">
+							<h:panelGrid columns="3">
+								<h:outputText value="Estado OT" />
+								<h:outputText value=":" />
+								<p:selectOneMenu value="#{admOTMB.idNuevoEstadoOrden}">
+									<f:selectItems value="#{admOTMB.estadosOrdenes}" var="so" itemLabel="#{so.descripcion}" itemValue="#{so.idEstadoOrden}" />
+									<p:ajax event="change" update="pniEstadoOT" process="@this" />
+								</p:selectOneMenu>
+								<h:outputText value="Forma de Pago" rendered="#{admOTMB.idNuevoEstadoOrden eq 5}" />
+								<h:outputText value=":" rendered="#{admOTMB.idNuevoEstadoOrden eq 5}" />
+								<p:selectOneMenu value="#{admOTMB.idFormaPago}" rendered="#{admOTMB.idNuevoEstadoOrden eq 5}">
+									<f:selectItems value="#{admOTMB.formasPago}" var="fp" itemLabel="#{fp.descripcion}" itemValue="#{fp.idFormaPago}" />
+								</p:selectOneMenu>
+							</h:panelGrid>
+							<h:panelGrid columns="3">
+								<h:outputText value="Observaci&oacute;n" />
+								<h:outputText value=":" />
+								<p:inputTextarea value="#{admOTMB.observacionEstado}" cols="30" rows="5"></p:inputTextarea>
+							</h:panelGrid>
+						</h:panelGroup>
+					</div>
+					<f:facet name="footer">
+				    	<div align="center">
+					    	<p:commandButton 
+				    			icon="ui-icon-disk"
+				    			update="@this, dttWorks"
+				    			process="@this,pniEstadoOT"
+				    			action="#{admOTMB.guardarEstadoOrden}"
+				    			oncomplete="PF('diaStatusOrder').hide();"
+				    			value="Guardar" />
+			    			<p:commandButton 
+				    			icon="ui-icon-close"
+				    			oncomplete="PF('diaStatusOrder').hide();"
+				    			process="@this"
+				    			value="Cancelar" />
+			    		</div>
+				    </f:facet>
+		    	</p:dialog>
+			</h:panelGroup>
+			<h:panelGroup id="pngWorks">
+				<p:dialog id="diaTrabajosOT" header="Trabajos OT #{admOTMB.orden.idOrden}" widgetVar="diaTrabajosOT" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+					<h:panelGrid>
+						<h:panelGrid columns="2">
+			    			<p:commandButton 
+			    				icon="ui-icon-plus"
+			    				process="@this"
+			    				action="#{admOTMB.abrirBusquedaProducto}"
+			    				update="dttFindWorks"
+			    				oncomplete="PF('diaTrabajos').show();"
+			    				value="Agregar Trabajo"/>
+			    			<p:commandButton 
+			    				icon="ui-icon-gear"
+			    				process="@this"
+			    				action="#{admOTMB.buscarStock}"
+			    				update="tetWorks"
+			    				value="Buscar Stock Productos" />
+			    		</h:panelGrid>
+						<p:treeTable id="tetWorks" value="#{admOTMB.tnTrabajos}" var="works" emptyMessage="Sin informaci&oacute;n"
+							styleClass="tetClass">  
+					        <p:column style="width:230px">   
+					            <f:facet name="header">  
+					                <h:outputText value="Trabajo" />
+					            </f:facet>  
+					            <h:outputText value="#{works.trabajoDescripcion}" />  
+					        </p:column>
+					        <p:column style="width:130px">   
+					            <f:facet name="header">  
+					                <h:outputText value="Estado Trabajo" />
+					            </f:facet>  
+					            <h:outputText value="#{works.ot ne null ? works.ot.ultimoEstado.estadoTrabajo.descripcion : ''}" />  
+					        </p:column>
+					        <p:column style="width:60px">   
+					            <f:facet name="header">  
+					                <h:outputText value="Garant&iacute;a" />
+					            </f:facet>  
+					            <div align="center">
+					            	<p:selectBooleanCheckbox value="#{works.garantia}" rendered="#{works.tipo eq 1}">
+					            		<p:ajax event="change" />
+					            	</p:selectBooleanCheckbox>
+					            </div>  
+					        </p:column>
+					        <p:column style="width:180px">  
+					            <f:facet name="header">  
+					                Producto
+					            </f:facet>  
+					            <h:outputText value="#{works.productoDescripcion} #{works.tieneStock ? '' : '(SIN STOCK)'}" styleClass="#{works.tieneStock ? '' : 'sinStockMec'}" />  
+					        </p:column>
+					        <p:column style="width:60px">   
+					            <f:facet name="header">  
+					                <h:outputText value="Traido Cliente" />
+					            </f:facet>  
+					            <div align="center">
+					            	<p:selectBooleanCheckbox value="#{works.productoCliente}" rendered="#{works.tipo eq 2}">
+					            		<p:ajax event="change" />
+					            	</p:selectBooleanCheckbox>
+					            </div>  
+					        </p:column>
+					        <p:column>  
+					            <f:facet name="header">  
+					                Cantidad
+					            </f:facet>  
+					            <div align="right">
+						            <p:inputText value="#{works.cantidad}" onkeypress="return validarDecimal(event, this)" rendered="#{works.tipo eq 2}" style="width:30px; text-align:right">
+						            	<p:ajax event="change" />
+						            </p:inputText> 
+					            </div> 
+					        </p:column>
+					        <p:column>  
+					            <f:facet name="header">  
+					                Precio
+					            </f:facet>  
+					            <div align="right">
+						            <p:inputText value="#{works.precio}" onkeypress="return validateNumbers(event)" style="width:40px; text-align:right">
+						            	<p:ajax event="change" />
+						            </p:inputText> 
+					            </div> 
+					        </p:column>
+					        <p:column>  
+					            <f:facet name="header">  
+					                HH Estimadas
+					            </f:facet>  
+					            <div align="right">
+					            	<p:inputText value="#{works.hhEstimadas}" onkeypress="return validarDecimal(event, this)" rendered="#{works.tipo eq 1}" style="width:30px; text-align:right">
+					            		<p:ajax event="change" />
+					            	</p:inputText>
+					            </div>  
+					        </p:column>
+					        <p:column style="width:120px">
+					        	<f:facet name="header">
+					        		Acciones
+					        	</f:facet>
+					        	<div align="center">
+						        	<h:panelGrid columns="3" rendered="#{works.tipo eq 1}" styleClass="tetSubTable">
+						                <p:commandButton 
+						                	icon="ui-icon-close" 
+						                	title="Eliminar Trabajo"
+						                	action="#{admOTMB.quitarTrabajo}"
+						                	process="@this"
+						                	update=":frm:tetWorks" 
+						                	alt="Eliminar Trabajo">
+						                	<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
+						                	<p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el trabajo seleccionado?" icon="ui-icon-alert" />
+						                </p:commandButton>
+						                <p:commandButton 
+						                	icon="ui-icon-plus" 
+						                	title="Agregar Producto"
+						                	update=":frm:pgiProducts :frm:dttFindProducts"
+				                			action="#{admOTMB.abrirBusquedaProducto}"
+						                	oncomplete="PF('diaProducts').show();" 
+						                	alt="Agregar Producto">
+						                	<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
+						                </p:commandButton>
+						                <p:commandButton 
+						                	icon="ui-icon-person" 
+					                		title="Asociar Mec&aacute;nico"
+					                		action="#{admOTMB.abrirBusquedaMecanicos}"
+			                				update=":frm:pklMecanicos"
+					                		oncomplete="PF('diaMecanics').show();" 
+			                				alt="Asociar Mec&aacute;nico">
+			                				<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
+			                			</p:commandButton>  
+						        	</h:panelGrid>
+						        	<h:panelGrid columns="3" rendered="#{works.tipo eq 2}" styleClass="tetSubTable">
+						                <p:commandButton 
+						                	icon="ui-icon-circle-close" 
+						                	title="Eliminar Producto"
+						                	action="#{admOTMB.quitarTrabajo}"
+						                	process="@this" 
+						                	update=":frm:tetWorks" 
+						                	alt="Eliminar Producto">
+						                	<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
+						                	<p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el producto seleccionado?" icon="ui-icon-alert" />
+						               	</p:commandButton>
+						        	</h:panelGrid>
+					        	</div>
+					        </p:column>
+						</p:treeTable>
+					</h:panelGrid>
+					<f:facet name="footer">
+				    	<div align="center">
+					    	<p:commandButton 
+				    			icon="ui-icon-disk"
+				    			update="@this"
+				    			process="@this"
+				    			action="#{admOTMB.guardarOT}"
+				    			oncomplete="PF('diaTrabajosOT').hide();"
+				    			value="Guardar" />
+			    			<p:commandButton 
+				    			icon="ui-icon-close"
+				    			oncomplete="PF('diaTrabajosOT').hide();"
+				    			partialSubmit="true"
+				    			process="@this"
+				    			value="Cerrar" />
+			    		</div>
+				    </f:facet>
+				</p:dialog>
+			</h:panelGroup>
+			<p:dialog id="diaMecanics" header="Asociar Mec&aacute;nicos" widgetVar="diaMecanics" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <p:pickList 
+			    	id="pklMecanicos" 
+			    	value="#{admOTMB.dlmMecanicos}" 
+			    	var="mecanico" 
+			    	effect="fade"  
+                    itemValue="#{mecanico}" 
+                    itemLabel="#{mecanico.nombreUsuario}"
+                    addAllLabel="Agregar Todos"
+                    addLabel="Agregar"
+                    removeAllLabel="Quitar Todos"
+                    removeLabel="Quitar" 
+                    converter="UsuarioConverter" >  
+			        <f:facet name="sourceCaption">Disponibles</f:facet>  
+			        <f:facet name="targetCaption">Asignados</f:facet> 
+				</p:pickList>
+			    <f:facet name="footer">
+			    	<div align="center">
+		    			<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			process="@this,pklMecanicos"
+			    			oncomplete="PF('diaMecanics').hide();"
+			    			action="#{admOTMB.guardarAsignacionMecanico}"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaMecanics').hide();"
+			    			value="Cerrar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+			 <p:dialog id="diaTrabajos" header="Buscar Trabajos" widgetVar="diaTrabajos" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="6" cellpadding="4" id="pgiWorkFilter">
+			    	<h:outputText value="C&oacute;digo" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{admOTMB.trabajoFiltro.codigo}" />
+			    	
+			    	<h:outputText value="Descripci&oacute;n" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{admOTMB.trabajoFiltro.desc}" />
+			    	
+			    	<h:outputText value="Tipo" />
+			    	<h:outputText value=":" /> 
+			    	<p:selectOneMenu value="#{admOTMB.trabajoFiltro.tipo}">
+			    		<f:selectItem itemValue="-1" itemLabel="Todos" />
+			    		<f:selectItems value="#{admOTMB.trabajoTipos}" var="wt" itemLabel="#{wt.descripcion}" itemValue="#{wt.idTrabajoTipo}" />
+			    		<p:ajax listener="#{admOTMB.buscarTrabajosSubTipos}" update="somSubTypes" process="@this" event="change" />
+			    	</p:selectOneMenu>
+			    	
+			    	<h:outputText value="Sub-Tipo" />
+			    	<h:outputText value=":" />
+			    	<p:selectOneMenu value="#{admOTMB.trabajoFiltro.subTipo}" id="somSubTypes">
+			    		<f:selectItem itemValue="-1" itemLabel="Todos" />
+			    		<f:selectItems value="#{admOTMB.trabajoSubTipos}" var="wst" itemLabel="#{wst.descripcion}" itemValue="#{wst.idTrabajoSubTipo}" />
+			    	</p:selectOneMenu>
+			    </h:panelGrid>
+			    <p:commandButton 
+			    	value="Buscar" 
+			    	action="#{admOTMB.buscarTrabajo}"
+			    	process="@this,pgiWorkFilter"
+			    	update="dttFindWorks" 
+			    	icon="ui-icon-search" />
+			    <p:dataTable 
+			    	emptyMessage="Sin informaci&oacute;n" 
+			    	id="dttFindWorks" 
+			    	var="work"
+			    	paginator="true" rows="10"
+			    	paginatorPosition="bottom"
+					paginatorTemplate="{CurrentPageReport} {PageLinks}"  
+			    	value="#{admOTMB.trabajos}">
+					<p:columnGroup type="header">  
+			            <p:row>  
+			                <p:column />  
+			                <p:column headerText="C&oacute;digo" />
+			                <p:column headerText="Descripci&oacute;n" />
+			                <p:column headerText="Tipo" />
+			                <p:column headerText="Sub-Tipo" />
+			            </p:row>  
+			        </p:columnGroup>
+					<p:column style="width:10px; text-align:center">  
+		                <p:selectBooleanCheckbox value="#{work.seleccionado}" />
+					</p:column> 
+			        <p:column>  
+		                <h:outputText value="#{work.codigo}" />
+					</p:column>
+					<p:column>  
+		                <h:outputText value="#{work.descripcion}" />
+					</p:column>
+					<p:column>  
+		                <h:outputText value="#{work.trabajoSubTipo.trabajoTipo.descripcion}" />
+					</p:column>
+					<p:column>  
+		                <h:outputText value="#{work.trabajoSubTipo.descripcion}" />
+					</p:column>
+				</p:dataTable>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton
+			    			icon="ui-icon-plus"
+			    			update=":frm:tetWorks"
+			    			process="@this,dttFindWorks"
+			    			action="#{admOTMB.agregarTrabajo}"
+			    			value="Agregar" />
+			    		<p:commandButton 
+			    			icon="ui-icon-circle-plus"
+			    			update=":frm:tetWorks"
+			    			process="@this,dttFindWorks"
+			    			action="#{admOTMB.agregarTrabajo}"
+			    			oncomplete="PF('diaTrabajos').hide();"
+			    			value="Agregar y Cerrar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			oncomplete="PF('diaTrabajos').hide();"
+			    			process="@this"
+			    			value="Cerrar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>    
+		    <p:dialog id="diaProducts" header="Buscar Productos" widgetVar="diaProducts" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="6" id="pgiProducts">
+			    	<h:outputText value="C&oacute;digo" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{admOTMB.productoCodigo}" />
+			    	
+			    	<h:outputText value="Descripci&oacute;n" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{admOTMB.productoDesc}" />
+			    	
+			    	<h:outputText value="Marca" />
+			    	<h:outputText value=":" />
+			    	<p:selectOneMenu value="#{admOTMB.idMarca}">
+			    		<f:selectItem itemValue="-1" itemLabel="Todos" />
+			    		<f:selectItems value="#{admOTMB.marcas}"  var="stamp" itemValue="#{stamp.idMarca}" itemLabel="#{stamp.descripcion}" />
+			    	</p:selectOneMenu>
+			    	
+			    	<h:outputText value="" />
+			    	<h:outputText value="" />
+			    	<h:outputText value="" />
+			    	
+			    </h:panelGrid>
+		    	<p:commandButton 
+		    		value="Buscar" 
+		    		icon="ui-icon-search" 
+		    		update="dttFindProducts" 
+		    		process="@this,pgiProducts" 
+		    		action="#{admOTMB.buscarProductos}" />
+			    <h:panelGroup id="pngFindProducts">
+				    <p:dataTable id="dttFindProducts" emptyMessage="Sin productos" value="#{admOTMB.productos}" var="product">
+						<p:column style="width:10px; text-align:center">
+							<p:selectBooleanCheckbox value="#{product.seleccionado}"/>
+						</p:column> 
+				        <p:column headerText="C&oacute;digo">  
+			                <h:outputText value="#{product.codigo}" />
+						</p:column>
+						<p:column headerText="Descripci&oacute;n">  
+			                <h:outputText value="#{product.descripcion}" />
+						</p:column>
+						<p:column headerText="Marca">  
+			                <h:outputText value="#{product.marca.descripcion}" />
+						</p:column>
+					</p:dataTable>
+				</h:panelGroup>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-plus"
+			    			update="tetWorks"
+			    			process="@this,dttFindProducts"
+			    			action="#{admOTMB.agregarProductos}"
+			    			value="Agregar" />
+			    		<p:commandButton 
+			    			icon="ui-icon-circle-plus"
+			    			oncomplete="PF('diaProducts').hide();"
+			    			process="@this,dttFindProducts"
+			    			update="tetWorks"
+			    			action="#{admOTMB.agregarProductos}"
+			    			value="Agregar y Cerrar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			oncomplete="PF('diaProducts').hide();"
+			    			process="@this"
+			    			value="Cerrar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog> 
+			<h:panelGroup id="pngVehiculo">
+				<p:dialog header="Vehiculo del Trabajo #{admOTMB.orden.idOrden}" widgetVar="diaVehiculo" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+					<h:panelGrid columns="6" id="pngVehiculoActual">
+	    				<h:outputText value="Patente" />
+	    				<h:outputText value=":" />
+    					<p:inputMask id="ipmPatente" value="#{admOTMB.orden.vehiculoOrden.vehiculo.patente}" mask="aa-**-99" styleClass="uppercase" />
+	    				
+	    				<p:commandButton 
+	    					title="Buscar" alt="Buscar" 
+	    					update="pngCrearNuevoVehiculo" 
+	    					process="@this,ipmPatente" 
+	    					icon="ui-icon-search" 
+	    					action="#{admOTMB.buscarVehiculo}" />
+	    				<h:outputText value="" rendered="#{admOTMB.orden.vehiculoOrden.vehiculo.idVehiculo eq null}" />
+	    				<h:outputText value="" />
+	    				<p:commandButton 
+	    					rendered="#{admOTMB.orden.vehiculoOrden.vehiculo.idVehiculo ne null}" 
+	    					title="Editar" alt="Editar" 
+	    					update="pagNuevoVehiculo" 
+	    					process="@this" 
+	    					icon="ui-icon-pencil" 
+	    					oncomplete="PF('diaCrearVehiculo').show();" />
+	    				
+	    				<h:outputText value="Chasis" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.vehiculo.chasis}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="Color" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.vehiculo.color}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="Marca" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.vehiculo.marcaVehiculo.descripcion}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="Modelo" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.vehiculo.modelo}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="Nro. Motor" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.vehiculo.nroMotor}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="A&ntilde;o" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.vehiculo.acno}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="Kilometraje" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.kilometraje}" onkeypress="return validarDecimal(event, this)" id="kilometraje" />
+	    			</h:panelGrid>
+	    			<f:facet name="footer">
+				    	<div align="center">
+			    			<p:commandButton 
+				    			icon="ui-icon-disk"
+				    			update=":frm:pngVehiculoActual dttWorks"
+				    			process="@this,kilometraje"
+				    			action="#{admOTMB.guardarVehiculo}"
+				    			oncomplete="PF('diaVehiculo').hide();"
+				    			value="Aceptar" />
+				    		<p:commandButton 
+				    			icon="ui-icon-close"
+				    			process="@this"
+				    			onclick="PF('diaVehiculo').hide();"
+				    			value="Cancelar" />
+			    		</div>
+				    </f:facet>
+				</p:dialog>
+				<h:panelGroup id="pngCrearNuevoVehiculo">
+					<p:dialog id="diaCrearNuevoVehiculo" header="Crear Nuevo Vehiculo" visible="true" rendered="#{admOTMB.crearNuevoVehiculo}" widgetVar="diaCrearNuevoVehiculo" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+						<h:panelGroup layout="block" align="left">
+					    	<h:outputText value="El vehiculo patente #{admOTMB.orden.vehiculoOrden.vehiculo.patente} no existe, ¿Desea crearlo?" />
+					    </h:panelGroup>
+					    <f:facet name="footer">
+					    	<div align="center">
+				    			<p:commandButton 
+					    			icon="ui-icon-check"
+					    			update="pagNuevoVehiculo"
+					    			process="@this"
+					    			action="#{admOTMB.nuevoVehiculo}"
+					    			oncomplete="PF('diaCrearNuevoVehiculo').hide(); PF('diaCrearVehiculo').show();"
+					    			value="Aceptar" />
+					    		<p:commandButton 
+					    			icon="ui-icon-close"
+					    			process="@this"
+					    			onclick="PF('diaCrearNuevoVehiculo').hide();"
+					    			value="Cancelar" />
+				    		</div>
+					    </f:facet>
+					</p:dialog>
+					<p:dialog header="Crear Nuevo Vehiculo" widgetVar="diaCrearVehiculo" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+						<h:panelGrid columns="3" id="pagNuevoVehiculo">
+							<h:outputText value="Patente" />
+		    				<h:outputText value=":" />
+		    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.vehiculo.patente}" readonly="true" disabled="true" />  
+		    				
+		    				<h:outputText value="Chasis" />
+		    				<h:outputText value=":" />
+		    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.vehiculo.chasis}" />
+		    				
+		    				<h:outputText value="Color" />
+		    				<h:outputText value=":" />
+		    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.vehiculo.color}" />
+		    				
+		    				<h:outputText value="Marca" />
+		    				<h:outputText value=":" />
+		    				<p:selectOneMenu filterMatchMode="contains" filter="true" value="#{admOTMB.orden.vehiculoOrden.vehiculo.marcaVehiculo.idMarcaVehiculo}">
+		    					<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+		    					<f:selectItems value="#{admOTMB.marcasVehiculo}" var="vs" itemLabel="#{vs.descripcion}" itemValue="#{vs.idMarcaVehiculo}" />
+		    				</p:selectOneMenu>
+		    				
+		    				<h:outputText value="Modelo" />
+		    				<h:outputText value=":" />
+		    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.vehiculo.modelo}" />
+		    				
+		    				<h:outputText value="Nro. Motor" />
+		    				<h:outputText value=":" />
+		    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.vehiculo.nroMotor}" />
+		    				
+		    				<h:outputText value="A&ntilde;o" />
+		    				<h:outputText value=":" />
+		    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.vehiculo.acno}" onkeypress="return validateNumbers(event)" maxlength="4" />
+						</h:panelGrid>
+						<f:facet name="footer">
+					    	<div align="center">
+				    			<p:commandButton 
+					    			icon="ui-icon-disk"
+					    			process="@this,pagNuevoVehiculo"
+					    			action="#{admOTMB.guardarVehiculo}"
+					    			update="pngVehiculoActual,dttWorks"
+					    			onclick="PF('diaCrearVehiculo').hide();"
+					    			value="Guardar" />
+					    		<p:commandButton 
+					    			icon="ui-icon-close"
+					    			process="@this"
+					    			onclick="PF('diaCrearVehiculo').hide();"
+					    			value="Cancelar" />
+				    		</div>
+					    </f:facet>
+					</p:dialog>
+				</h:panelGroup>
+			</h:panelGroup>
+			<h:panelGroup id="pngCliente">
+				<p:dialog header="Cliente del Trabajo #{admOTMB.orden.idOrden}" widgetVar="diaCliente" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+					<h:panelGrid columns="6" id="pngCustomer">
+	    				<h:outputText value="Rut" />
+	    				<h:outputText value=":" />
+	    				<p:inputText id="countryId" value="#{admOTMB.orden.vehiculoOrden.cliente.rutCliente}" />
+	    				<p:commandButton 
+	    					title="Buscar" alt="Buscar" 
+	    					update="pngCustomer,:frm:pngCreateNewCustomer" 
+	    					process="@this,countryId" 
+	    					icon="ui-icon-search" 
+	    					action="#{admOTMB.buscarCliente}" />
+	    				<h:outputText value="" rendered="#{admOTMB.orden.vehiculoOrden.cliente.idCliente eq null}" />
+	    				<h:outputText value="" />
+	    				<p:commandButton 
+	    					rendered="#{admOTMB.orden.vehiculoOrden.cliente.idCliente ne null}" 
+	    					title="Editar" alt="Editar" 
+	    					update="pagNewCustomer"
+	    					process="@this" 
+	    					icon="ui-icon-pencil" 
+	    					oncomplete="PF('diaCreateCustomer').show();" />
+	    				
+	    				<h:outputText value="Cliente" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.cliente.nombreCliente}" readonly="true" disabled="true" />
+	    				<h:outputText value="E-Mail" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.cliente.email}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="Tel&eacute;fono" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.cliente.telefono}" readonly="true" disabled="true" />
+	    				<h:outputText value="Celular" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.cliente.celular}" readonly="true" disabled="true" />
+	    			</h:panelGrid>
+	    			<f:facet name="footer">
+			    		<div align="center">
+			    			<p:commandButton 
+				    			icon="ui-icon-check"
+				    			oncomplete="PF('diaCliente').hide();"
+				    			update="dttWorks"
+				    			action="#{admOTMB.guardarCliente}"
+				    			value="Guardar" />
+				    		<p:commandButton 
+				    			process="@this"
+				    			icon="ui-icon-close"
+				    			oncomplete="PF('diaCliente').hide();"
+				    			value="Cancelar" />
+			    		</div>
+				    </f:facet>
+				</p:dialog>
+				<h:panelGroup id="pngCreateNewCustomer">
+					<p:dialog id="diaCreateNewCustomer" header="Crear Nuevo Cliente" visible="true" rendered="#{admOTMB.crearNuevoCliente}" widgetVar="diaCreateNewCustomer" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+						<h:panelGroup layout="block" align="left">
+					    	<h:outputText value="El cliente RUT #{admOTMB.orden.vehiculoOrden.cliente.rutCliente} no existe, ¿Desea crearlo?" />
+					    </h:panelGroup>
+					    <f:facet name="footer">
+					    	<div align="center">
+				    			<p:commandButton 
+					    			icon="ui-icon-check"
+					    			update=":frm:pngCustomer pagNewCustomer"
+					    			action="#{admOTMB.nuevoCliente}"
+					    			process="@this"
+					    			oncomplete="PF('diaCreateNewCustomer').hide(); PF('diaCreateCustomer').show();"
+					    			value="Aceptar" />
+					    		<p:commandButton 
+					    			icon="ui-icon-close"
+					    			onclick="PF('diaCreateNewCustomer').hide();"
+				    				process="@this"
+					    			value="Cancelar" />
+				    		</div>
+					    </f:facet>
+					</p:dialog>
+				</h:panelGroup>
+				<p:dialog id="diaCreateCustomer" header="Crear Nuevo Cliente" widgetVar="diaCreateCustomer" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+					<h:panelGrid columns="3" id="pagNewCustomer">
+						<h:outputText value="RUT" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.cliente.rutCliente}" readonly="true" disabled="true" />
+	    				
+						<h:outputText value="Cliente" />
+	    				<h:outputText value=":" />
+	    				<p:inputText id="customerName" value="#{admOTMB.orden.vehiculoOrden.cliente.nombreCliente}" />
+	    				<h:outputText value="E-Mail" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.cliente.email}" />
+	    				
+	    				<h:outputText value="Tel&eacute;fono" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.cliente.telefono}" />
+	    				<h:outputText value="Celular" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{admOTMB.orden.vehiculoOrden.cliente.celular}" />
+					</h:panelGrid>
+					<f:facet name="footer">
+				    	<div align="center">
+			    			<p:commandButton 
+				    			icon="ui-icon-disk"
+				    			action="#{admOTMB.guardarNuevoCliente}"
+				    			process="@this,pagNewCustomer"
+				    			update=":frm:pngCustomer"
+				    			onclick="PF('diaCreateCustomer').hide();"
+				    			value="Guardar" />
+				    		<p:commandButton 
+				    			icon="ui-icon-close"
+				    			onclick="PF('diaCreateCustomer').hide();"
+					    		process="@this"
+				    			value="Cancelar" />
+			    		</div>
+				    </f:facet>
+				</p:dialog>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

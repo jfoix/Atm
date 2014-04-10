@@ -1,0 +1,274 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="body">
+		<h:form id="frm">
+			<p:fieldset legend="B&uacute;squeda">
+				<h:panelGrid columns="6" cellpadding="5" id="pniBusqueda">  
+		            <h:outputLabel value="Descripci&oacute;n Trabajo" />
+		            <h:outputLabel value=":" />  
+		            <p:inputText value="#{trabajoMB.trabajoDesc}" />
+		            <h:outputLabel value="C&oacute;digo Trabajo" />
+		            <h:outputLabel value=":" />  
+		            <p:inputText value="#{trabajoMB.trabajoCode}" />
+		            
+		            <h:outputLabel value="Trabajo Tipo" />
+		            <h:outputLabel value=":" />  
+		            <p:selectOneMenu value="#{trabajoMB.idTrabajoTipo}">
+		            	<f:selectItem itemValue="-1" itemLabel="Todos"/>
+		            	<f:selectItems value="#{trabajoMB.trabajoTipos}" var="wt" itemLabel="#{wt.descripcion}" itemValue="#{wt.idTrabajoTipo}" />
+		            	<p:ajax listener="#{trabajoMB.buscarTrabajoSubTipos}" update="somSubTypes" process="@this" event="change" />
+		            </p:selectOneMenu>
+		            
+		            <h:outputLabel value="Trabajo Sub-Tipo" />
+		            <h:outputLabel value=":" />  
+		            <p:selectOneMenu value="#{trabajoMB.idTrabajoSubTipo}" id="somSubTypes">
+		            	<f:selectItem itemValue="-1" itemLabel="Todos"/>
+		            	<f:selectItems value="#{trabajoMB.trabajoSubTipos}" var="wst" itemLabel="#{wst.descripcion}" itemValue="#{wst.idTrabajoSubTipo}" />
+		            </p:selectOneMenu>
+		            
+		            <p:commandButton 
+		            	value="Buscar" 
+		            	update="dttWorks"
+		            	process="pniBusqueda"
+		            	icon="ui-icon-search" 
+		            	action="#{trabajoMB.buscarTrabajo}" />  
+		        </h:panelGrid>
+	        </p:fieldset>
+			<div align="left">
+				<h:panelGrid columns="4">
+					<p:commandButton 
+						update=":dialogs"
+						oncomplete="PF('diaWork').show();"
+						action="#{trabajoMB.nuevoTrabajo}"
+						icon="ui-icon-plus"
+						process="@this"
+						value="Agregar Trabajo"/>
+				</h:panelGrid>
+			</div>
+			<p:dataTable var="work" value="#{trabajoMB.trabajos}" id="dttWorks" emptyMessage="Sin informaci&oacute;n">
+				<p:columnGroup type="header">  
+		            <p:row>  
+		                <p:column headerText="Descripci&oacute;n Trabajo" />
+		                <p:column headerText="Trabajo Tipo" />
+		                <p:column headerText="Trabajo Sub-Tipo" />
+		                <p:column headerText="Valor Mano Obra" />
+		                <p:column headerText="HH Estimada" />
+		                <p:column colspan="2" headerText="Acciones" />  
+		            </p:row>  
+		        </p:columnGroup>  
+		        <p:column>
+	            	<h:outputText value="#{work.codigo} - #{work.descripcion}" />
+		        </p:column>  
+		        <p:column>  
+		            <h:outputText value="#{work.trabajoSubTipo.trabajoTipo.descripcion}" />  
+		        </p:column>
+		        <p:column>  
+		            <h:outputText value="#{work.trabajoSubTipo.descripcion}" />  
+		        </p:column>
+		        <p:column>  
+		        	<div align="right">  
+		            	<h:outputText value="#{work.precioManoObra}">
+		            		<f:convertNumber pattern="$###,###,###" />
+		            	</h:outputText>  
+		            </div>  
+		        </p:column>
+		        <p:column>
+		        	<div align="right">  
+		            	<h:outputText value="#{work.hhEstimada}" />
+		            </div>  
+		        </p:column>
+		        <p:column style="width:30px; text-align:center">  
+	                <p:commandButton update=":dialogs" action="#{trabajoMB.editarTrabajo}" process="@this" oncomplete="PF('diaWork').show()" icon="ui-icon-pencil" title="Editar" alt="Editar">  
+		                <f:setPropertyActionListener value="#{work}" target="#{trabajoMB.trabajo}" />  
+		            </p:commandButton>
+				</p:column> 
+		        <p:column style="width:30px; text-align:center">
+		            <p:commandButton update="dttWorks" action="#{trabajoMB.eliminarTrabajo}"  icon="ui-icon-closethick" title="Eliminar" alt="Eliminar">  
+		                <p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el Trabajo?" icon="ui-icon-alert" />
+		                <f:setPropertyActionListener value="#{work}" target="#{trabajoMB.trabajo}" />    
+		            </p:commandButton>  
+		        </p:column> 
+		    </p:dataTable>
+		    
+		    <p:confirmDialog global="true" closeOnEscape="true">  
+		        <p:commandButton value="Aceptar" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+		        <p:commandButton value="Cancelar" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+		    </p:confirmDialog>
+		</h:form>
+		<h:form id="dialogs">
+			<p:growl id="gwlWork" showDetail="true" life="5000" />  
+		    <p:dialog id="diaWork" header="Datos Trabajo" widgetVar="diaWork" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGroup id="pgiWorkInfo">
+				    <h:panelGrid columns="6" cellpadding="3">
+				    	<h:outputText value="C&oacute;digo" />
+				    	<h:outputText value=":" />
+				    	<p:inputMask mask="aaa9999" value="#{trabajoMB.trabajo.codigo}" styleClass="uppercase" />
+				    	
+				    	<h:outputText value="Descripci&oacute;n Tipo" />
+				    	<h:outputText value=":" />
+				    	<p:inputText value="#{trabajoMB.trabajo.descripcion}" />
+				    	
+				    	<h:outputText value="Valor Mano Obra" />
+				    	<h:outputText value=":" />
+				    	<p:inputText value="#{trabajoMB.trabajo.precioManoObra}" onkeypress="return validateNumbers(event)" />
+				    	
+				    	<h:outputText value="HH Estimadas" />
+				    	<h:outputText value=":" />
+				    	<p:inputText value="#{trabajoMB.trabajo.hhEstimada}" onkeypress="return validarDecimal(event, this)" />
+				    	
+				    	<h:outputLabel value="Trabajo Tipo" />
+			            <h:outputLabel value=":" />  
+			            <p:selectOneMenu value="#{trabajoMB.idTrabajoTipoTrabajo}">
+			            	<f:selectItem itemValue="-1" itemLabel="Todos"/>
+			            	<f:selectItems value="#{trabajoMB.trabajoTipos}" var="wt" itemLabel="#{wt.descripcion}" itemValue="#{wt.idTrabajoTipo}" />
+			            	<p:ajax listener="#{trabajoMB.buscarTrabajoSubTiposTrabajo}" update="somSubTypesWork" process="@this" event="change" />
+			            </p:selectOneMenu>
+			            
+			            <h:outputLabel value="Trabajo Sub-Tipo" />
+			            <h:outputLabel value=":" />  
+			            <p:selectOneMenu value="#{trabajoMB.idTrabajoSubTipoTrabajo}" id="somSubTypesWork">
+			            	<f:selectItem itemValue="-1" itemLabel="Todos"/>
+			            	<f:selectItems value="#{trabajoMB.subTiposTrabajo}" var="wst" itemLabel="#{wst.descripcion}" itemValue="#{wst.idTrabajoSubTipo}" />
+			            </p:selectOneMenu>
+				    </h:panelGrid>
+                </h:panelGroup>
+                <h:panelGrid width="100%">
+                	<p:commandButton 
+		    			icon="ui-icon-search"
+		    			actionListener="#{trabajoMB.abrirBusquedaProductos}"
+		    			oncomplete="PF('diaProduct').show();"
+		    			update="pgiProduct"
+		    			value="Buscar Productos" />
+		    		<p:dataTable var="workProduct" value="#{trabajoMB.trabajoProductos}" id="dttWorkProducts" emptyMessage="Sin informaci&oacute;n">
+						<p:columnGroup type="header">  
+				            <p:row>
+				                <p:column headerText="C&oacute;digo" />
+				                <p:column headerText="Descripci&oacute;n" />
+				                <p:column headerText="Marca" />
+				            	<p:column headerText="Cantidad" />
+				            	<p:column headerText="" />  
+				            </p:row>  
+				        </p:columnGroup>  
+				        <p:column>  
+				            <h:outputText value="#{workProduct.producto.codigo}" />  
+				        </p:column>
+				        <p:column>  
+				            <h:outputText value="#{workProduct.producto.descripcion}" />  
+				        </p:column>
+				        <p:column>  
+				            <h:outputText value="#{workProduct.producto.marca.descripcion}" />  
+				        </p:column>
+				        <p:column>
+				        	<div align="center">  
+				            	<p:inputText style="width:50px; text-align:right" value="#{workProduct.cantidadProducto}" onkeypress="return validarDecimal(event, this)" />
+				            </div>  
+				        </p:column>
+				        <p:column style="width:30px; text-align:center">
+				            <p:commandButton update="dttWorkProducts" action="#{trabajoMB.eliminarTrabajoProducto}"  icon="ui-icon-closethick" title="Eliminar" alt="Eliminar">  
+				                <p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el Producto seleccionado?" icon="ui-icon-alert" />
+				                <f:setPropertyActionListener value="#{workProduct}" target="#{trabajoMB.trabajoProducto}" />    
+				            </p:commandButton>  
+				        </p:column>
+					</p:dataTable>
+                </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			action="#{trabajoMB.guardarTrabajo}"
+			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaWork').hide(); }"
+			    			update="gwlWork, :frm:dttWorks"
+			    			process="@this,dttWorkProducts,pgiWorkInfo"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaWork').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>    
+			<p:dialog id="diaProduct" header="B&uacute;squeda de Productos" widgetVar="diaProduct" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid id="pgiProduct">
+				    <p:fieldset legend="B&uacute;squeda">
+					    <h:panelGrid columns="6" cellspacing="3" id="pniBusquedaProductos">
+					    	<h:outputText value="C&oacute;digo Producto" />
+					    	<h:outputText value=":" />
+					    	<p:inputText value="#{trabajoMB.productoCode}" />
+					    	
+					    	<h:outputText value="Descripci&oacute;n Producto" />
+					    	<h:outputText value=":" />
+					    	<p:inputText value="#{trabajoMB.productoDesc}" />
+					    	
+					    	<h:outputText value="Marca" />
+					    	<h:outputText value=":" />
+					    	<p:selectOneMenu value="#{trabajoMB.idMarca}">
+				            	<f:selectItem itemValue="-1" itemLabel="Todas" />
+				            	<f:selectItem itemValue="-2" itemLabel="Sin Marca" />
+				            	<f:selectItems value="#{trabajoMB.marcas}" var="stamp" itemLabel="#{stamp.descripcion}" itemValue="#{stamp.idMarca}" />
+				            </p:selectOneMenu>
+					    </h:panelGrid>
+			            <p:commandButton 
+			            	value="Buscar" 
+			            	icon="ui-icon-search" 
+			            	update="dttProducts"
+			            	process="@this,pniBusquedaProductos" 
+			            	action="#{trabajoMB.searchProducts}" />
+				    </p:fieldset>
+	    			<p:dataTable var="product" value="#{trabajoMB.productos}" id="dttProducts" emptyMessage="Sin informaci&oacute;n">
+						<p:columnGroup type="header">  
+				            <p:row>
+				            	<p:column>#</p:column>  
+				                <p:column headerText="C&oacute;digo" />
+				                <p:column headerText="Descripci&oacute;n" />
+				                <p:column headerText="Marca" />
+				            </p:row>  
+				        </p:columnGroup>  
+				        <p:column style="width:10px; text-align:center">  
+				            <p:selectBooleanCheckbox value="#{product.seleccionado}" />  
+				        </p:column>
+				        <p:column>  
+				            <h:outputText value="#{product.codigo}" />  
+				        </p:column>
+				        <p:column>  
+				            <h:outputText value="#{product.descripcion}" />  
+				        </p:column>
+				        <p:column>  
+				            <h:outputText value="#{product.marca.descripcion}" />  
+				        </p:column>
+					</p:dataTable>
+                </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-plus"
+			    			action="#{trabajoMB.addProduct}"
+			    			process="@this,dttProducts"
+			    			update="dttProducts, :dialogs:dttWorkProducts"
+			    			value="Agregar" />
+				    	<p:commandButton 
+			    			icon="ui-icon-circle-plus"
+			    			action="#{trabajoMB.addProduct}"
+			    			oncomplete="PF('diaProduct').hide();"
+			    			process="@this,dttProducts"
+			    			update=":dialogs:dttWorkProducts"
+			    			value="Agregar y Cerrar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaProduct').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>    
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

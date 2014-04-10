@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="body">
+		<h:form id="frm">
+			<p:fieldset legend="B&uacute;squeda">
+				<h:panelGrid columns="9" cellpadding="5" id="pniBusqueda">  
+		            <h:outputLabel value="C&oacute;digo Producto" />
+		            <h:outputLabel value=":" />  
+		            <p:inputText value="#{productoMB.productoCode}" />
+		            <h:outputLabel value="Nombre Producto" />
+		            <h:outputLabel value=":" />  
+		            <p:inputText value="#{productoMB.productoDesc}" />
+		            <h:outputLabel value="Marca Producto" />
+		            <h:outputLabel value=":" />  
+		            <p:selectOneMenu value="#{productoMB.productoIdMarca}">
+		            	<f:selectItem itemValue="-1" itemLabel="Todas" />
+		            	<f:selectItem itemValue="-2" itemLabel="Sin Marca" />
+		            	<f:selectItems value="#{productoMB.marcas}" var="stamp" itemLabel="#{stamp.descripcion}" itemValue="#{stamp.idMarca}" />
+		            </p:selectOneMenu>
+		            <p:commandButton 
+		            	value="Buscar" 
+		            	update="dttProducts"
+		            	process="pniBusqueda"
+		            	icon="ui-icon-search" 
+		            	action="#{productoMB.buscarProductos}" />  
+		        </h:panelGrid>
+	        </p:fieldset>
+			<div align="left">
+				<h:panelGrid columns="4">
+					<p:commandButton 
+						update=":frm:pgiProductInfo"
+						oncomplete="PF('diaProduct').show();"
+						action="#{productoMB.nuevoProducto}"
+						icon="ui-icon-plus"
+						process="@this"
+						value="Agregar Producto"/>
+				</h:panelGrid>
+			</div>
+			<p:dataTable var="product" value="#{productoMB.productos}" id="dttProducts" emptyMessage="Sin informaci&oacute;n">
+				<p:columnGroup type="header">  
+		            <p:row>  
+		                <p:column headerText="C&oacute;digo Producto" />
+		                <p:column headerText="Nombre Producto" />
+		                <p:column headerText="Marca Producto" />
+		                <p:column colspan="2" headerText="Acciones" />  
+		            </p:row>  
+		        </p:columnGroup>  
+		        <p:column>  
+		            <h:outputText value="#{product.codigo}" />  
+		        </p:column>
+		        <p:column>  
+		            <h:outputText value="#{product.descripcion}" />  
+		        </p:column>
+		        <p:column>  
+		            <h:outputText value="#{product.marca eq null ? 'Sin Marca' : product.marca.descripcion}" /> 
+		        </p:column>  
+		        <p:column style="width:30px; text-align:center">  
+	                <p:commandButton update=":frm:pgiProductInfo" process="@this" action="#{productoMB.actualizarProducto}" oncomplete="PF('diaProduct').show()" icon="ui-icon-pencil" title="Editar" alt="Editar">  
+		                <f:setPropertyActionListener value="#{product}" target="#{productoMB.producto}" />  
+		            </p:commandButton>
+				</p:column> 
+		        <p:column style="width:30px; text-align:center">
+		            <p:commandButton update="dttProducts" process="@this" action="#{productoMB.eliminarProducto}"  icon="ui-icon-closethick" title="Eliminar" alt="Eliminar">  
+		                <p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el producto?" icon="ui-icon-alert" />
+		                <f:setPropertyActionListener value="#{product}" target="#{productoMB.producto}" />    
+		            </p:commandButton>  
+		        </p:column> 
+		    </p:dataTable>
+		    
+		    <p:confirmDialog global="true" closeOnEscape="true">  
+		        <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+		        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+		    </p:confirmDialog>
+		    <p:dialog id="diaProduct" header="Datos Producto" widgetVar="diaProduct" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="3" cellpadding="4" id="pgiProductInfo">
+			    	<h:outputText value="C&oacute;digo Producto" />
+			    	<h:outputText value=":" />
+			    	<p:inputMask mask="aaa9999" value="#{productoMB.producto.codigo}" styleClass="uppercase" />
+			    	
+			    	<h:outputText value="Nombre Producto" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{productoMB.producto.descripcion}" />
+			    	
+			    	<h:outputText value="Marca Producto" />
+			    	<h:outputText value=":" />
+			    	<p:selectOneMenu value="#{productoMB.producto.marca.idMarca}">
+			    		<f:selectItem itemLabel="Seleccione" />
+			    		<f:selectItems value="#{productoMB.marcas}" var="stamp" itemLabel="#{stamp.descripcion}" itemValue="#{stamp.idMarca}" />
+			    	</p:selectOneMenu>
+			    </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			action="#{productoMB.guardarProducto}"
+			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaProduct').hide(); }"
+			    			update=":frm:dttProducts"
+			    			process="@this,pgiProductInfo"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaProduct').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>    
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

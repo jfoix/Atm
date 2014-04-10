@@ -1,0 +1,230 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="body">
+		<h:form id="frm">
+			<p:fieldset legend="B&uacute;squeda">
+				<h:panelGrid columns="6" cellspacing="3" id="pniBusqueda">  
+		            <h:outputLabel value="C&oacute;digo" />
+		            <h:outputLabel value=":" />  
+		            <p:inputText value="#{mantencionProgramadaMB.mpCode}" />
+		            <h:outputLabel value="Descripci&oacute;n" />
+		            <h:outputLabel value=":" />  
+		            <p:inputText value="#{mantencionProgramadaMB.mpDesc}" />
+		        </h:panelGrid>
+	            <p:commandButton 
+	            	value="Buscar" 
+	            	update="dttMantencionesProgramadas"
+	            	process="@this,pniBusqueda"
+	            	icon="ui-icon-search" 
+	            	action="#{mantencionProgramadaMB.buscarMantenciones}" />  
+	        </p:fieldset>
+			<div align="left">
+				<h:panelGrid columns="4">
+					<p:commandButton 
+						update="pgiMantencionProgramada,dttTrabajosMantencion"
+						oncomplete="PF('diaMantencionProgramada').show();"
+						action="#{mantencionProgramadaMB.nuevoMantencionProgramada}"
+						icon="ui-icon-plus"
+						process="@this"
+						value="Nueva Mantenci&oacute;n Programada"/>
+				</h:panelGrid>
+			</div>
+			<p:dataTable var="mp" value="#{mantencionProgramadaMB.mantencionesProgramadas}" id="dttMantencionesProgramadas" emptyMessage="Sin informaci&oacute;n">
+				<p:columnGroup type="header">  
+		            <p:row>  
+		                <p:column headerText="Descripci&oacute;n Mantenci&oacute;n Programada" />
+		                <p:column headerText="C&oacute;digo Mantenci&oacute;n Programada" />
+		                <p:column headerText="Trabajos" />
+		                <p:column colspan="2" headerText="Acciones" />  
+		            </p:row>  
+		        </p:columnGroup>  
+		        <p:column>
+	            	<h:outputText value="#{mp.descripcion}" />
+		        </p:column>  
+		        <p:column>  
+		            <h:outputText value="#{mp.codigo}" />  
+		        </p:column>
+		        <p:column>  
+		            <h:outputText value="#{fn:length(mp.mantencionTrabajos)}" />  
+		        </p:column>
+		        <p:column style="width:30px; text-align:center">  
+	                <p:commandButton update=":frm:pgiMantencionProgramada,:frm:dttTrabajosMantencion" action="#{mantencionProgramadaMB.editarMantencion}" process="@this" oncomplete="PF('diaMantencionProgramada').show()" icon="ui-icon-pencil" title="Editar" alt="Editar">  
+		                <f:setPropertyActionListener value="#{mp}" target="#{mantencionProgramadaMB.mantencionProgramada}" />  
+		            </p:commandButton>
+				</p:column> 
+		        <p:column style="width:30px; text-align:center">
+		            <p:commandButton update=":frm:dttMantencionesProgramadas" process="@this" action="#{mantencionProgramadaMB.eliminarMantencion}"  icon="ui-icon-closethick" title="Eliminar" alt="Eliminar">  
+		                <p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar la Mantenci&oacute;n Programada?" icon="ui-icon-alert" />
+		                <f:setPropertyActionListener value="#{mp}" target="#{mantencionProgramadaMB.mantencionProgramada}" />    
+		            </p:commandButton>  
+		        </p:column> 
+		    </p:dataTable>
+		    
+		    <p:confirmDialog global="true" closeOnEscape="true">  
+		        <p:commandButton value="Aceptar" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+		        <p:commandButton value="Cancelar" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+		    </p:confirmDialog>
+		    <p:dialog header="Datos Mantenci&oacute;n Programada" widgetVar="diaMantencionProgramada" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGroup id="pgiMantencionProgramada">
+				    <h:panelGrid columns="6" cellpadding="4">
+				    	<h:outputText value="C&oacute;digo" />
+				    	<h:outputText value=":" />
+				    	<p:inputMask mask="aaa9999" value="#{mantencionProgramadaMB.mantencionProgramada.codigo}" styleClass="uppercase" />
+				    	
+				    	<h:outputText value="Descripci&oacute;n" />
+				    	<h:outputText value=":" />
+				    	<p:inputText value="#{mantencionProgramadaMB.mantencionProgramada.descripcion}" />
+				    </h:panelGrid>
+                </h:panelGroup>
+                <h:panelGrid width="100%">
+                	<p:commandButton 
+		    			icon="ui-icon-search"
+		    			actionListener="#{mantencionProgramadaMB.abrirBusquedaTrabajo}"
+		    			oncomplete="PF('diaTrabajos').show();"
+		    			update=":frm:pgiTrabajoFiltros, :frm:dttTrabajosEncontrados"
+		    			value="Agregar Trabajos" />
+		    		<p:dataTable var="trabajo" value="#{mantencionProgramadaMB.trabajosMantencion}" id="dttTrabajosMantencion" emptyMessage="Sin informaci&oacute;n">
+						<p:columnGroup type="header">  
+				            <p:row>
+				                <p:column headerText="C&oacute;digo" />
+				                <p:column headerText="Descripci&oacute;n" />
+				                <p:column headerText="Estado Trabajo" />
+				                <p:column headerText="" />
+				            </p:row>  
+				        </p:columnGroup>  
+				        <p:column>  
+				            <h:outputText value="#{trabajo.codigo}" />  
+				        </p:column>
+				        <p:column>  
+				        	<h:outputText value="#{trabajo.descripcion}" />
+				        </p:column>
+				        <p:column>  
+				        	<h:outputText value="#{trabajo.estado ? 'Activo' : 'Inactivo'}" />
+				        </p:column>
+				        <p:column style="width:30px; text-align:center">
+				            <p:commandButton update=":frm:dttTrabajosMantencion" action="#{mantencionProgramadaMB.eliminarTrabajo}"  icon="ui-icon-closethick" title="Eliminar" alt="Eliminar">  
+				                <p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el Trabajo?" icon="ui-icon-alert" />
+				                <f:setPropertyActionListener value="#{trabajo}" target="#{mantencionProgramadaMB.trabajo}" />    
+				            </p:commandButton>  
+				        </p:column>
+					</p:dataTable>
+                </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			action="#{mantencionProgramadaMB.guardarMatencionProgramada}"
+			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaMantencionProgramada').hide(); }"
+			    			update=":frm:dttMantencionesProgramadas"
+			    			process="@this,pgiMantencionProgramada"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaMantencionProgramada').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+			<p:dialog header="Agregar Trabajos" widgetVar="diaTrabajos" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="1">
+				    <p:fieldset legend="B&uacute;squeda">
+					    <h:panelGrid columns="6" cellpadding="4" id="pgiTrabajoFiltros">
+					    	<h:outputText value="C&oacute;digo" />
+					    	<h:outputText value=":" />
+					    	<p:inputText value="#{mantencionProgramadaMB.trabajoCode}" />
+					    	
+					    	<h:outputText value="Descripci&oacute;n" />
+					    	<h:outputText value=":" />
+					    	<p:inputText value="#{mantencionProgramadaMB.trabajoDesc}" />
+					    	
+					    	<h:outputText value="Tipo" />
+					    	<h:outputText value=":" />
+					    	<p:selectOneMenu value="#{mantencionProgramadaMB.idTrabajoTipo}">
+					    		<f:selectItem itemValue="-1" itemLabel="Todos" />
+					    		<f:selectItems value="#{mantencionProgramadaMB.trabajoTipos}" var="wt" itemLabel="#{wt.descripcion}" itemValue="#{wt.idTrabajoTipo}" />
+					    		<p:ajax listener="#{mantencionProgramadaMB.buscarTrabajoSubTipos}" update="somSubTypes" process="@this" event="change" />
+					    	</p:selectOneMenu>
+					    	
+					    	<h:outputText value="Sub-Tipo" />
+					    	<h:outputText value=":" />
+					    	<p:selectOneMenu value="#{mantencionProgramadaMB.idTrabajoSubTipo}" id="somSubTypes">
+					    		<f:selectItem itemValue="-1" itemLabel="Todos" />
+					    		<f:selectItems value="#{mantencionProgramadaMB.trabajoSubTipos}" var="wst" itemLabel="#{wst.descripcion}" itemValue="#{wst.idTrabajoSubTipo}" />
+					    	</p:selectOneMenu>
+					    </h:panelGrid>
+					    <p:commandButton 
+					    	value="Buscar" 
+					    	action="#{mantencionProgramadaMB.buscarTrabajo}"
+					    	process="@this,pgiTrabajoFiltros"
+					    	update="dttTrabajosEncontrados" 
+					    	icon="ui-icon-search" />
+				    </p:fieldset>
+				    <p:dataTable 
+				    	emptyMessage="Sin informaci&oacute;n" 
+				    	id="dttTrabajosEncontrados" 
+				    	var="work"
+				    	paginator="true" rows="10"
+				    	paginatorPosition="bottom"
+						paginatorTemplate="{CurrentPageReport} {PageLinks}"  
+				    	value="#{mantencionProgramadaMB.trabajos}">
+						<p:columnGroup type="header">  
+				            <p:row>  
+				                <p:column />  
+				                <p:column headerText="C&oacute;digo" />
+				                <p:column headerText="Descripci&oacute;n" />
+				                <p:column headerText="Tipo" />
+				                <p:column headerText="Sub-Tipo" />
+				            </p:row>  
+				        </p:columnGroup>
+						<p:column style="width:10px; text-align:center">  
+			                <p:selectBooleanCheckbox value="#{work.seleccionado}" />
+						</p:column> 
+				        <p:column>  
+			                <h:outputText value="#{work.codigo}" />
+						</p:column>
+						<p:column>  
+			                <h:outputText value="#{work.descripcion}" />
+						</p:column>
+						<p:column>  
+			                <h:outputText value="#{work.trabajoSubTipo.trabajoTipo.descripcion}" />
+						</p:column>
+						<p:column>  
+			                <h:outputText value="#{work.trabajoSubTipo.descripcion}" />
+						</p:column>
+					</p:dataTable>
+				</h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-plus"
+			    			update=":frm:dttTrabajosMantencion"
+			    			process="@this,dttTrabajosEncontrados"
+			    			action="#{mantencionProgramadaMB.agregarTrabajos}"
+			    			value="Agregar" />
+			    		<p:commandButton 
+			    			icon="ui-icon-circle-plus"
+			    			update=":frm:dttTrabajosMantencion"
+			    			process="@this,dttTrabajosEncontrados"
+			    			action="#{mantencionProgramadaMB.agregarTrabajos}"
+			    			oncomplete="PF('diaTrabajos').hide();"
+			    			value="Agregar y Cerrar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			oncomplete="PF('diaTrabajos').hide();"
+			    			process="@this"
+			    			value="Cerrar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

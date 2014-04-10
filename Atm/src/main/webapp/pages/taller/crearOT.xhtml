@@ -1,0 +1,732 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="/templates/template.xhtml">
+	<ui:define name="body">
+		<h:form id="frm">
+			<h:panelGrid columns="1" id="pngVehicle" cellspacing="3">
+				<p:fieldset legend="Veh&iacute;culo">  
+	    			<h:panelGrid columns="6">
+	    				<h:outputText value="Patente" />
+	    				<h:outputText value=":" />
+    					<p:inputMask id="ipmPatente" value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.patente}" mask="aa-**-99" styleClass="uppercase" />
+	    				
+	    				<p:commandButton 
+	    					title="Buscar" alt="Buscar" 
+	    					update="pngVehicle pngCreateNewVehicle" 
+	    					process="@this,ipmPatente" 
+	    					icon="ui-icon-search" 
+	    					action="#{crearOrdenTrabajoMB.buscarVehiculo}" />
+	    				<h:outputText value="" rendered="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.idVehiculo eq null}" />
+	    				<h:outputText value="" />
+	    				<p:commandButton 
+	    					rendered="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.idVehiculo ne null}" 
+	    					title="Editar" alt="Editar" 
+	    					update="pagNewVehicle" 
+	    					process="@this" 
+	    					icon="ui-icon-pencil" 
+	    					oncomplete="PF('diaCreateVehicle').show();" />
+	    				
+	    				<h:outputText value="Chasis" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.chasis}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="Color" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.color}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="Marca" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.marcaVehiculo.descripcion}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="Modelo" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.modelo}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="Nro. Motor" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.nroMotor}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="A&ntilde;o" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.acno}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="Kilometraje" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.kilometraje}" onkeypress="return validateNumbers(event)" id="kilometraje" />
+	    			</h:panelGrid>
+	    		</p:fieldset>
+	    	</h:panelGrid>
+			<h:panelGrid columns="1" id="pngCustomer" cellspacing="3">
+	    		<p:fieldset legend="Cliente">  
+	    			<h:panelGrid columns="6">
+	    				<h:outputText value="Rut" />
+	    				<h:outputText value=":" />
+	    				<p:inputText id="countryId" value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.rutCliente}" />
+	    				<p:commandButton 
+	    					title="Buscar" alt="Buscar" 
+	    					update="pngCustomer pngCreateNewCustomer" 
+	    					process="@this,countryId" 
+	    					icon="ui-icon-search" 
+	    					action="#{crearOrdenTrabajoMB.buscarCliente}" />
+	    				<h:outputText value="" rendered="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.idCliente eq null}" />
+	    				<h:outputText value="" />
+	    				<p:commandButton 
+	    					rendered="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.idCliente ne null}" 
+	    					title="Editar" alt="Editar" 
+	    					update="pagNewCustomer"
+	    					process="@this" 
+	    					icon="ui-icon-pencil" 
+	    					oncomplete="PF('diaCreateCustomer').show();" />
+	    				
+	    				<h:outputText value="Cliente" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.nombreCliente}" readonly="true" disabled="true" />
+	    				<h:outputText value="E-Mail" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.email}" readonly="true" disabled="true" />
+	    				
+	    				<h:outputText value="Tel&eacute;fono" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.telefono}" readonly="true" disabled="true" />
+	    				<h:outputText value="Celular" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.celular}" readonly="true" disabled="true" />
+	    			</h:panelGrid>
+	    		</p:fieldset>
+	    	</h:panelGrid>
+			<h:panelGrid columns="1" id="pngWork" cellspacing="3">
+	    		<h:panelGrid cellpadding="0" cellspacing="0">
+		    		<h:outputText value="Observaci&oacute;n" />
+		    		<p:inputTextarea id="iptComments" cols="100" value="#{crearOrdenTrabajoMB.orden.observacion}"></p:inputTextarea>
+	    		</h:panelGrid>
+	    		<h:panelGrid columns="3">
+		    		<p:commandButton
+		    			onclick="PF('diaVerDocumentos').show()" 
+		    			update=":frm:dttDocumentosOT"
+		    			icon="ui-icon-document"
+		    			process="@this"
+		    			value="Documentos OT" />
+	    			<p:commandButton 
+	    				icon="ui-icon-plus"
+	    				process="@this"
+	    				action="#{crearOrdenTrabajoMB.abrirBusquedaTrabajos}"
+	    				update="dttFindWorks"
+	    				oncomplete="PF('diaWorks').show();"
+	    				value="Agregar Trabajo"/>
+	    			<p:commandButton 
+	    				icon="ui-icon-calendar"
+	    				process="@this"
+	    				action="#{crearOrdenTrabajoMB.abrirBusquedaMantencionProgramada}"
+	    				update="pniBusquedaMantProgramada,dttMantencionesProgramadas"
+	    				oncomplete="PF('diaMantencionesProgramadas').show();"
+	    				value="Cargar Mantenci&oacute;n Programada"/>
+	    		</h:panelGrid>
+			    <p:treeTable id="tetWorks" value="#{crearOrdenTrabajoMB.tnTrabajos}" var="works" emptyMessage="Sin informaci&oacute;n" styleClass="tetClass">  
+			        <p:column style="width:230px">   
+			            <f:facet name="header">  
+			                <h:outputText value="Trabajo" />
+			            </f:facet>  
+			            <h:outputText value="#{works.trabajoDescripcion}" rendered="#{works.tipo eq 1}" />  
+			        </p:column>
+			        <p:column style="width:60px">   
+			            <f:facet name="header">  
+			                <h:outputText value="Garant&iacute;a" />
+			            </f:facet>  
+			            <div align="center">
+			            	<p:selectBooleanCheckbox value="#{works.garantia}" rendered="#{works.tipo eq 1}">
+			            		<p:ajax event="change" />
+			            	</p:selectBooleanCheckbox>
+			            </div>  
+			        </p:column>
+			        <p:column style="width:180px">  
+			            <f:facet name="header">  
+			                Producto
+			            </f:facet>  
+			            <h:outputText value="#{works.productoDescripcion}" />  
+			        </p:column>
+			        <p:column style="width:60px">   
+			            <f:facet name="header">  
+			                <h:outputText value="Traido Cliente" />
+			            </f:facet>  
+			            <div align="center">
+			            	<p:selectBooleanCheckbox value="#{works.productoCliente}" rendered="#{works.tipo eq 2}">
+			            		<p:ajax event="change" />
+			            	</p:selectBooleanCheckbox>
+			            </div>  
+			        </p:column>
+			        <p:column>  
+			            <f:facet name="header">  
+			                Precio/Cantidad
+			            </f:facet>  
+			            <div align="right">
+				            <h:panelGrid columns="2" cellpadding="0" cellspacing="0" rendered="#{works.tipo eq 1}" border="0" styleClass="subTableBorder">
+				            	<h:outputText value="$" />
+					            <p:inputText value="#{works.precio}" style="width:40px; text-align:right">
+					            	<p:ajax event="change" />
+					            </p:inputText>
+				            </h:panelGrid>
+				            <h:panelGrid columns="2" cellpadding="0" cellspacing="0" rendered="#{works.tipo eq 2}" styleClass="subTableBorder">
+					            <p:inputText value="#{works.cantidad}" onkeypress="return validarDecimal(event, this)" style="width:30px; text-align:right">
+					            	<p:ajax event="change" />
+					            </p:inputText>
+					            <h:outputText value="(unid)" /> 
+				            </h:panelGrid>
+			            </div> 
+			        </p:column>
+			        <p:column>  
+			            <f:facet name="header">  
+			                HH Estimadas
+			            </f:facet>  
+			            <div align="right">
+			            	<p:inputText value="#{works.hhEstimadas}" onkeypress="return validarDecimal(event, this)" rendered="#{works.tipo eq 1}" style="width:30px; text-align:right">
+			            		<p:ajax event="change" />
+			            	</p:inputText>
+			            </div>  
+			        </p:column>
+			        <p:column style="width:120px">
+			        	<f:facet name="header">
+			        		Acciones
+			        	</f:facet>
+			        	<div align="center">
+				        	<h:panelGrid columns="3" rendered="#{works.tipo eq 1}" styleClass="tetSubTable">
+				                <p:commandButton 
+				                	icon="ui-icon-close" 
+				                	title="Eliminar Trabajo"
+				                	action="#{crearOrdenTrabajoMB.quitarTrabajo}"
+				                	process="@this" 
+				                	update=":frm:tetWorks"
+				                	alt="Eliminar Trabajo">
+				                	<p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el trabajo seleccionado?" icon="ui-icon-alert" />
+				                	<f:setPropertyActionListener target="#{crearOrdenTrabajoMB.trabajoProductoDto}" value="#{works}" />
+				                </p:commandButton>
+				                <p:commandButton 
+				                	icon="ui-icon-plus" 
+				                	title="Agregar Producto"
+				                	process="@this"
+				                	update=":frm:pgiProducts :frm:dttFindProducts"
+				                	action="#{crearOrdenTrabajoMB.abrirBusquedaProducto}"
+				                	oncomplete="PF('diaProducts').show();" 
+				                	alt="Agregar Producto">
+				                	<f:setPropertyActionListener target="#{crearOrdenTrabajoMB.trabajoProductoDto}" value="#{works}" />
+				                </p:commandButton>
+				                <p:commandButton 
+				                	icon="ui-icon-person" 
+			                		title="Asociar Mec&aacute;nico"
+			                		action="#{crearOrdenTrabajoMB.abrirBusquedaMecanicos}"
+			                		update=":frm:pklMecanicos"
+			                		process="@this"
+			                		oncomplete="PF('diaMecanics').show();" 
+	                				alt="Asociar Mec&aacute;nico">
+	                				<f:setPropertyActionListener target="#{crearOrdenTrabajoMB.trabajoProductoDto}" value="#{works}" />
+	                			</p:commandButton>  
+				        	</h:panelGrid>
+				        	<h:panelGrid columns="3" rendered="#{works.tipo eq 2}" styleClass="tetSubTable">
+				                <p:commandButton 
+				                	icon="ui-icon-circle-close" 
+				                	title="Eliminar Producto"
+				                	action="#{crearOrdenTrabajoMB.quitarTrabajo}"
+				                	process="@this" 
+				                	update=":frm:tetWorks :frm:confirmDialog"
+				                	alt="Eliminar Producto">
+				                	<f:setPropertyActionListener target="#{crearOrdenTrabajoMB.trabajoProductoDto}" value="#{works}" />
+				                	<p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el producto seleccionado?" icon="ui-icon-alert" />
+				               	</p:commandButton>
+				        	</h:panelGrid>
+			        	</div>
+			        </p:column>
+				</p:treeTable>
+	    		<h:panelGrid columns="2">
+	    			<p:commandButton 
+	    				icon="ui-icon-disk"
+	    				update="diaSuccesOT"
+	    				process="@this,kilometraje,iptComments"
+						oncomplete="if(args.done){ PF('diaSuccesOT').show(); }"
+	    				action="#{crearOrdenTrabajoMB.guardarOT}"
+	    				value="Guardar OT">
+	    				<p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro crear la Orden de Trabajo?" icon="ui-icon-alert" />
+    				</p:commandButton>
+	    		</h:panelGrid>
+	    	</h:panelGrid>
+	    	<p:confirmDialog global="true" id="confirmDialog" widgetVar="confirmDialog">  
+		        <p:commandButton value="Aceptar" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+		        <p:commandButton value="Cancelar" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+		    </p:confirmDialog>
+		    <p:dialog id="diaWorks" header="Buscar Trabajos" widgetVar="diaWorks" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="1" cellpadding="3">
+				   	<p:fieldset legend="B&uacute;squeda">  
+					    <h:panelGrid columns="6" cellpadding="3" id="pgiWorkFilter">
+					    	<h:outputText value="C&oacute;digo" />
+					    	<h:outputText value=":" />
+					    	<p:inputText value="#{crearOrdenTrabajoMB.trabajoFiltro.codigo}" />
+					    	
+					    	<h:outputText value="Descripci&oacute;n" />
+					    	<h:outputText value=":" />
+					    	<p:inputText value="#{crearOrdenTrabajoMB.trabajoFiltro.desc}" />
+					    	
+					    	<h:outputText value="Tipo" />
+					    	<h:outputText value=":" />
+					    	<p:selectOneMenu value="#{crearOrdenTrabajoMB.trabajoFiltro.tipo}">
+					    		<f:selectItem itemValue="-1" itemLabel="Todos" />
+					    		<f:selectItems value="#{crearOrdenTrabajoMB.trabajoTipos}" var="wt" itemLabel="#{wt.descripcion}" itemValue="#{wt.idTrabajoTipo}" />
+					    		<p:ajax listener="#{crearOrdenTrabajoMB.buscarTrabajosSubTipos}" update="somSubTypes" process="@this" event="change" />
+					    	</p:selectOneMenu>
+					    	
+					    	<h:outputText value="Sub-Tipo" />
+					    	<h:outputText value=":" />
+					    	<p:selectOneMenu value="#{crearOrdenTrabajoMB.trabajoFiltro.subTipo}" id="somSubTypes">
+					    		<f:selectItem itemValue="-1" itemLabel="Todos" />
+					    		<f:selectItems value="#{crearOrdenTrabajoMB.trabajoSubTipos}" var="wst" itemLabel="#{wst.descripcion}" itemValue="#{wst.idTrabajoSubTipo}" />
+					    	</p:selectOneMenu>
+					    </h:panelGrid>
+					    <p:commandButton 
+					    	value="Buscar" 
+					    	action="#{crearOrdenTrabajoMB.buscarTrabajo}"
+					    	process="@this,pgiWorkFilter"
+					    	update="dttFindWorks" 
+					    	icon="ui-icon-search" />
+					 </p:fieldset>
+				    <p:dataTable 
+				    	emptyMessage="Sin informaci&oacute;n" 
+				    	id="dttFindWorks" 
+				    	var="work"
+				    	paginator="true" rows="10"
+				    	paginatorPosition="bottom"
+						paginatorTemplate="{CurrentPageReport} {PageLinks}"  
+				    	value="#{crearOrdenTrabajoMB.trabajos}">
+						<p:columnGroup type="header">  
+				            <p:row>  
+				                <p:column />  
+				                <p:column headerText="C&oacute;digo" />
+				                <p:column headerText="Descripci&oacute;n" />
+				                <p:column headerText="Tipo" />
+				                <p:column headerText="Sub-Tipo" />
+				            </p:row>  
+				        </p:columnGroup>
+						<p:column style="width:10px; text-align:center">  
+			                <p:selectBooleanCheckbox value="#{work.seleccionado}" />
+						</p:column> 
+				        <p:column>  
+			                <h:outputText value="#{work.codigo}" />
+						</p:column>
+						<p:column>  
+			                <h:outputText value="#{work.descripcion}" />
+						</p:column>
+						<p:column>  
+			                <h:outputText value="#{work.trabajoSubTipo.trabajoTipo.descripcion}" />
+						</p:column>
+						<p:column>  
+			                <h:outputText value="#{work.trabajoSubTipo.descripcion}" />
+						</p:column>
+					</p:dataTable>
+				</h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-plus"
+			    			update=":frm:tetWorks"
+			    			process="@this,dttFindWorks"
+			    			action="#{crearOrdenTrabajoMB.agregarTrabajo}"
+			    			value="Agregar" />
+			    		<p:commandButton 
+			    			icon="ui-icon-circle-plus"
+			    			update=":frm:tetWorks"
+			    			process="@this,dttFindWorks"
+			    			action="#{crearOrdenTrabajoMB.agregarTrabajo}"
+			    			oncomplete="PF('diaWorks').hide();"
+			    			value="Agregar y Cerrar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			oncomplete="PF('diaWorks').hide();"
+			    			process="@this"
+			    			value="Cerrar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>    
+		    <p:dialog id="diaProducts" header="Buscar Productos" widgetVar="diaProducts" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="1">
+				    <p:fieldset legend="B&uacute;squeda">
+					    <h:panelGrid columns="6" id="pgiProducts" cellspacing="3">
+					    	<h:outputText value="C&oacute;digo" />
+					    	<h:outputText value=":" />
+					    	<p:inputText value="#{crearOrdenTrabajoMB.productoCodigo}" />
+					    	
+					    	<h:outputText value="Descripci&oacute;n" />
+					    	<h:outputText value=":" />
+					    	<p:inputText value="#{crearOrdenTrabajoMB.productoDesc}" />
+					    	
+					    	<h:outputText value="Marca" />
+					    	<h:outputText value=":" />
+					    	<p:selectOneMenu value="#{crearOrdenTrabajoMB.idMarca}">
+					    		<f:selectItem itemValue="-1" itemLabel="Todos" />
+					    		<f:selectItems value="#{crearOrdenTrabajoMB.marcas}"  var="stamp" itemValue="#{stamp.idMarca}" itemLabel="#{stamp.descripcion}" />
+					    	</p:selectOneMenu>
+					    	
+					    	<h:outputText value="" />
+					    	<h:outputText value="" />
+					    	<h:outputText value="" />
+					    	
+					    </h:panelGrid>
+				    	<p:commandButton 
+				    		value="Buscar" 
+				    		icon="ui-icon-search" 
+				    		update="dttFindProducts" 
+				    		process="@this,pgiProducts" 
+				    		action="#{crearOrdenTrabajoMB.buscarProductos}" />
+			    	</p:fieldset>
+				    <h:panelGroup id="pngFindProducts">
+					    <p:dataTable id="dttFindProducts" emptyMessage="Sin productos" value="#{crearOrdenTrabajoMB.productos}" var="product">
+							<p:column style="width:10px; text-align:center">
+								<p:selectBooleanCheckbox value="#{product.seleccionado}"/>
+							</p:column> 
+					        <p:column headerText="C&oacute;digo">  
+				                <h:outputText value="#{product.codigo}" />
+							</p:column>
+							<p:column headerText="Descripci&oacute;n">  
+				                <h:outputText value="#{product.descripcion}" />
+							</p:column>
+							<p:column headerText="Marca">  
+				                <h:outputText value="#{product.marca.descripcion}" />
+							</p:column>
+						</p:dataTable>
+					</h:panelGroup>
+				</h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-plus"
+			    			update="tetWorks"
+			    			process="@this,dttFindProducts"
+			    			action="#{crearOrdenTrabajoMB.agregarProductos}"
+			    			value="Agregar" />
+			    		<p:commandButton 
+			    			icon="ui-icon-circle-plus"
+			    			oncomplete="PF('diaProducts').hide();"
+			    			process="@this,dttFindProducts"
+			    			update="tetWorks"
+			    			action="#{crearOrdenTrabajoMB.agregarProductos}"
+			    			value="Agregar y Cerrar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			oncomplete="PF('diaProducts').hide();"
+			    			process="@this"
+			    			value="Cerrar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>    
+		    <p:dialog id="diaProgrammedWorks" header="Buscar Mantenciones Programadas" widgetVar="diaProgrammedWorks" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="6" cellpadding="4" id="pgiProgrammedWork">
+			    	<h:outputText value="C&oacute;digo" />
+			    	<h:outputText value=":" />
+			    	<p:inputText />
+			    	
+			    	<h:outputText value="Descripci&oacute;n" />
+			    	<h:outputText value=":" />
+			    	<p:inputText />
+			    </h:panelGrid>
+			    <p:dataTable id="dttFindProgrammedWork" emptyMessage="Sin programas" value="">
+					<p:columnGroup type="header">  
+			            <p:row>  
+			                <p:column headerText="C&oacute;digo" />
+			                <p:column headerText="Descripci&oacute;n" />
+			                <p:column />  
+			            </p:row>  
+			        </p:columnGroup>
+			        <p:column>  
+		                <h:outputText value="PROD" />
+					</p:column>
+					<p:column>  
+		                <h:outputText value="Producto 1" />
+					</p:column>
+					<p:column style="width:15px; text-align:center">  
+		                <p:commandButton value="Cargar" />
+					</p:column> 
+				</p:dataTable>
+			    <f:facet name="footer">
+			    	<div align="center">
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			oncomplete="PF('diaProgrammedWorks').hide();"
+			    			value="Cerrar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>    
+		    <p:dialog id="diaMecanics" header="Asociar Mec&aacute;nicos" widgetVar="diaMecanics" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <p:pickList 
+			    	id="pklMecanicos" 
+			    	value="#{crearOrdenTrabajoMB.dlmMecanicos}" 
+			    	var="mecanico" 
+			    	effect="fade"  
+                    itemValue="#{mecanico}" 
+                    itemLabel="#{mecanico.nombreUsuario}"
+                    addAllLabel="Agregar Todos"
+                    addLabel="Agregar"
+                    removeAllLabel="Quitar Todos"
+                    removeLabel="Quitar" 
+                    converter="UsuarioConverter" >  
+  
+			        <f:facet name="sourceCaption">Disponibles</f:facet>  
+			        <f:facet name="targetCaption">Asignados</f:facet> 
+				</p:pickList>
+			    <f:facet name="footer">
+			    	<div align="center">
+		    			<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			process="@this,pklMecanicos"
+			    			oncomplete="PF('diaMecanics').hide();"
+			    			action="#{crearOrdenTrabajoMB.guardarAsignacionMecanico}"
+			    			value="Guardar" />
+			    		<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			process="@this,pklMecanicos"
+			    			oncomplete="PF('diaMecanics').hide();"
+			    			action="#{crearOrdenTrabajoMB.guardarAsignacionMecanicoMasiva}"
+			    			value="Guardar Para Todos los Trabajos" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaMecanics').hide();"
+			    			value="Cerrar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+			<h:panelGroup id="pngCreateNewVehicle">    
+				<p:dialog id="diaCreateNewVehicle" header="Crear Nuevo Vehiculo" visible="true" rendered="#{crearOrdenTrabajoMB.crearNuevoVehiculo}" widgetVar="diaCreateNewVehicle" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+					<h:panelGroup layout="block" align="left">
+				    	<h:outputText value="El vehiculo patente #{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.patente} no existe, ¿Desea crearlo?" />
+				    </h:panelGroup>
+				    <f:facet name="footer">
+				    	<div align="center">
+			    			<p:commandButton 
+				    			icon="ui-icon-check"
+				    			update=":frm:pngVehicle pagNewVehicle"
+				    			process="@this"
+				    			action="#{crearOrdenTrabajoMB.nuevoVehiculo}"
+				    			oncomplete="PF('diaCreateNewVehicle').hide(); PF('diaCreateVehicle').show();"
+				    			value="Aceptar" />
+				    		<p:commandButton 
+				    			icon="ui-icon-close"
+				    			process="@this"
+				    			onclick="PF('diaCreateNewVehicle').hide();"
+				    			value="Cancelar" />
+			    		</div>
+				    </f:facet>
+				</p:dialog>
+			</h:panelGroup>
+			<p:dialog id="diaCreateVehicle" header="Crear Nuevo Vehiculo" widgetVar="diaCreateVehicle" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+				<h:panelGrid columns="3" id="pagNewVehicle">
+					<h:outputText value="Patente" />
+    				<h:outputText value=":" />
+    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.patente}" readonly="true" disabled="true" />  
+    				
+    				<h:outputText value="Chasis" />
+    				<h:outputText value=":" />
+    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.chasis}" />
+    				
+    				<h:outputText value="Color" />
+    				<h:outputText value=":" />
+    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.color}" />
+    				
+    				<h:outputText value="Marca" />
+    				<h:outputText value=":" />
+    				<p:selectOneMenu filterMatchMode="contains" filter="true" value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.marcaVehiculo.idMarcaVehiculo}">
+    					<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+    					<f:selectItems value="#{crearOrdenTrabajoMB.marcasVehiculo}" var="vs" itemLabel="#{vs.descripcion}" itemValue="#{vs.idMarcaVehiculo}" />
+    				</p:selectOneMenu>
+    				
+    				<h:outputText value="Modelo" />
+    				<h:outputText value=":" />
+    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.modelo}" />
+    				
+    				<h:outputText value="Nro. Motor" />
+    				<h:outputText value=":" />
+    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.nroMotor}" />
+    				
+    				<h:outputText value="A&ntilde;o" />
+    				<h:outputText value=":" />
+    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.acno}" onkeypress="return validateNumbers(event)" maxlength="4" />
+				</h:panelGrid>
+				<f:facet name="footer">
+			    	<div align="center">
+		    			<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			process="@this,pagNewVehicle"
+			    			action="#{crearOrdenTrabajoMB.guardarVehiculo}"
+			    			update=":frm:pngVehicle"
+			    			onclick="PF('diaCreateVehicle').hide();"
+			    			value="Guardar" />
+			    		<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			onclick="PF('diaCreateVehicle').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+			<h:panelGroup id="pngCreateNewCustomer">
+				<p:dialog id="diaCreateNewCustomer" header="Crear Nuevo Cliente" visible="true" rendered="#{crearOrdenTrabajoMB.crearNuevoCliente}" widgetVar="diaCreateNewCustomer" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+					<h:panelGroup layout="block" align="left">
+				    	<h:outputText value="El cliente RUT #{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.rutCliente} no existe, ¿Desea crearlo?" />
+				    </h:panelGroup>
+				    <f:facet name="footer">
+				    	<div align="center">
+			    			<p:commandButton 
+				    			icon="ui-icon-check"
+				    			update=":frm:pngCustomer pagNewCustomer"
+				    			action="#{crearOrdenTrabajoMB.nuevoCliente}"
+				    			process="@this"
+				    			oncomplete="PF('diaCreateNewCustomer').hide(); PF('diaCreateCustomer').show();"
+				    			value="Aceptar" />
+				    		<p:commandButton 
+				    			icon="ui-icon-close"
+				    			onclick="PF('diaCreateNewCustomer').hide();"
+			    				process="@this"
+				    			value="Cancelar" />
+			    		</div>
+				    </f:facet>
+				</p:dialog>
+				<p:dialog id="diaCreateCustomer" header="Crear Nuevo Cliente" widgetVar="diaCreateCustomer" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+					<h:panelGrid columns="3" id="pagNewCustomer">
+						<h:outputText value="RUT" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.rutCliente}" readonly="true" disabled="true" />
+	    				
+						<h:outputText value="Cliente" />
+	    				<h:outputText value=":" />
+	    				<p:inputText id="customerName" value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.nombreCliente}" />
+	    				<h:outputText value="E-Mail" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.email}" />
+	    				
+	    				<h:outputText value="Tel&eacute;fono" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.telefono}" />
+	    				<h:outputText value="Celular" />
+	    				<h:outputText value=":" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.celular}" />
+					</h:panelGrid>
+					<f:facet name="footer">
+				    	<div align="center">
+			    			<p:commandButton 
+				    			icon="ui-icon-disk"
+				    			action="#{crearOrdenTrabajoMB.guardarCliente}"
+				    			process="@this,pagNewCustomer"
+				    			update=":frm:pngCustomer"
+				    			onclick="PF('diaCreateCustomer').hide();"
+				    			value="Guardar" />
+				    		<p:commandButton 
+				    			icon="ui-icon-close"
+				    			onclick="PF('diaCreateCustomer').hide();"
+					    		process="@this"
+				    			value="Cancelar" />
+			    		</div>
+				    </f:facet>
+				</p:dialog>
+			</h:panelGroup>
+		    <p:dialog header="Documentos OT" widgetVar="diaVerDocumentos" modal="true" resizable="false" width="500" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid width="100%">
+			    	<p:fileUpload fileUploadListener="#{crearOrdenTrabajoMB.handleFileUpload}" mode="advanced" dragDropSupport="false"  
+						multiple="true" sizeLimit="100000" fileLimit="3" auto="true" update="dttDocumentosOT" label="Elegir Archivo" />
+			    	<p:dataTable var="doc" value="#{crearOrdenTrabajoMB.documentos}" emptyMessage="Sin Documentos" id="dttDocumentosOT">
+			    		<p:column headerText="Descargar">
+			    			<div align="center">
+				    			<p:commandLink ajax="false" immediate="true" action="#{crearOrdenTrabajoMB.descargarArchivo}" value="#{doc.nombreArchivo}">
+				    				<f:setPropertyActionListener value="#{doc}" target="#{crearOrdenTrabajoMB.documento}" />
+				    			</p:commandLink>
+			    			</div>
+			    		</p:column>
+			    		<p:column headerText="">
+			    			<div align="center">
+				    			<p:commandButton update="dttDocumentosOT" action="#{crearOrdenTrabajoMB.elminiarArchivo}" alt="Eliminar" title="Eliminar" icon="ui-icon-close">
+				    				<f:setPropertyActionListener value="#{doc}" target="#{crearOrdenTrabajoMB.documento}" />
+				    			</p:commandButton>
+			    			</div>
+			    		</p:column>
+			    	</p:dataTable>
+			    </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			oncomplete="PF('diaVerDocumentos').hide();"
+			    			value="Cerrar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+			<p:dialog id="diaSuccesOT" header="Creaci&oacute;n OT" widgetVar="diaSuccesOT" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid>
+				    <h:panelGroup layout="block" align="center">
+				    	<h:outputText value="Orden de Trabajo generada con &eacute;xito : #{crearOrdenTrabajoMB.ordenTrabajoCodigo}" />
+				    </h:panelGroup>
+				    <h:panelGroup layout="block" rendered="#{fn:length(crearOrdenTrabajoMB.mensajesStock) > 0}" style="margin-bottom:40px; margin-top:10px" styleClass="listaProd">
+					    <h:outputText value="Mensajes de Stock" />
+					    <p:dataList value="#{crearOrdenTrabajoMB.mensajesStock}" var="mensaje" style="margin-top:20px">
+					    	<h:outputText value="#{mensaje}" />
+					    </p:dataList>
+				    </h:panelGroup>
+			    </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+		    			<p:commandButton 
+			    			icon="ui-icon-check"
+			    			oncomplete="PF('diaSuccesOT').hide();"
+			    			action="#{crearOrdenTrabajoMB.saltarAAdmOT}"
+			    			ajax="false"
+			    			value="Aceptar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+			<p:dialog header="Mantenciones Programadas" widgetVar="diaMantencionesProgramadas" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+				<h:panelGrid>
+					<p:fieldset legend="B&uacute;squeda">
+						<h:panelGrid columns="6" cellpadding="3" id="pniBusquedaMantProgramada">  
+				            <h:outputLabel value="C&oacute;digo" />
+				            <h:outputLabel value=":" />  
+				            <p:inputText value="#{crearOrdenTrabajoMB.mpCodigo}" />
+				            <h:outputLabel value="Descripci&oacute;n" />
+				            <h:outputLabel value=":" />  
+				            <p:inputText value="#{crearOrdenTrabajoMB.mpDescripcion}" />
+				        </h:panelGrid>
+			            <p:commandButton 
+			            	value="Buscar" 
+			            	update="dttMantencionesProgramadas"
+			            	process="@this,pniBusquedaMantProgramada"
+			            	icon="ui-icon-search" 
+			            	action="#{crearOrdenTrabajoMB.buscarMantenciones}" />  
+			        </p:fieldset>
+					<p:dataTable var="mp" value="#{crearOrdenTrabajoMB.mantencionesProgramadas}" id="dttMantencionesProgramadas" emptyMessage="Sin informaci&oacute;n">
+						<p:columnGroup type="header">  
+				            <p:row>  
+				                <p:column headerText="C&oacute;digo" />
+				                <p:column headerText="Descripci&oacute;n" />
+				                <p:column headerText="# Trabajos" />
+				                <p:column headerText="" />  
+				            </p:row>  
+				        </p:columnGroup>  
+				        <p:column>
+				            <h:outputText value="#{mp.codigo}" />  
+				        </p:column>  
+				        <p:column>  
+			            	<h:outputText value="#{mp.descripcion}" />
+				        </p:column>
+				        <p:column>
+				        	<div align="right">
+				            	<h:outputText value="#{mp.numTrabajosAsociados}" />
+				            </div>  
+				        </p:column>
+				        <p:column style="text-align:center">  
+			                <p:commandButton update=":frm:tetWorks" action="#{crearOrdenTrabajoMB.agregarTrabajosMantencionSeleccionada}" process="@this" oncomplete="PF('diaMantencionesProgramadas').hide()" icon="ui-icon-gear" title="Seleccionar" alt="Seleccionar" value="Cargar Mantenci&oacute;n">  
+				                <f:setPropertyActionListener value="#{mp}" target="#{crearOrdenTrabajoMB.mantencionProgramada}" />  
+				            </p:commandButton>
+						</p:column> 
+				    </p:dataTable>
+			    </h:panelGrid>
+			</p:dialog>    
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

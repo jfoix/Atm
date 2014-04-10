@@ -1,0 +1,189 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="body">
+		<h:form id="frm">
+			<h:panelGrid width="100%">
+				<p:fieldset legend="B&uacute;squeda">
+					<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
+			            <h:outputLabel value="Producto" />
+			            <h:outputLabel value=":" />  
+			            <p:selectOneMenu value="#{adminSolicitudRepuestoMB.idProducto}">
+			            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+			            	<f:selectItems value="#{adminSolicitudRepuestoMB.productos}" var="prod" itemLabel="#{prod.descripcion}" itemValue="#{prod.idProducto}" />
+			            </p:selectOneMenu>
+			            
+			            <h:outputLabel value="Fecha Solicitud" />
+			            <h:outputLabel value=":" />  
+			            <p:calendar value="#{adminSolicitudRepuestoMB.fechaSolicitud}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
+			            <h:outputLabel value="" />
+			            
+			            <h:outputLabel value="Estado Solicitud" />
+			            <h:outputLabel value=":" />  
+			            <p:selectOneMenu value="#{adminSolicitudRepuestoMB.estadoSolicitud}">
+			            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+			            	<f:selectItem itemValue="1" itemLabel="Pendientes" />
+			            	<f:selectItem itemValue="0" itemLabel="Terminadas" />
+			            </p:selectOneMenu>
+			            
+			        </h:panelGrid>
+		            <p:commandButton 
+		            	value="Buscar" 
+		            	update="dttSolicitudes" 
+		            	icon="ui-icon-search" 
+		            	process="@this,pniBusqueda" 
+		            	action="#{adminSolicitudRepuestoMB.buscarSolicitudes}" />  
+		        </p:fieldset>
+				<p:dataTable var="sol" value="#{adminSolicitudRepuestoMB.solicitudes}" id="dttSolicitudes" emptyMessage="Sin Informaci&oacute;n">
+					<p:columnGroup type="header">  
+			            <p:row>
+			                <p:column headerText="Solicitante" />
+			                <p:column headerText="Fecha Solicitud" />
+			                <p:column headerText="Fecha T&eacute;rmino" />
+			                <p:column headerText="Estado" />
+			                <p:column colspan="2" headerText="Acciones" />  
+			            </p:row>  
+			        </p:columnGroup>  
+			        <p:column>  
+			            <h:outputText value="#{sol.usuario.persona.nombres}" />
+			        </p:column>
+			        <p:column>  
+			            <h:outputText value="#{sol.fechaSolicitud}">
+			            	<f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss"/>
+			            </h:outputText>
+			        </p:column>
+			        <p:column>  
+			            <h:outputText value="#{sol.fechaTermino}" />
+			        </p:column>
+			        <p:column>  
+			            <h:outputText value="#{sol.estado ? 'Pendiente' : 'Terminada'}" />
+			        </p:column>
+			        <p:column style="width:30px; text-align:center">  
+		                <p:commandButton disabled="#{not sol.estado}" update="dttSolicitudes" action="#{adminSolicitudRepuestoMB.cambiarEstadoSolicitud}" icon="ui-icon-transferthick-e-w" title="Terminar" alt="Terminar">  
+			                <p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro que desea dar por terminada la solicitud?" icon="ui-icon-alert" />
+			                <f:setPropertyActionListener value="#{sol}" target="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud}" />  
+			            </p:commandButton>
+					</p:column> 
+			        <p:column style="width:30px; text-align:center">
+			            <p:commandButton disabled="#{not sol.estado}" update=":frm:dttProductosSolicitados" oncomplete="PF('repuestosSolicitados').show()" icon="ui-icon-pencil" title="Repuestos Solicitados" alt="Repuestos Solicitados">  
+			                <f:setPropertyActionListener value="#{sol}" target="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud}" />    
+			            </p:commandButton>  
+			        </p:column> 
+			    </p:dataTable>
+		    </h:panelGrid>
+		    <p:confirmDialog global="true">  
+		        <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+		        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+		    </p:confirmDialog>
+		    
+		    <p:dialog header="Repuestos Solicitados" widgetVar="repuestosSolicitados" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+		    	<p:dataTable var="prodSol" value="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.productos}" id="dttProductosSolicitados">
+					<p:columnGroup type="header">  
+			            <p:row>  
+			                <p:column headerText="Producto" />
+			                <p:column headerText="Cantidad Solicitada" />
+			                <p:column headerText="Estado" />
+			                <p:column headerText="" />  
+			            </p:row>  
+			        </p:columnGroup>  
+			        <p:column>  
+			            <h:outputText value="#{prodSol.producto.codigo} - #{prodSol.producto.descripcion}" />
+			        </p:column>
+			        <p:column>  
+			            <h:outputText value="#{prodSol.cantidad}" />
+			        </p:column>
+			        <p:column>  
+			            <h:outputText value="#{prodSol.estado ? 'Pendiente' : 'Agregado'}" />
+			        </p:column>
+			        <p:column style="width:30px; text-align:center">  
+		                <p:commandButton disabled="#{not prodSol.estado}" update=":frm:dttProductosSolicitados" action="#{adminSolicitudRepuestoMB.cambiarEstadoSolProducto}" icon="ui-icon-transferthick-e-w" title="Agregar" alt="Agregar" oncomplete="PF('diaAgregarStock').show()">  
+			                <p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro que marcar como agregado el producto seleccionado?" icon="ui-icon-alert" />
+			                <f:setPropertyActionListener value="#{prodSol}" target="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitudProducto}" />  
+			            </p:commandButton>
+					</p:column> 
+			    </p:dataTable>
+			    <f:facet name="footer">
+			    	<div align="center">
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('repuestosSolicitados').hide();"
+			    			value="Cerrar" />
+		    		</div>
+			    </f:facet>
+		    </p:dialog>
+		    
+		    <p:dialog header="Stock Producto" widgetVar="diaAgregarStock" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+		    	<div align="center">
+		    		<h:outputText value="¿Desea agregar el producto al stock?" style="font-weight:bold" />
+		    	</div>
+		    	<f:facet name="footer">
+			    	<div align="center">
+		    			<p:commandButton 
+			    			icon="ui-icon-check"
+			    			process="@this"
+			    			update="pgiStockInfo"
+			    			action="#{adminSolicitudRepuestoMB.agregarStock}"
+			    			oncomplete="PF('diaAgregarStock').hide(); PF('diaStock').show();"
+			    			value="Aceptar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaAgregarStock').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+		    </p:dialog>
+		    
+		    <p:dialog header="Stock Producto" widgetVar="diaStock" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="3" cellpadding="4" id="pgiStockInfo">
+		            <h:outputLabel value="Producto" />
+		            <h:outputLabel value=":" />  
+		            <h:inputText value="#{adminSolicitudRepuestoMB.stock.producto.codigo} - #{adminSolicitudRepuestoMB.stock.producto.descripcion}" alt="#{adminSolicitudRepuestoMB.stock.producto.codigo} - #{adminSolicitudRepuestoMB.stock.producto.descripcion}" title="#{adminSolicitudRepuestoMB.stock.producto.codigo} - #{adminSolicitudRepuestoMB.stock.producto.descripcion}" disabled="true" />
+		            
+			    	<h:outputText value="Cantidad" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{adminSolicitudRepuestoMB.movimiento.cantidad}" disabled="true" />
+			    	
+			    	<h:outputLabel value="Proveedor" />
+		            <h:outputLabel value=":" />  
+		            <p:selectOneMenu value="#{adminSolicitudRepuestoMB.movimiento.proveedor.idProveedor}">
+		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+		            	<f:selectItems value="#{adminSolicitudRepuestoMB.proveedores}" var="prov" itemLabel="#{prov.descripcion}" itemValue="#{prov.idProveedor}" />
+		            </p:selectOneMenu>
+		            
+		            <h:outputLabel value="Bodega" />
+		            <h:outputLabel value=":" />  
+		            <p:selectOneMenu value="#{adminSolicitudRepuestoMB.stock.bodega.idBodega}">
+		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+		            	<f:selectItems value="#{adminSolicitudRepuestoMB.bodegas}" var="bod" itemLabel="#{bod.descripcion}" itemValue="#{bod.idBodega}" />
+		            </p:selectOneMenu>
+			    	
+			    	<h:outputText value="Valor Compra (Unidad)" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{adminSolicitudRepuestoMB.movimiento.valorUnidad}" />
+			    </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			action="#{adminSolicitudRepuestoMB.guardarStock}"
+			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaStock').hide(); }"
+			    			process="@this,pgiStockInfo"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaStock').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>    
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

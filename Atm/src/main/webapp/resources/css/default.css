@@ -1,0 +1,114 @@
+body{
+	font-size: 12px;
+	font-family: Arial;
+	padding: 0px;
+	margin: 0px;
+	color: #4f4f4f;
+}
+
+.bodyLogin{
+	background: url('../resources/images/fondo-login-azul.jpg') no-repeat;
+}
+
+.fondoLogin{
+	background: url('../resources/images/fondo-opa-login.png') repeat;
+}
+
+.ui-treetable tbody td{
+	padding: 2px 4px !important;
+}
+
+.tableUp td{
+	vertical-align: top;
+}
+
+.ui-widget{
+	font-size: 12px !important;
+}
+
+.subTableBorder{
+	width: auto !important;
+}
+
+.subTableBorder td{
+	border-width:0px !important;
+	padding: 0px !important;
+}
+
+.sinStockMec{
+	font-weight: bold;
+	color: #f00;
+}
+
+.backNoStock{
+	background: #FFE098;
+}
+
+.listaProd .ui-datalist-content{
+	border: 0px !important;
+}
+
+.listaProd .ui-datalist-content ul{
+	padding-left: 10px !important;
+}
+
+.uppercase { 
+	text-transform: uppercase; 
+}
+
+.bold{
+	font-weight: bold;
+}
+
+#header{
+	margin-bottom: 10px;
+}
+
+#header .ui-panel-title{
+	height: 70px;
+}
+
+#content{
+	padding: 5px;
+	min-height:400px;
+}
+
+#footer{
+	margin-top: 10px;
+}
+
+.ui-header{
+	padding:0px !important;
+}
+
+.ui-footer{
+	padding:0px !important;
+	font-style: italic;
+}
+
+.ui-footer .ui-panel-titlebar{
+	padding: 0.3em;
+}
+
+.tetClass .tetSubTable{
+	border-style: none;
+	border-color: #fff;
+}
+
+.tetSubTable{
+	width: auto !important;
+}
+
+.tetSubTable td{
+	border: 0px !important;
+}
+
+.ui-state-disabled{
+	opacity: 1 !important;
+	filter: Alpha(Opacity=100) !important;
+	background-color: #f8fb9e !important;
+}
+
+.ui-dialog-buttonpane{
+	text-align: center !important;
+}

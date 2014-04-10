@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.0" xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
+	<persistence-unit name="ATMPU" transaction-type="JTA">
+		<description>Base ATM</description>
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<jta-data-source>java:jboss/datasources/ATMDS</jta-data-source>
+		<class>cl.jfoix.atm.comun.entity.EstadoTrabajo</class>
+		<class>cl.jfoix.atm.comun.entity.Marca</class>
+		<class>cl.jfoix.atm.comun.entity.Producto</class>
+		<class>cl.jfoix.atm.comun.entity.Trabajo</class>
+		<class>cl.jfoix.atm.comun.entity.TrabajoProducto</class>
+		<class>cl.jfoix.atm.comun.entity.TrabajoSubTipo</class>
+		<class>cl.jfoix.atm.comun.entity.TrabajoTipo</class>
+		<class>cl.jfoix.atm.login.entity.Perfil</class>
+		<class>cl.jfoix.atm.login.entity.Permiso</class>
+		<class>cl.jfoix.atm.login.entity.Persona</class>
+		<class>cl.jfoix.atm.login.entity.Usuario</class>
+		<class>cl.jfoix.atm.login.entity.UsuarioPermiso</class>
+		<class>cl.jfoix.atm.ot.entity.Bodega</class>
+		<class>cl.jfoix.atm.ot.entity.Cliente</class>
+		<class>cl.jfoix.atm.ot.entity.EstadoOrden</class>
+		<class>cl.jfoix.atm.ot.entity.FormaPago</class>
+		<class>cl.jfoix.atm.ot.entity.MarcaVehiculo</class>
+		<class>cl.jfoix.atm.ot.entity.Movimiento</class>
+		<class>cl.jfoix.atm.ot.entity.MovimientoDocumento</class>
+		<class>cl.jfoix.atm.ot.entity.Orden</class>
+		<class>cl.jfoix.atm.ot.entity.OrdenDocumento</class>
+		<class>cl.jfoix.atm.ot.entity.OrdenEstado</class>
+		<class>cl.jfoix.atm.ot.entity.OrdenTrabajo</class>
+		<class>cl.jfoix.atm.ot.entity.OrdenTrabajoProducto</class>
+		<class>cl.jfoix.atm.ot.entity.OrdenTrabajoSolicitudProducto</class>
+		<class>cl.jfoix.atm.ot.entity.Proveedor</class>
+		<class>cl.jfoix.atm.ot.entity.Stock</class>
+		<class>cl.jfoix.atm.ot.entity.Vehiculo</class>
+		<class>cl.jfoix.atm.ot.entity.VehiculoOrden</class>
+		<class>cl.jfoix.atm.ot.entity.OrdenTrabajoUsuario</class>
+		<class>cl.jfoix.atm.ot.entity.OrdenTrabajoSolicitud</class>
+		<class>cl.jfoix.atm.comun.entity.MantencionProgramada</class>
+		<class>cl.jfoix.atm.comun.entity.MantencionProgramadaTrabajo</class>
+		<class>cl.jfoix.atm.ot.entity.MovimientoIngreso</class>
+		<class>cl.jfoix.atm.ot.entity.OrdenTrabajoEstado</class>
+		<exclude-unlisted-classes>false</exclude-unlisted-classes>
+		<properties>
+			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />
+			<property name="hibernate.transaction.jta.platform" value="org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform" />
+			<property name="hibernate.transaction.manager_lookup_class" value="org.hibernate.transaction.JBossTransactionManagerLookup" />
+		</properties>
+	</persistence-unit>
+</persistence>

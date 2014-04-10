@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="body">
+		<h:form id="frm">
+			<p:fieldset legend="B&uacute;squeda">
+				<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
+		            <h:outputLabel value="Nombre Proveedor" />
+		            <h:outputLabel value=":" />  
+		            <p:inputText value="#{proveedorMB.nombreProveedor}" />
+		            <p:commandButton 
+		            	value="Buscar" 
+		            	update="dttStamps"
+		            	process="pniBusqueda"
+		            	icon="ui-icon-search" 
+		            	action="#{proveedorMB.buscarProveedores}" />  
+		        </h:panelGrid>
+	        </p:fieldset>
+			<div align="left">
+				<h:panelGrid columns="4">
+					<p:commandButton 
+						update=":frm:pgiStampInfo"
+						oncomplete="PF('diaStamp').show();"
+						action="#{proveedorMB.nuevaProveedor}"
+						icon="ui-icon-plus"
+						process="@this"
+						value="Agregar Proveedor"/>
+				</h:panelGrid>
+			</div>
+			<p:dataTable var="stamp" value="#{proveedorMB.proveedores}" id="dttStamps" emptyMessage="Sin informaci&oacute;n">
+				<p:columnGroup type="header">  
+		            <p:row>  
+		                <p:column headerText="Proveedor" />
+		                <p:column headerText="Tel&eacute;fono" />
+		                <p:column headerText="E-Mail" />
+		                <p:column headerText="Direcci&oacute;n" />
+		                <p:column headerText="Porcentaje Ganancia" />
+		                <p:column colspan="2" headerText="Acciones" />  
+		            </p:row>  
+		        </p:columnGroup>  
+		        <p:column>  
+		            <h:outputText value="#{stamp.codigo} - #{stamp.descripcion}" />  
+		        </p:column>
+		        <p:column>  
+		            <h:outputText value="#{stamp.telefono}" />  
+		        </p:column>
+		        <p:column>  
+		            <h:outputText value="#{stamp.email}" />  
+		        </p:column>
+		        <p:column>  
+		            <h:outputText value="#{stamp.direccion}" />  
+		        </p:column>
+		        <p:column>  
+		            <h:outputText value="#{stamp.porcentajeGanancia}" />  
+		        </p:column>  
+		        <p:column style="width:30px; text-align:center">  
+	                <p:commandButton update=":frm:pgiStampInfo" process="@this" oncomplete="PF('diaStamp').show()" icon="ui-icon-pencil" title="Editar" alt="Editar">  
+		                <f:setPropertyActionListener value="#{stamp}" target="#{proveedorMB.proveedor}" />  
+		            </p:commandButton>
+				</p:column> 
+		        <p:column style="width:30px; text-align:center">
+		            <p:commandButton update="dttStamps" process="@this" action="#{proveedorMB.eliminarProveedor}"  icon="ui-icon-closethick" title="Eliminar" alt="Eliminar">  
+		                <p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el proveedor seleccionado?" icon="ui-icon-alert" />
+		                <f:setPropertyActionListener value="#{stamp}" target="#{proveedorMB.proveedor}" />    
+		            </p:commandButton>  
+		        </p:column> 
+		    </p:dataTable>
+		    
+		    <p:confirmDialog global="true" closeOnEscape="true">  
+		        <p:commandButton value="Aceptar" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+		        <p:commandButton value="Cancelar" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+		    </p:confirmDialog>
+		    <p:dialog id="diaStamp" header="Datos Proveedor" widgetVar="diaStamp" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="3" cellpadding="4" id="pgiStampInfo">
+			    	<h:outputText value="C&oacute;digo" />
+			    	<h:outputText value=":" />
+			    	<p:inputMask mask="aaa9999" value="#{proveedorMB.proveedor.codigo}" styleClass="uppercase" />
+			    	<h:outputText value="Descripci&oacute;n" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{proveedorMB.proveedor.descripcion}" />
+			    	<h:outputText value="Tel&eacute;fono" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{proveedorMB.proveedor.telefono}" />
+			    	<h:outputText value="E-Mail" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{proveedorMB.proveedor.email}" />
+			    	<h:outputText value="Direcci&oacute;n" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{proveedorMB.proveedor.direccion}" />
+			    	<h:outputText value="Porcentaje Ganancia" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{proveedorMB.proveedor.porcentajeGanancia}" onkeypress="return validarDecimal(event, this)" />
+			    </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			actionListener="#{proveedorMB.guardarProveedor}"
+			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaStamp').hide(); }"
+			    			update=":frm:dttStamps"
+			    			process="@this,pgiStampInfo"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaStamp').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>    
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

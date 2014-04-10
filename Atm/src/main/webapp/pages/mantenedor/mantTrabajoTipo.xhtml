@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="body">
+		<h:form id="frm">
+			<p:fieldset legend="B&uacute;squeda">
+				<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
+		            <h:outputLabel value="Descripci&oacute;n Tipo" />
+		            <h:outputLabel value=":" />  
+		            <p:inputText value="#{trabajoTipoMB.tipoDesc}" />
+		            <p:commandButton 
+		            	value="Buscar" 
+		            	update="dttTypes"
+		            	process="pniBusqueda"
+		            	icon="ui-icon-search" 
+		            	action="#{trabajoTipoMB.buscarTrabajoTipo}" />  
+		        </h:panelGrid>
+	        </p:fieldset>
+			<div align="left">
+				<h:panelGrid columns="4">
+					<p:commandButton 
+						update=":frm:pgiTypeInfo"
+						oncomplete="PF('diaType').show();"
+						action="#{trabajoTipoMB.nuevoTrabajoTipo}"
+						icon="ui-icon-plus"
+						process="@this"
+						value="Agregar Tipo"/>
+				</h:panelGrid>
+			</div>
+			<p:dataTable var="type" value="#{trabajoTipoMB.tipos}" id="dttTypes" emptyMessage="Sin informaci&oacute;n">
+				<p:columnGroup type="header">  
+		            <p:row>  
+		                <p:column headerText="Descripci&oacute;n Tipo" />
+		                <p:column colspan="2" headerText="Acciones" />  
+		            </p:row>  
+		        </p:columnGroup>  
+		        <p:column>  
+		            <h:outputText value="#{type.descripcion}" />  
+		        </p:column>  
+		        <p:column style="width:30px; text-align:center">  
+	                <p:commandButton  process="@this" update=":frm:pgiTypeInfo" oncomplete="PF('diaType').show()" icon="ui-icon-pencil" title="Editar" alt="Editar">  
+		                <f:setPropertyActionListener value="#{type}" target="#{trabajoTipoMB.trabajoTipo}" />  
+		            </p:commandButton>
+				</p:column> 
+		        <p:column style="width:30px; text-align:center">
+		            <p:commandButton update="dttTypes" process="@this" action="#{trabajoTipoMB.eliminarTrabajoTipo}"  icon="ui-icon-closethick" title="Eliminar" alt="Eliminar">  
+		                <p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el Sub-Tipo?" icon="ui-icon-alert" />
+		                <f:setPropertyActionListener value="#{type}" target="#{trabajoTipoMB.trabajoTipo}" />    
+		            </p:commandButton>  
+		        </p:column> 
+		    </p:dataTable>
+		    
+		    <p:confirmDialog global="true" closeOnEscape="true">  
+		        <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+		        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+		    </p:confirmDialog>
+		    <p:dialog id="diaType" header="Datos Tipo" widgetVar="diaType" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGroup id="pgiTypeInfo">
+				    <h:panelGrid columns="3" cellpadding="4">
+				    	<h:outputText value="Descripci&oacute;n Tipo" />
+				    	<h:outputText value=":" />
+				    	<p:inputText value="#{trabajoTipoMB.trabajoTipo.descripcion}" />
+				    </h:panelGrid>
+                </h:panelGroup>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			action="#{trabajoTipoMB.guardarTrabajoTipo}"
+			    			process="@this,pgiTypeInfo"
+			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaType').hide(); }"
+			    			update=":frm:dttTypes"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaType').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>    
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>
