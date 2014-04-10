@@ -1,7 +1,9 @@
 Pendientes Taller
-Alto - Poner IS NULL en vista de mecánicos por OT repetidas.
-Medio - Construir parametros generales (poner ruta upload archivos).
-Bajo - Verificar observaciones.
-Medio - Mostrar archivos en la OT.
-Medio - Validar Códigos en Producto, Trabajo, Mantencion Programada, Proveedor.
-Medio - Poner observacion en Movimiento (Stock).
+--------------------------------------
+
+JF - Alto - Poner IS NULL en vista de mecánicos por OT repetidas.
+JF - Medio - Construir parametros generales (poner ruta upload archivos).
+JF - Bajo - Verificar observaciones.
+JF - Medio - Mostrar archivos en la OT.
+DA - Medio - Validar Códigos. (Validar en mantenedor de Producto, Trabajo, Mantencion Programada, Proveedor que el código en modificación y creación no exista previamente)
+DA - Medio - Poner observacion en Movimiento (Stock). (Agregar la columna en BD y en la pantalla al agregar un Stock)
