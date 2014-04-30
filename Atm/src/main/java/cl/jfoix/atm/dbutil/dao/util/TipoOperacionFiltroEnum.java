@@ -33,7 +33,10 @@ public enum TipoOperacionFiltroEnum {
 	MENOR_IGUAL_QUE (" <= "),
 	LIKE_INICIO (" like "),
 	LIKE_FIN (" like "),
-	LIKE_COMPLETO (" like ");
+	LIKE_COMPLETO (" like "),
+	IS_NULL (" IS NULL "),
+	EXISTS (" exists "),
+	NOT_EXISTS (" not exists ");
 	
 	private String operacion;
 	

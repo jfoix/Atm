@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Consulta Movimientos" /></ui:define>
+	<ui:define name="body">
+		<h:form id="frm">
+			<h:panelGrid width="100%">
+				<p:fieldset legend="B&uacute;squeda">
+					<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
+			            <h:outputLabel value="Fecha Desde" />
+			            <h:outputLabel value=":" />  
+						<p:calendar value="#{consultaMovimientosMB.fechaDesdeBusq}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
+
+			            <h:outputLabel value="Fecha Hasta" />
+			            <h:outputLabel value=":" />  
+			            <p:calendar value="#{consultaMovimientosMB.fechaHastaBusq}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
+			            <h:outputLabel value="" />
+			            
+						<h:outputLabel value="C&oacute;digo Producto" />
+			            <h:outputLabel value=":" />
+			            <p:inputMask mask="aaa9999" value="#{consultaMovimientosMB.codProductoBusq}" styleClass="uppercase" />
+			            
+			            <h:outputLabel value="Proveedor" />
+			            <h:outputLabel value=":" />
+			            <p:selectOneMenu value="#{consultaMovimientosMB.idProveedorBusq}">
+			            	<f:selectItem itemValue="-1" itemLabel="Todos" />
+			            	<f:selectItems value="#{consultaMovimientosMB.proveedores}" var="mov" itemLabel="#{mov.codigo} - #{mov.descripcion}" itemValue="#{mov.idProveedor}" />
+			            </p:selectOneMenu>
+						
+			            <p:commandButton 
+			            	value="Buscar" 
+			            	update="dttMovimientos"
+			            	process="@this,pniBusqueda"
+			            	icon="ui-icon-search" 
+			            	action="#{consultaMovimientosMB.buscarMovimientos}" />  
+			        </h:panelGrid>
+		        </p:fieldset>
+		        <p:commandButton value="Exportar Excel" ajax="false">
+		            <p:dataExporter type="xls" target="dttClientes" fileName="movimientos_stock" />  
+		        </p:commandButton>
+				<p:dataTable 
+					var="mov" 
+					value="#{consultaMovimientosMB.movimientos}" 
+					id="dttMovimientos" 
+					paginator="true" rows="10"
+			    	paginatorPosition="bottom"
+					paginatorTemplate="{CurrentPageReport} {PageLinks}"
+					emptyMessage="Sin informaci&oacute;n">
+			        <p:column>
+			        	<f:facet name="header">
+			        		Fecha Movimiento
+			        	</f:facet>
+			            <h:outputText value="#{mov.fecha}">
+			            	<f:convertDateTime pattern="dd/MM/yyyy" />
+			            </h:outputText>  
+			        </p:column>
+			        <p:column>
+			        	<f:facet name="header">
+			        		Tipo Movimiento
+			        	</f:facet>
+			            <h:outputText value="#{mov.tipo.description}" />
+			        </p:column>
+			        <p:column>
+			        	<f:facet name="header">
+			        		Cantidad
+			        	</f:facet>
+			            <div align="right">
+			            	<h:outputText value="#{mov.cantidad}" />
+			            </div>  
+			        </p:column>
+			        <p:column>  
+			            <f:facet name="header">
+			        		Valor Compra (Unid)
+			        	</f:facet>
+			        	<div align="right">
+			            	<h:outputText value="#{mov.tipo eq 'INGRESO' ? mov.valorUnidad : ''}" />
+			            </div>  
+			        </p:column>
+			        <p:column>  
+			            <f:facet name="header">
+			        		Proveedor
+			        	</f:facet>
+			            <h:outputText value="#{mov.proveedor.descripcion}" />  
+			        </p:column>
+			        <p:column>  
+			            <f:facet name="header">
+			        		Observaci&oacute;n
+			        	</f:facet>
+			            <h:outputText value="#{mov.observacion}" />  
+			        </p:column>
+			    </p:dataTable>
+		    </h:panelGrid>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

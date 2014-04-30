@@ -1,6 +1,8 @@
 package cl.jfoix.atm.ot.stock.bean;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -9,13 +11,16 @@ import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.ViewScoped;
 import javax.faces.context.FacesContext;
+import javax.servlet.http.HttpServletResponse;
 
 import org.primefaces.context.RequestContext;
+import org.primefaces.event.FileUploadEvent;
 
 import cl.jfoix.atm.comun.entity.Producto;
 import cl.jfoix.atm.comun.excepcion.view.ViewException;
 import cl.jfoix.atm.ot.entity.Bodega;
 import cl.jfoix.atm.ot.entity.Movimiento;
+import cl.jfoix.atm.ot.entity.MovimientoDocumento;
 import cl.jfoix.atm.ot.entity.Proveedor;
 import cl.jfoix.atm.ot.entity.Stock;
 import cl.jfoix.atm.ot.stock.dto.FiltroBusquedaStockDto;
@@ -42,6 +47,9 @@ public class AdminStockMB implements Serializable {
 	private Movimiento movimiento;
 	private TipoMovimientoEnum tipoMovimiento;
 	
+	private List<MovimientoDocumento> documentos;
+	private MovimientoDocumento documento;
+	
 	@PostConstruct
 	public void init(){
 		filtro = new FiltroBusquedaStockDto();
@@ -50,6 +58,37 @@ public class AdminStockMB implements Serializable {
 		proveedores = adminStockService.buscarProveedores();
 		
 		nuevoStock();
+	}
+	
+	public void elminiarArchivo(){
+		documentos.remove(documento);
+	}
+	
+	public void handleFileUpload(FileUploadEvent event) {
+		if(documentos == null){
+			documentos = new ArrayList<MovimientoDocumento>();
+		}
+		
+		MovimientoDocumento doc = new MovimientoDocumento();
+		doc.setDatosArchivo(event.getFile().getContents());
+		doc.setNombreArchivo(event.getFile().getFileName());
+		doc.setMovimiento(movimiento);
+		
+		documentos.add(doc);
+	}
+	
+	public void descargarArchivo(){
+		try{
+			HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
+	        response.setContentType("application/octet-stream");
+	        response.setHeader("Content-Disposition", "attachment;filename=" + documento.getNombreArchivo() + "");
+	        response.getOutputStream().write(documento.getDatosArchivo());
+	        response.getOutputStream().flush();
+	        response.getOutputStream().close();
+	        FacesContext.getCurrentInstance().responseComplete();
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
 	}
 
 	public void buscarStock(){
@@ -86,23 +125,31 @@ public class AdminStockMB implements Serializable {
 			vEx.agregarMensaje("Debe ingresar la cantidad");
 		}
 		
-		if(movimiento.getProveedor().getIdProveedor().equals(-1)){
+		if(movimiento.getCantidad().doubleValue() > 0d && movimiento.getProveedor().getIdProveedor().equals(-1)){
 			vEx.agregarMensaje("Debe seleccionar un proveedor");
 		}
 
-		if(stock.getBodega().getIdBodega().equals(-1)){
+		if(movimiento.getCantidad().doubleValue() > 0d && stock.getBodega().getIdBodega().equals(-1)){
 			vEx.agregarMensaje("Debe seleccionar una bodega");
 		}
 		
-		if(movimiento.getValorUnidad().equals(0)){
+		if(movimiento.getCantidad().doubleValue() > 0d && movimiento.getValorUnidad().equals(0)){
 			vEx.agregarMensaje("Debe ingresar un valor al stock");
+		}
+		
+		Stock stockProd = adminStockService.buscarStockPorIdProducto(stock.getProducto().getIdProducto());
+
+		if(movimiento.getCantidad().doubleValue() < 0d && (stockProd == null || stockProd.getCantidad().doubleValue() == 0d)){
+			vEx.agregarMensaje("No puede descontar stock a un producto que no tiene stock");
+		}
+		
+		if(movimiento.getCantidad().doubleValue() < 0d && stockProd != null && (stockProd.getCantidad() - (movimiento.getCantidad()*-1d)) < 0d){
+			vEx.agregarMensaje("La cantidad que intenta descontar es mayor al stock que tiene actualmente");
 		}
 		
 		if(vEx.tieneMensajes()){
 			throw vEx;
 		}
-		
-		Stock stockProd = adminStockService.buscarStockPorIdProducto(stock.getProducto().getIdProducto());
 		
 		if(stockProd != null){
 			stock = stockProd;
@@ -111,13 +158,20 @@ public class AdminStockMB implements Serializable {
 			stock.setCantidad(movimiento.getCantidad());
 		}
 		
-		for(Proveedor proveedor : proveedores){
-			if(proveedor.getIdProveedor().equals(movimiento.getProveedor().getIdProveedor())){
-				movimiento.getProveedor().setPorcentajeGanancia(proveedor.getPorcentajeGanancia());
+		if(movimiento.getProveedor().getIdProveedor().equals(-1)){
+			movimiento.setProveedor(null);
+		} else {
+			for(Proveedor proveedor : proveedores){
+				if(proveedor.getIdProveedor().equals(movimiento.getProveedor().getIdProveedor())){
+					movimiento.getProveedor().setPorcentajeGanancia(proveedor.getPorcentajeGanancia());
+				}
 			}
 		}
 		
+		movimiento.setDocumentos(documentos);
+		
 		movimiento.setTipo(tipoMovimiento);
+		
 		adminStockService.guardarStock(stock, movimiento);
 		
 		adminStockService.actualizarProductoStockValor(movimiento);
@@ -266,5 +320,33 @@ public class AdminStockMB implements Serializable {
 	 */
 	public void setTipoMovimiento(TipoMovimientoEnum tipoMovimiento) {
 		this.tipoMovimiento = tipoMovimiento;
+	}
+
+	/**
+	 * @return the documentos
+	 */
+	public List<MovimientoDocumento> getDocumentos() {
+		return documentos;
+	}
+
+	/**
+	 * @param documentos the documentos to set
+	 */
+	public void setDocumentos(List<MovimientoDocumento> documentos) {
+		this.documentos = documentos;
+	}
+
+	/**
+	 * @return the documento
+	 */
+	public MovimientoDocumento getDocumento() {
+		return documento;
+	}
+
+	/**
+	 * @param documento the documento to set
+	 */
+	public void setDocumento(MovimientoDocumento documento) {
+		this.documento = documento;
 	}
 }

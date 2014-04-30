@@ -11,43 +11,50 @@
 				<div align="center">
 					<br /><br /><br /><br /><br />
 					<br /><br /><br /><br /><br />
-					<br /><br /><br /><br /><br />
-					<p:panel styleClass="fondoLogin">
-					<table> 
-						<tbody>
-							<tr> 
-								<td style="color:#fff">
-									<h:outputText value="#{msg['login.nombreUsuario']}" /><br/>
-									<h:inputText id="username" value="#{authenticationBean.username}" style="#{errorcheck.getErrorStyle('loginForm:username')}" maxlength="50" required="true" requiredMessage="#{msg['login.mensajeErrorUsuario']}"/>			 
-								</td>
-								<td style="color:#fff">
-									<h:outputText value="#{msg['login.claveUsuario']}" /><br />
-									<h:inputSecret id="password" styleClass="pass" value="#{authenticationBean.password}" style="#{errorcheck.getErrorStyle('loginForm:password')}" maxlength="50" 
-									required="true" requiredMessage="#{msg['login.mensajeErrorClaveUsuario']}"/>
-								</td>
-							</tr>
-							<tr><!-- onclick="$('.pass').val(hex_sha256($('.pass').val()));" -->
-								<td colspan="2" align="center">
-									<p:commandButton
-										value="#{msg['login.btnIgresar']}"
-										process="@this,username,password"
-										ajax="false"
-										type="submit"
-										action="#{authenticationBean.login}" />
-								</td> 
-							</tr> 
-						</tbody>
-						<thead>
-							<tr>
-								<td colspan="2"></td>
-							</tr>
-							<tr>
-								<td colspan="2">
-									<h:messages showSummary="true" showDetail="false" style="#{errorcheck.errorMessagesStyle}" />
-								</td>
-							</tr>
-						</thead>
-					</table>
+					<p:panel styleClass="fondoLoginGrande" style="width:450px">
+						<table width="100%" style="color:#fff" cellpadding="5px">
+							<thead>
+								<tr>
+									<td align="center">
+										<br /><br /><br />
+										<img src="http://www.servi-parts.cl/images/SP_CHICO.jpg" border="0" />
+										<br /><br /><br />
+									</td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td align="left">
+										<h:outputText value="#{msg['login.nombreUsuario']}" /><br/>
+										<p:inputText id="username" value="#{authenticationBean.username}" style="#{errorcheck.getErrorStyle('loginForm:username')}; width:400px" maxlength="50" required="true" requiredMessage="#{msg['login.mensajeErrorUsuario']}" />			 
+									</td>
+								</tr>
+								<tr>
+									<td align="left">
+										<h:outputText value="#{msg['login.claveUsuario']}" /><br />
+										<p:password id="password" styleClass="pass" value="#{authenticationBean.password}" style="#{errorcheck.getErrorStyle('loginForm:password')}; width:400px" maxlength="50" 
+										required="true" requiredMessage="#{msg['login.mensajeErrorClaveUsuario']}"/>
+									</td>
+								</tr>
+								<tr>
+									<td align="right">
+										<p:commandButton
+											value="#{msg['login.btnIgresar']}"
+											process="@this,username,password"
+											ajax="false"
+											type="submit"
+											action="#{authenticationBean.login}" />
+									</td> 
+								</tr> 
+							</tbody>
+							<tfoot>
+								<tr>
+									<td style="color:#fff" colspan="2">
+										<h:messages showSummary="true" showDetail="false" style="#{errorcheck.errorMessagesStyle}" />
+									</td>
+								</tr>
+							</tfoot>
+						</table>
 					</p:panel>
 				</div>
 		</h:form>

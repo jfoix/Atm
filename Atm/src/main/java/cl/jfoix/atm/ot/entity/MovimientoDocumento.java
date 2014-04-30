@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name="movimiento_documento")
@@ -29,6 +30,12 @@ public class MovimientoDocumento implements Serializable {
 	@Column(name="rutaNombre")
 	private String rutaNombre;
 
+	@Transient
+	private byte[] datosArchivo;
+	
+	@Transient
+	private String nombreArchivo;
+	
 	/**
 	 * @return the idMovimientoDocumento
 	 */
@@ -69,5 +76,33 @@ public class MovimientoDocumento implements Serializable {
 	 */
 	public void setRutaNombre(String rutaNombre) {
 		this.rutaNombre = rutaNombre;
+	}
+
+	/**
+	 * @return the datosArchivo
+	 */
+	public byte[] getDatosArchivo() {
+		return datosArchivo;
+	}
+
+	/**
+	 * @param datosArchivo the datosArchivo to set
+	 */
+	public void setDatosArchivo(byte[] datosArchivo) {
+		this.datosArchivo = datosArchivo;
+	}
+
+	/**
+	 * @return the nombreArchivo
+	 */
+	public String getNombreArchivo() {
+		return nombreArchivo;
+	}
+
+	/**
+	 * @param nombreArchivo the nombreArchivo to set
+	 */
+	public void setNombreArchivo(String nombreArchivo) {
+		this.nombreArchivo = nombreArchivo;
 	}
 }

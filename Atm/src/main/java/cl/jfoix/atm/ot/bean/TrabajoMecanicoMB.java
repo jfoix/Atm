@@ -20,7 +20,6 @@ import cl.jfoix.atm.comun.excepcion.view.ViewException;
 import cl.jfoix.atm.comun.seguridad.proveedor.UsuarioAtenticacion;
 import cl.jfoix.atm.comun.service.IOrdenService;
 import cl.jfoix.atm.login.entity.Usuario;
-import cl.jfoix.atm.ot.entity.OrdenTrabajo;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoProducto;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoSolicitud;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoSolicitudProducto;
@@ -47,6 +46,7 @@ public class TrabajoMecanicoMB implements Serializable {
 	
 	private OrdenTrabajoUsuario trabajo;
 	private OrdenTrabajoSolicitud solicitud;
+	private OrdenTrabajoSolicitudProducto productoSolicitud;
 	
 	private Integer idOTBusq;
 	private Integer idEstadoOTBusq;
@@ -130,6 +130,10 @@ public class TrabajoMecanicoMB implements Serializable {
 		solicitud.setOrdenTrabajo(trabajo.getOrdenTrabajo());
 	}
 	
+	public void eliminarProductos(){
+		productosSolicitud.remove(productoSolicitud);
+	}
+		
 	public void agregarProductos(){
 		if(productosSolicitud == null){
 			productosSolicitud = new ArrayList<OrdenTrabajoSolicitudProducto>();
@@ -370,5 +374,19 @@ public class TrabajoMecanicoMB implements Serializable {
 	 */
 	public void setOrdenService(IOrdenService ordenService) {
 		this.ordenService = ordenService;
+	}
+
+	/**
+	 * @return the productoSolicitud
+	 */
+	public OrdenTrabajoSolicitudProducto getProductoSolicitud() {
+		return productoSolicitud;
+	}
+
+	/**
+	 * @param productoSolicitud the productoSolicitud to set
+	 */
+	public void setProductoSolicitud(OrdenTrabajoSolicitudProducto productoSolicitud) {
+		this.productoSolicitud = productoSolicitud;
 	}
 }

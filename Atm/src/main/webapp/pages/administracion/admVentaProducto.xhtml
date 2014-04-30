@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Administraci&oacute;n Stock" /></ui:define>
+	<ui:define name="body">
+		<h:form id="frm">
+			<p:fieldset legend="B&uacute;squeda">
+				<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
+		            <h:outputLabel value="Producto" />
+		            <h:outputLabel value=":" />  
+		            <p:selectOneMenu value="#{adminStockMB.filtro.idProducto}">
+		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+		            	<f:selectItems value="#{adminStockMB.productos}" var="prod" itemLabel="#{prod.descripcion}" itemValue="#{prod.idProducto}" />
+		            </p:selectOneMenu>
+		            
+		            <h:outputLabel value="Bodega" />
+		            <h:outputLabel value=":" />  
+		            <p:selectOneMenu value="#{adminStockMB.filtro.idBodega}">
+		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+		            	<f:selectItems value="#{adminStockMB.bodegas}" var="bod" itemLabel="#{bod.descripcion}" itemValue="#{bod.idBodega}" />
+		            </p:selectOneMenu>
+		            
+		            <p:commandButton 
+		            	value="Buscar" 
+		            	update="dttStocks" 
+		            	icon="ui-icon-search" 
+		            	process="pniBusqueda" 
+		            	action="#{adminStockMB.buscarStock}" />  
+		        </h:panelGrid>
+	        </p:fieldset>
+			<div align="left">
+				<h:panelGrid columns="4">
+					<p:commandButton 
+						oncomplete="PF('diaStock').show();"
+						update=":frm:pgiStockInfo"
+						action="#{adminStockMB.nuevoStock}"
+						icon="ui-icon-plus"
+						process="@this"
+						value="Agregar Stock"/>
+				</h:panelGrid>
+			</div>
+			<p:dataTable var="stock" value="#{adminStockMB.stocks}" id="dttStocks" emptyMessage="Sin Informaci&oacute;n">
+				<p:columnGroup type="header">  
+		            <p:row> 
+		                <p:column headerText="Producto" />
+		                <p:column headerText="Bodega" />
+		                <p:column headerText="Cantidad" />
+		                <p:column colspan="2" headerText="Acciones" rendered="false" />  
+		            </p:row>  
+		        </p:columnGroup>  
+		        <p:column>  
+		            <h:outputText value="#{stock.producto.codigo} - #{stock.producto.descripcion}" />
+		        </p:column>
+		        <p:column>  
+		            <h:outputText value="#{stock.bodega.descripcion}" />
+		        </p:column>
+		        <p:column>  
+		            <h:outputText value="#{stock.cantidad}" />
+		        </p:column>
+		        <p:column style="width:30px; text-align:center" rendered="false">  
+	                <p:commandButton update=":frm:pgiStockInfo"  action="#{adminStockMB.ajusteIngresoStock}" oncomplete="PF('diaStock').show()" icon="ui-icon-plus" title="Ajuste Ingreso" alt="Ajuste Ingreso">  
+		                <f:setPropertyActionListener value="#{stock}" target="#{adminStockMB.stock}" />  
+		            </p:commandButton>
+				</p:column> 
+		        <p:column style="width:30px; text-align:center" rendered="false">
+		            <p:commandButton update=":frm:pgiStockInfo"  action="#{adminStockMB.ajusteEgresoStock}" oncomplete="PF('diaStock').show()" icon="ui-icon-minus" title="Ajuste Egreso" alt="Ajuste Egreso">  
+		                <f:setPropertyActionListener value="#{stock}" target="#{adminStockMB.stock}" />  
+		            </p:commandButton>  
+		        </p:column> 
+		    </p:dataTable>
+		    
+		    <p:confirmDialog global="true">  
+		        <p:commandButton value="Si" type="button" styleClass="ui-confirmdialog-yes" icon="ui-icon-check"/>  
+		        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
+		    </p:confirmDialog>
+		    
+		    <p:dialog header="Stock Producto" widgetVar="diaStock" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="3" cellpadding="4" id="pgiStockInfo">
+		            <h:outputLabel value="Producto" />
+		            <h:outputLabel value=":" />  
+		            <p:selectOneMenu value="#{adminStockMB.stock.producto.idProducto}">
+		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+		            	<f:selectItems value="#{adminStockMB.productos}" var="prod" itemLabel="#{prod.descripcion}" itemValue="#{prod.idProducto}" />
+		            </p:selectOneMenu>
+			    	
+			    	<h:outputText value="Cantidad" />
+			    	<h:outputText value=":" />
+			    	<p:inputText id="iptCantidad" value="#{adminStockMB.movimiento.cantidad}" />
+		            
+			    	<h:outputLabel value="Proveedor" rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}" />
+		            <h:outputLabel value=":" rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}" />  
+		            <p:selectOneMenu value="#{adminStockMB.movimiento.proveedor.idProveedor}" rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}">
+		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+		            	<f:selectItems value="#{adminStockMB.proveedores}" var="prov" itemLabel="#{prov.descripcion}" itemValue="#{prov.idProveedor}" />
+		            </p:selectOneMenu>
+		            
+		            <h:outputLabel value="Bodega" />
+		            <h:outputLabel value=":" />  
+		            <p:selectOneMenu value="#{adminStockMB.stock.bodega.idBodega}">
+		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+		            	<f:selectItems value="#{adminStockMB.bodegas}" var="bod" itemLabel="#{bod.descripcion}" itemValue="#{bod.idBodega}" />
+		            </p:selectOneMenu>
+			    	
+			    	<h:outputText value="Valor Compra (Unidad)" rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}" />
+			    	<h:outputText value=":"  rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}"/>
+			    	<p:inputText value="#{adminStockMB.movimiento.valorUnidad}"  rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}"/>
+			    	<p:watermark for="iptCantidad" value="&plusmn; cantidad" />
+			    </h:panelGrid>
+			    
+			    <h:panelGrid>
+			    	<h:outputText value="Observaci&oacute;n :" />
+			    	<p:inputTextarea id="iptObservacion" cols="100" value="#{adminStockMB.movimiento.observacion}"></p:inputTextarea>
+			    </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			action="#{adminStockMB.guardarStock}"
+			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaStock').hide(); }"
+			    			process="@this,pgiStockInfo,iptObservacion"
+			    			update=":frm:dttStocks"
+			    			value="Guardar" />
+			    		<p:commandButton 
+			    			icon="ui-icon-document"
+			    			process="@this"
+			    			onclick="PF('diaVerDocumentos').show();"
+			    			value="Adjuntar Documentos" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaStock').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+			<p:dialog header="Documentos Movimiento" widgetVar="diaVerDocumentos" modal="true" resizable="false" width="500" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid width="100%">
+			    	<p:fileUpload fileUploadListener="#{adminStockMB.handleFileUpload}" mode="advanced" dragDropSupport="false"  
+						multiple="true" sizeLimit="100000" fileLimit="3" auto="true" update="dttDocumentosOT" label="Elegir Archivo" />
+			    	<p:dataTable var="doc" value="#{adminStockMB.documentos}" emptyMessage="Sin Documentos" id="dttDocumentosOT">
+			    		<p:column headerText="Descargar">
+			    			<div align="center">
+				    			<p:commandLink ajax="false" immediate="true" action="#{adminStockMB.descargarArchivo}" value="#{doc.nombreArchivo}">
+				    				<f:setPropertyActionListener value="#{doc}" target="#{adminStockMB.documento}" />
+				    			</p:commandLink>
+			    			</div>
+			    		</p:column>
+			    		<p:column headerText="">
+			    			<div align="center">
+				    			<p:commandButton update="dttDocumentosOT" action="#{adminStockMB.elminiarArchivo}" alt="Eliminar" title="Eliminar" icon="ui-icon-close">
+				    				<f:setPropertyActionListener value="#{doc}" target="#{adminStockMB.documento}" />
+				    			</p:commandButton>
+			    			</div>
+			    		</p:column>
+			    	</p:dataTable>
+			    </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			oncomplete="PF('diaVerDocumentos').hide();"
+			    			value="Cerrar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

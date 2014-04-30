@@ -52,9 +52,15 @@ public class Movimiento implements Serializable {
 	
 	@Column(name="valorUnidad")
 	private Integer valorUnidad;
+	
+	@Column(name="observacion")
+	private String observacion;
 
 	@OneToMany(mappedBy="movimiento")
 	private List<MovimientoIngreso> movimientosIngreso;
+	
+	@OneToMany(mappedBy="movimiento")
+	private List<MovimientoDocumento> documentos;
 	
 	/**
 	 * @return the idMovimiento
@@ -166,6 +172,34 @@ public class Movimiento implements Serializable {
 	 */
 	public void setMovimientosIngreso(List<MovimientoIngreso> movimientosIngreso) {
 		this.movimientosIngreso = movimientosIngreso;
+	}
+
+	/**
+	 * @return the documentos
+	 */
+	public List<MovimientoDocumento> getDocumentos() {
+		return documentos;
+	}
+
+	/**
+	 * @param documentos the documentos to set
+	 */
+	public void setDocumentos(List<MovimientoDocumento> documentos) {
+		this.documentos = documentos;
+	}
+
+	/**
+	 * @return the observacion
+	 */
+	public String getObservacion() {
+		return observacion;
+	}
+
+	/**
+	 * @param observacion the observacion to set
+	 */
+	public void setObservacion(String observacion) {
+		this.observacion = observacion;
 	}
 	
 }

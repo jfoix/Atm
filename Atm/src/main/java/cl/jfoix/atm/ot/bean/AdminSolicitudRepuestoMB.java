@@ -14,6 +14,7 @@ import javax.faces.context.FacesContext;
 import org.primefaces.context.RequestContext;
 
 import cl.jfoix.atm.comun.entity.Producto;
+import cl.jfoix.atm.comun.excepcion.view.ViewException;
 import cl.jfoix.atm.ot.entity.Bodega;
 import cl.jfoix.atm.ot.entity.Movimiento;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoSolicitud;
@@ -85,7 +86,29 @@ public class AdminSolicitudRepuestoMB implements Serializable {
 		movimiento.setCantidad(ordenTrabajoSolicitudProducto.getCantidad());
 	}
 	
-	public void guardarStock(){
+	public void guardarStock() throws ViewException{
+		
+		ViewException vEx = new ViewException();
+		
+		if(movimiento.getCantidad().equals(0d)){
+			vEx.agregarMensaje("Debe ingresar la cantidad");
+		}
+		
+		if(movimiento.getProveedor().getIdProveedor().equals(-1)){
+			vEx.agregarMensaje("Debe seleccionar un proveedor");
+		}
+
+		if(stock.getBodega().getIdBodega().equals(-1)){
+			vEx.agregarMensaje("Debe seleccionar una bodega");
+		}
+		
+		if(movimiento.getValorUnidad().equals(0)){
+			vEx.agregarMensaje("Debe ingresar un valor al stock");
+		}
+		
+		if(vEx.tieneMensajes()){
+			throw vEx;
+		}
 		
 		Stock stockProd = adminStockService.buscarStockPorIdProducto(stock.getProducto().getIdProducto());
 		

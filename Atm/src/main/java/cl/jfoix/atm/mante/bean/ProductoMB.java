@@ -73,6 +73,8 @@ public class ProductoMB implements Serializable {
 			
 			if(producto.getCodigo() == null || producto.getCodigo().equals("")){
 				messages.add(new FacesMessage(FacesMessage.SEVERITY_ERROR,"Mensaje", "Debe ingresar un código para el producto"));
+			} else if(!productoService.validarProductoPorCodigo(producto.getIdProducto(), producto.getCodigo())){
+				messages.add(new FacesMessage(FacesMessage.SEVERITY_ERROR,"Mensaje", "El código ingresado ya se encuentra asociado a otro producto"));
 			}
 			
 			if(producto.getDescripcion() == null || producto.getDescripcion().equals("")){
@@ -93,14 +95,9 @@ public class ProductoMB implements Serializable {
 				
 				producto.setCodigo(producto.getCodigo().toUpperCase());
 				
-				if(productos == null){
-					productos = new ArrayList<Producto>();
-				}
-				
 				msg = "Modificado con éxito";
 				
 				if(producto.getIdProducto() == null){
-					productos.add(producto);
 					msg = "Ingresado con éxito";
 				}
 				

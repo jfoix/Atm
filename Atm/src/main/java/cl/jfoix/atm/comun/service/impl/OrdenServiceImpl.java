@@ -1,11 +1,22 @@
 package cl.jfoix.atm.comun.service.impl;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
+
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import cl.jfoix.atm.comun.dao.IEstadoOrdenDao;
 import cl.jfoix.atm.comun.dao.IOrdenDao;
 import cl.jfoix.atm.comun.dao.IOrdenDocumentoDao;
+import cl.jfoix.atm.comun.dao.IParametroGeneralDao;
+import cl.jfoix.atm.comun.entity.ParametroGeneral;
 import cl.jfoix.atm.comun.excepcion.dao.DaoException;
 import cl.jfoix.atm.comun.excepcion.view.ViewException;
 import cl.jfoix.atm.comun.service.IOrdenService;
@@ -21,10 +34,14 @@ import cl.jfoix.atm.dbutil.dao.util.TipoOperacionFiltroEnum;
 import cl.jfoix.atm.ot.dao.IFormaPagoDao;
 import cl.jfoix.atm.ot.dao.IMovimientoIngresoDao;
 import cl.jfoix.atm.ot.dao.IOrdenEstadoDao;
+import cl.jfoix.atm.ot.dao.IOrdenObservacionDao;
+import cl.jfoix.atm.ot.dao.IOrdenTrabajoDao;
 import cl.jfoix.atm.ot.dao.IOrdenTrabajoProductoDao;
 import cl.jfoix.atm.ot.dao.IOrdenTrabajoUsuarioDao;
 import cl.jfoix.atm.ot.dao.IStockDao;
 import cl.jfoix.atm.ot.dao.IVehiculoOrdenDao;
+import cl.jfoix.atm.ot.dto.ResumentMecanicoDto;
+import cl.jfoix.atm.ot.dto.ResumentOTDto;
 import cl.jfoix.atm.ot.entity.Cliente;
 import cl.jfoix.atm.ot.entity.EstadoOrden;
 import cl.jfoix.atm.ot.entity.FormaPago;
@@ -32,12 +49,14 @@ import cl.jfoix.atm.ot.entity.MovimientoIngreso;
 import cl.jfoix.atm.ot.entity.Orden;
 import cl.jfoix.atm.ot.entity.OrdenDocumento;
 import cl.jfoix.atm.ot.entity.OrdenEstado;
+import cl.jfoix.atm.ot.entity.OrdenObservacion;
 import cl.jfoix.atm.ot.entity.OrdenTrabajo;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoProducto;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoUsuario;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoUsuarioPK;
 import cl.jfoix.atm.ot.entity.Stock;
 import cl.jfoix.atm.ot.entity.VehiculoOrden;
+import cl.jfoix.atm.ot.util.TipoOrdenObservacionEnum;
 
 @Service("ordenService")
 public class OrdenServiceImpl implements IOrdenService {
@@ -47,7 +66,13 @@ public class OrdenServiceImpl implements IOrdenService {
 
 	@Autowired
 	private IOrdenDao ordenDao;
-	
+
+	@Autowired
+	private IOrdenObservacionDao ordenObservacionDao;
+
+	@Autowired
+	private IParametroGeneralDao parametroGeneralDao;
+
 	@Autowired
 	private IStockDao stockDao;
 	
@@ -62,6 +87,9 @@ public class OrdenServiceImpl implements IOrdenService {
 	
 	@Autowired
 	private IOrdenEstadoDao ordenEstadoDao;
+	
+	@Autowired
+	private IOrdenTrabajoDao ordenTrabajoDao;
 	
 	@Autowired
 	private IOrdenTrabajoProductoDao ordenTrabajoProductoDao;
@@ -112,15 +140,17 @@ public class OrdenServiceImpl implements IOrdenService {
 					}
 				}
 				
-				String ruta = "D:\\ArchivosAtm\\upload\\" + orden.getIdOrden().toString();
-				
-				File file = new File(ruta);
-				
-				if(!file.exists()){
-					file.mkdirs();
-				}
-				
 				if(orden.getOrdenDocumentos() != null){
+
+					ParametroGeneral rutaArchivosPG = parametroGeneralDao.buscarPorId("ruta.archivos");
+					String ruta = rutaArchivosPG.getValor() + orden.getIdOrden().toString();
+					
+					File file = new File(ruta);
+					
+					if(!file.exists()){
+						file.mkdirs();
+					}
+					
 					for(OrdenDocumento documento : orden.getOrdenDocumentos()){
 						documento.setRutaNombre(ruta + File.separator + documento.getNombreArchivo());
 						ordenDocumentoDao.guardar(documento);
@@ -222,6 +252,18 @@ public class OrdenServiceImpl implements IOrdenService {
 		
 		return null;
 	}
+	
+	@Transactional
+	@Override
+	public EstadoOrden buscarEstadoOrdenPorId(Integer idEstadoOrden) {
+		try {
+			return estadoOrdenDao.buscarPorId(idEstadoOrden);
+		} catch (DaoException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
 
 	@Transactional
 	@Override
@@ -315,6 +357,334 @@ public class OrdenServiceImpl implements IOrdenService {
 			if(movimientosIngreso != null && movimientosIngreso.size() > 0){
 				return movimientosIngreso.get(0).getValorVenta();
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public List<OrdenObservacion> buscarObservacionesPorIdOrden(Integer idOrden){
+		try{
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			filtros.add(new Filtro("c.orden.idOrden", TipoOperacionFiltroEnum.EQUAL, idOrden));
+			
+			return ordenObservacionDao.buscarPorFiltros(filtros, null);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	@Override
+	@Transactional
+	public void guardarObservacion(OrdenObservacion observacion){
+		try{
+			if(observacion.getIdOrdenObservacion() == null){
+				observacion.setFechaRegistro(new Date());
+				ordenObservacionDao.guardar(observacion);
+			} else {
+				ordenObservacionDao.modificar(observacion);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	@Transactional
+	public void eliminarObservacion(OrdenObservacion observacion){
+		try{
+			OrdenObservacion obActal = ordenObservacionDao.buscarPorId(observacion.getIdOrdenObservacion());
+			ordenObservacionDao.eliminar(obActal);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	public List<OrdenDocumento> buscarDocumentosPorIdOrden(Integer idOrden){
+		try{
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			filtros.add(new Filtro("c.orden.idOrden", TipoOperacionFiltroEnum.EQUAL, idOrden));
+			
+			List<OrdenDocumento> documentos = ordenDocumentoDao.buscarPorFiltros(filtros, null);
+			
+			if(documentos != null){
+				for(OrdenDocumento doc : documentos){
+					File archivo = new File(doc.getRutaNombre());
+					doc.setDatosArchivo(IOUtils.toByteArray(new FileInputStream(archivo)));
+					doc.setNombreArchivo(doc.getRutaNombre().split(Pattern.quote(File.separator))[doc.getRutaNombre().split(Pattern.quote(File.separator)).length - 1]);
+				}
+			}
+			
+			return documentos;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	@Override
+	@Transactional
+	public void guardarDocumento(OrdenDocumento documento){
+		try{
+			ordenDocumentoDao.guardar(documento);
+			
+			ParametroGeneral rutaArchivosPG = parametroGeneralDao.buscarPorId("ruta.archivos");
+			String ruta = rutaArchivosPG.getValor() + documento.getOrden().getIdOrden().toString();
+			
+			File file = new File(ruta);
+			
+			if(!file.exists()){
+				file.mkdirs();
+			}
+			
+			documento.setRutaNombre(ruta + File.separator + documento.getNombreArchivo());
+			ordenDocumentoDao.guardar(documento);
+			
+	        try {
+			    FileOutputStream fileOuputStream = new FileOutputStream(documento.getRutaNombre()); 
+			    fileOuputStream.write(documento.getDatosArchivo());
+			    fileOuputStream.close();
+	        }catch(Exception e){
+	            e.printStackTrace();
+	        }
+	        
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Override
+	@Transactional
+	public void eliminarDocumento(OrdenDocumento documento){
+		try{
+			OrdenDocumento odActal = ordenDocumentoDao.buscarPorId(documento.getIdOrdenDocumento());
+			ordenDocumentoDao.eliminar(odActal);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Transactional
+	@Override
+	public byte[] generarResumenOT(Orden ot, boolean finalizado){
+		try{
+			
+			ResumentOTDto resumen = buscarResumenOT(ot, finalizado);
+			
+			List<ResumentOTDto> datos = new ArrayList<ResumentOTDto>();
+			datos.add(resumen);
+			
+			ParametroGeneral pgIVA = parametroGeneralDao.buscarPorId("porcentaje.iva");
+			Double porcentajeIVA = 0d;
+			
+			if(pgIVA != null){
+				porcentajeIVA = Double.parseDouble(pgIVA.getValor());
+			}
+			
+			Map<String, Object> params = new HashMap<String, Object>();
+			params.put("IVA", porcentajeIVA);
+			
+			ParametroGeneral pgRutaReportes = parametroGeneralDao.buscarPorId("ruta.reportes");
+			
+			JasperPrint jp = JasperFillManager.fillReport(pgRutaReportes.getValor() + "ResumenOT.jasper", params, new JRBeanCollectionDataSource(datos));
+			return JasperExportManager.exportReportToPdf(jp);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	@Override
+	@Transactional
+	public ResumentOTDto buscarResumenOT(Orden ot, boolean finalizado){
+		
+		try{
+		
+			Orden orden = ordenDao.buscarPorId(ot.getIdOrden());
+			orden.getOrdenEstados().size();
+			orden.getOrdenTrabajos().size();
+			orden.getVehiculoOrden().getVehiculo().getIdVehiculo();
+			orden.getVehiculoOrden().getCliente().getIdCliente();
+			
+			List<OrdenTrabajo> trabajos = new ArrayList<OrdenTrabajo>();
+			List<OrdenTrabajo> trabajosServicioTerceros = new ArrayList<OrdenTrabajo>();
+			
+			ResumentOTDto resumen = new ResumentOTDto();
+			resumen.setOrden(orden);
+			
+			if(finalizado){
+				for(OrdenTrabajo trabajo : orden.getOrdenTrabajos()){
+					if(trabajo.getUltimoEstado().getEstadoTrabajo().getIdEstadoTrabajo().equals(3)){
+						if(trabajo.getTrabajo().getTrabajoSubTipo().getExterno()){
+							trabajosServicioTerceros.add(trabajo);
+						} else {
+							trabajos.add(trabajo);
+						}
+						
+						trabajo.getEstadosOrden().size();
+						
+						trabajo.getOrdenTrabajoProductos().size();
+						resumen.agregarProductos(trabajo.getOrdenTrabajoProductos());
+					}
+				}
+			} else {
+
+				for(OrdenTrabajo trabajo : orden.getOrdenTrabajos()){
+					
+					if(trabajo.getTrabajo().getTrabajoSubTipo().getExterno()){
+						trabajosServicioTerceros.add(trabajo);
+					} else {
+						trabajos.add(trabajo);
+					}
+					
+					trabajo.getEstadosOrden().size();
+					
+					trabajo.getOrdenTrabajoProductos().size();
+					resumen.agregarProductos(trabajo.getOrdenTrabajoProductos());
+				}
+			}
+			
+			resumen.setTrabajos(trabajos);
+			resumen.setTrabajosTerceros(trabajosServicioTerceros);
+		
+			String observacion = "";
+			
+			if(orden.getOrdenObservaciones() != null){
+				for(OrdenObservacion obs : orden.getOrdenObservaciones()){
+					if(obs.getTipoObservacion().equals(TipoOrdenObservacionEnum.FINALIZACION)){
+						observacion = obs.getObservacion();
+						break;
+					}
+				}
+			}
+			
+			resumen.setObservacion(observacion);
+			
+			return resumen;
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	@Transactional
+	@Override
+	public List<Orden> consultaOTVehiculo(Integer idOrden, String patente){
+		
+		try{
+		
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			
+			if(idOrden != null && !idOrden.equals(0)){
+				filtros.add(new Filtro("c.idOrden", TipoOperacionFiltroEnum.EQUAL, idOrden));
+			}
+			
+			if(patente != null && !patente.equals("")){
+				filtros.add(new Filtro("c.vehiculoOrden.vehiculo.patente", TipoOperacionFiltroEnum.EQUAL, patente));
+			}
+			
+			List<Orden> ordenes = ordenDao.buscarPorFiltros(filtros, null);
+			
+			for(Orden orden : ordenes){
+				orden.getOrdenEstados().size();
+				for(OrdenTrabajo ot : orden.getOrdenTrabajos()){
+					ot.getEstadosOrden().size();
+				}
+			}
+			
+			return ordenes;
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	@Transactional
+	@Override
+	public List<VehiculoOrden> consultaClientes(String rutCliente, String patente){
+		
+		try{
+		
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			
+			
+			if(rutCliente != null && !rutCliente.equals("")){
+				filtros.add(new Filtro("c.cliente.rutCliente", TipoOperacionFiltroEnum.EQUAL, rutCliente));
+			}
+			
+			if(patente != null && !patente.equals("")){
+				filtros.add(new Filtro("c.vehiculo.patente", TipoOperacionFiltroEnum.EQUAL, patente));
+			}
+			
+			List<VehiculoOrden> veOrd = vehiculoOrdenDao.buscarPorFiltros(filtros, "c.idVehiculoOrden,c.cliente.rutCliente ASC");
+			
+			for(VehiculoOrden vo : veOrd){
+				vo.getOrdenes().size();
+			}
+			
+			return veOrd;
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	@Transactional
+	@Override
+	public ResumentMecanicoDto consultaTrabajosMecanico(String nomUsuarioMecanico, Date fechaDesde, Date fechaHasta){
+		
+		try{
+		
+			List<Filtro> filtros = new ArrayList<Filtro>();
+
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(fechaHasta);
+			cal.add(Calendar.HOUR_OF_DAY, 23);
+			cal.add(Calendar.MINUTE, 59);
+			cal.add(Calendar.SECOND, 59);
+			
+			filtros.add(new Filtro("c.usuario.nombreUsuario", TipoOperacionFiltroEnum.EQUAL, nomUsuarioMecanico));
+			filtros.add(new Filtro("c.ordenTrabajo.orden.fechaOrden", TipoOperacionFiltroEnum.MAYOR_IGUAL_QUE, fechaDesde));
+			filtros.add(new Filtro("c.ordenTrabajo.orden.fechaOrden", TipoOperacionFiltroEnum.MENOR_IGUAL_QUE, cal.getTime()));
+			
+			List<OrdenTrabajoUsuario> ordenTrabajos = ordenTrabajoUsuarioDao.buscarPorFiltros(filtros, null);
+			
+			
+			if(ordenTrabajos != null && ordenTrabajos.size() > 0){
+				
+				ResumentMecanicoDto resumen = new ResumentMecanicoDto();
+				
+				resumen.setUsuario(ordenTrabajos.get(0).getUsuario());
+				
+				for(OrdenTrabajoUsuario otu : ordenTrabajos){
+					if(otu.getOrdenTrabajo().getUltimoEstado().getEstadoTrabajo().getIdEstadoTrabajo().equals(1)){
+						resumen.getIngresado().add(otu.getOrdenTrabajo());
+					} else if(otu.getOrdenTrabajo().getUltimoEstado().getEstadoTrabajo().getIdEstadoTrabajo().equals(2)){
+						resumen.getEnProceso().add(otu.getOrdenTrabajo());
+					} else if(otu.getOrdenTrabajo().getUltimoEstado().getEstadoTrabajo().getIdEstadoTrabajo().equals(3)){
+						resumen.getFinalizados().add(otu.getOrdenTrabajo());
+					} else if(otu.getOrdenTrabajo().getUltimoEstado().getEstadoTrabajo().getIdEstadoTrabajo().equals(4)){
+						resumen.getCancelados().add(otu.getOrdenTrabajo());
+					}
+				}
+				
+				return resumen;
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

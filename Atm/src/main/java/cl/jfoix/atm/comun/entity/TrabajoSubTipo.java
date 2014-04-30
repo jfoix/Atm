@@ -29,6 +29,9 @@ public class TrabajoSubTipo implements Serializable {
 	
 	@Column(name="estado")
 	private Boolean estado;
+	
+	@Column(name="externo")
+	private Boolean externo;
 
 	@ManyToOne
 	@JoinColumn(name="idTrabajoTipo")
@@ -105,5 +108,19 @@ public class TrabajoSubTipo implements Serializable {
 	 */
 	public void setTrabajos(List<Trabajo> trabajos) {
 		this.trabajos = trabajos;
+	}
+
+	/**
+	 * @return the externo
+	 */
+	public Boolean getExterno() {
+		return externo;
+	}
+
+	/**
+	 * @param externo the externo to set
+	 */
+	public void setExterno(Boolean externo) {
+		this.externo = externo;
 	}
 }

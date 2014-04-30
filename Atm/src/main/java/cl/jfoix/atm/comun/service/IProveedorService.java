@@ -11,4 +11,6 @@ public interface IProveedorService {
 	public List<Proveedor> buscarTodosProveedores();
 
 	public List<Proveedor> buscarProveedoresPorDescripcion(String descripcionProveedor);
+
+	boolean validarProveedorPorCodigo(Integer idProveedor, String codigoProveedor);
 }

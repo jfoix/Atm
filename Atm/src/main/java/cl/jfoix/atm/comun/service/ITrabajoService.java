@@ -15,4 +15,6 @@ public interface ITrabajoService {
 	List<TrabajoProducto> buscarProductosPorIdTrabajo(Integer idTrabajo);
 
 	Trabajo buscarTrabajoPorId(Integer idTrabajoTipo);
+
+	boolean validarTrabajoPorCodigo(Integer idTrabajo, String codigoTrabajo);
 }

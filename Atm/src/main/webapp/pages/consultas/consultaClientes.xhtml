@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Consulta Clientes" /></ui:define>
+	<ui:define name="body">
+		<h:form id="frm">
+			<h:panelGrid width="100%">
+				<p:fieldset legend="B&uacute;squeda">
+					<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
+			            <h:outputLabel value="Rut Cliente" />
+			            <h:outputLabel value=":" />  
+			            <p:inputText value="#{consultaClientesMB.rutClienteBusq}" />
+			            <h:outputLabel value="Patente Vehiculo" />
+			            <h:outputLabel value=":" />  
+			            <p:inputMask value="#{consultaClientesMB.patenteBusq}" mask="aa-**-99" styleClass="uppercase" />
+			            <p:commandButton 
+			            	value="Buscar" 
+			            	update="dttClientes"
+			            	process="@this,pniBusqueda"
+			            	icon="ui-icon-search" 
+			            	action="#{consultaClientesMB.buscarClientes}" />  
+			        </h:panelGrid>
+		        </p:fieldset>
+		        <p:commandButton value="Exportar Excel" ajax="false">
+		            <p:dataExporter type="xls" target="dttClientes" fileName="clientes_vehiculos" />  
+		        </p:commandButton>
+				<p:dataTable 
+					var="cliente" 
+					value="#{consultaClientesMB.vehiculos}" 
+					id="dttClientes" 
+					paginator="true" rows="10"
+			    	paginatorPosition="bottom"
+					paginatorTemplate="{CurrentPageReport} {PageLinks}"
+					emptyMessage="Sin informaci&oacute;n">
+			        <p:column>
+			        	<f:facet name="header">
+			        		OT
+			        	</f:facet>
+			            <h:outputText value="#{cliente.orden.idOrden}" />  
+			        </p:column>
+			        <p:column>
+			        	<f:facet name="header">
+			        		Fecha OT
+			        	</f:facet>
+			            <h:outputText value="#{cliente.orden.fechaOrden}">
+			            	<f:convertDateTime pattern="dd/MM/yyyy" />
+			            </h:outputText>  
+			        </p:column>
+			        <p:column>
+			        	<f:facet name="header">
+			        		RUT Cliente
+			        	</f:facet>
+			            <h:outputText value="#{cliente.cliente.rutCliente}" />  
+			        </p:column>
+			        <p:column>  
+			            <f:facet name="header">
+			        		Nombre Cliente
+			        	</f:facet>
+			            <h:outputText value="#{cliente.cliente.nombreCliente}" />  
+			        </p:column>
+			        <p:column>  
+			            <f:facet name="header">
+			        		Tel&eacute;fono Cliente
+			        	</f:facet>
+			            <h:outputText value="#{cliente.cliente.telefono}" />  
+			        </p:column>
+			        <p:column>  
+			            <f:facet name="header">
+			        		Celular Cliente
+			        	</f:facet>
+			            <h:outputText value="#{cliente.cliente.celular}" />  
+			        </p:column>
+			        <p:column>  
+			            <f:facet name="header">
+			        		E-Mail Cliente
+			        	</f:facet>
+			            <h:outputText value="#{cliente.cliente.email}" />  
+			        </p:column>
+			        <p:column>  
+			            <f:facet name="header">
+			        		Vehiculo
+			        	</f:facet>
+			        	<h:outputText value="#{cliente.vehiculo.marcaVehiculo.descripcion} #{cliente.vehiculo.modelo}" />
+			        </p:column>
+			        <p:column>
+			            <f:facet name="header">
+			        		Patente
+			        	</f:facet>
+			            <h:outputText value="#{cliente.vehiculo.patente}" />
+			        </p:column>
+			        <p:column>
+			            <f:facet name="header">
+			        		Kilometraje
+			        	</f:facet>
+			            <h:outputText value="#{cliente.kilometraje}">
+			            	<f:convertNumber pattern="###,###,###"/>
+			            </h:outputText>
+			        </p:column>
+			    </p:dataTable>
+		    </h:panelGrid>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

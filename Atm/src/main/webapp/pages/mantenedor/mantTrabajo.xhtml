@@ -7,6 +7,7 @@
 	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
 	xmlns:ui="http://java.sun.com/jsf/facelets">
 <ui:composition template="../../templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Mantenedor de Trabajos" /></ui:define>
 	<ui:define name="body">
 		<h:form id="frm">
 			<p:fieldset legend="B&uacute;squeda">
@@ -109,19 +110,21 @@
 				    <h:panelGrid columns="6" cellpadding="3">
 				    	<h:outputText value="C&oacute;digo" />
 				    	<h:outputText value=":" />
-				    	<p:inputMask mask="aaa9999" value="#{trabajoMB.trabajo.codigo}" styleClass="uppercase" />
+				    	<p:inputMask mask="aaaa9999" value="#{trabajoMB.trabajo.codigo}" styleClass="uppercase" />
 				    	
 				    	<h:outputText value="Descripci&oacute;n Tipo" />
 				    	<h:outputText value=":" />
 				    	<p:inputText value="#{trabajoMB.trabajo.descripcion}" />
 				    	
-				    	<h:outputText value="Valor Mano Obra" />
-				    	<h:outputText value=":" />
-				    	<p:inputText value="#{trabajoMB.trabajo.precioManoObra}" onkeypress="return validateNumbers(event)" />
-				    	
 				    	<h:outputText value="HH Estimadas" />
 				    	<h:outputText value=":" />
-				    	<p:inputText value="#{trabajoMB.trabajo.hhEstimada}" onkeypress="return validarDecimal(event, this)" />
+				    	<p:inputText value="#{trabajoMB.trabajo.hhEstimada}" onkeypress="return validarDecimal(event, this)">
+				    		<p:ajax event="blur" process="@this" update="iptValorManoObra" listener="#{trabajoMB.calcularValorManoObra}" />
+				    	</p:inputText>
+				    	
+				    	<h:outputText value="Valor Mano Obra" />
+				    	<h:outputText value=":" />
+				    	<p:inputText value="#{trabajoMB.trabajo.precioManoObra}" onkeypress="return validateNumbers(event)" id="iptValorManoObra" />
 				    	
 				    	<h:outputLabel value="Trabajo Tipo" />
 			            <h:outputLabel value=":" />  

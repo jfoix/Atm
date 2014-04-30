@@ -15,4 +15,6 @@ public interface IMantencionProgramadaService {
 	List<MantencionProgramada> buscarMantencionProgramadaPorCodigoDescripcion(String codigo, String descripcionMarca);
 
 	MantencionProgramada buscarMantencionProgramadPorId(Integer idMantencionProgramada);
+
+	boolean validarMantencionProgramadaPorCodigo(Integer idMantencionProgramada, String codigoMantencionProgramada);
 }

@@ -98,6 +98,28 @@ public class TrabajoServiceImpl implements ITrabajoService {
 			throw new ViewException("Ocurrió un problema al guardar la información, intentelo más tarde");
 		}
 	}
+	
+	@Override
+	public boolean validarTrabajoPorCodigo(Integer idTrabajo, String codigoTrabajo){
+		try {
+			
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			
+			if(idTrabajo != null){
+				filtros.add(new Filtro("idTrabajo", TipoOperacionFiltroEnum.NOT_EQUAL, idTrabajo));
+			}
+			
+			filtros.add(new Filtro("codigo", TipoOperacionFiltroEnum.EQUAL, codigoTrabajo));
+			
+			List<?> resultado  = trabajoDao.buscarPorFiltros(filtros, null);
+			
+			return resultado == null || resultado.size() == 0;
+		} catch (DaoException e) {
+			e.printStackTrace();
+		}
+		
+		return false;
+	}
 
 	@Transactional
 	@Override
@@ -125,7 +147,7 @@ public class TrabajoServiceImpl implements ITrabajoService {
 			
 			filtros.add(new Filtro("c.estado", TipoOperacionFiltroEnum.EQUAL, true));
 
-			List<Trabajo> trabajos = trabajoDao.buscarPorFiltros(filtros, null);
+			List<Trabajo> trabajos = trabajoDao.buscarPorFiltros(filtros, "codigo ASC");
 			
 			if(trabajos != null){
 				for(Trabajo trabajo : trabajos){

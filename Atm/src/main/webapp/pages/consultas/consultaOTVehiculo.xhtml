@@ -1,0 +1,288 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Conculta OT/Veh&iacute;culo" /></ui:define>
+	<ui:define name="body">
+		<h:form id="frm">
+			<h:panelGrid width="100%">
+				<p:fieldset legend="B&uacute;squeda">
+					<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
+			            <h:outputLabel value="Nro. OT" />
+			            <h:outputLabel value=":" />  
+			            <p:inputText value="#{consultaOTVehiculoMB.idOrdenBusq}" />
+			            <h:outputLabel value="Patente Vehiculo" />
+			            <h:outputLabel value=":" />  
+			            <p:inputMask value="#{consultaOTVehiculoMB.patenteBusq}" mask="aa-**-99" styleClass="uppercase" />
+			            <p:commandButton 
+			            	value="Buscar" 
+			            	update="dttOrdenes"
+			            	process="@this,pniBusqueda"
+			            	icon="ui-icon-search" 
+			            	action="#{consultaOTVehiculoMB.buscarOrdenes}" />  
+			        </h:panelGrid>
+		        </p:fieldset>
+		        <p:commandButton value="Exportar Excel" ajax="false">
+		            <p:dataExporter type="xls" target="dttOrdenes" fileName="ordenes_trabajo" />  
+		        </p:commandButton>
+				<p:dataTable 
+					var="orden" 
+					value="#{consultaOTVehiculoMB.ordenes}" 
+					id="dttOrdenes" 
+					paginator="true" rows="10"
+			    	paginatorPosition="bottom"
+					paginatorTemplate="{CurrentPageReport} {PageLinks}"
+					emptyMessage="Sin informaci&oacute;n">
+			        <p:column>
+			        	<f:facet name="header">
+			        		Nro. OT
+			        	</f:facet>
+			            <h:outputText value="#{orden.idOrden}" />  
+			        </p:column>
+			        <p:column>  
+			            <f:facet name="header">
+			        		Estado OT
+			        	</f:facet>
+			            <h:outputText value="#{orden.ultimoOrdenEstado.estadoOrden.descripcion}" />  
+			        </p:column>
+			        <p:column>  
+			            <f:facet name="header">
+			        		Fecha OT
+			        	</f:facet>
+			            <h:outputText value="#{orden.fechaOrden}">
+			            	<f:convertDateTime pattern="dd/MM/yyyy" />
+			            </h:outputText>  
+			        </p:column>
+			        <p:column>
+			            <f:facet name="header">
+			        		Forma de pago
+			        	</f:facet>
+			            
+			            <h:outputText value="#{orden.formaPago ne null ? orden.formaPago.descripcion : '-'}" />
+			        </p:column>
+			        <p:column>
+			            <f:facet name="header">
+			        		Patente Veh&iacute;culo
+			        	</f:facet>
+			            <h:outputText value="#{orden.vehiculoOrden.vehiculo.patente}" />
+			        </p:column>
+			        <p:column>
+			            <f:facet name="header">
+			        		Modelo Veh&iacute;culo
+			        	</f:facet>
+			            <h:outputText value="#{orden.vehiculoOrden.vehiculo.modelo}" />
+			        </p:column>
+			        <p:column>
+			            <f:facet name="header">
+			        		Cliente
+			        	</f:facet>
+			            <h:outputText value="#{orden.vehiculoOrden.cliente.nombreCliente}" />
+			        </p:column>
+			        <p:column style="width:30px; text-align:center" exportable="false">
+			            <p:commandButton update=":frm:pngDetalleOT" action="#{consultaOTVehiculoMB.generarResumenOT}" process="@this"  icon="ui-icon-pencil" title="Ver Detalle OT" alt="Ver Detalle OT" oncomplete="PF('diaDetalleOT').show()">  
+			                <f:setPropertyActionListener value="#{orden}" target="#{consultaOTVehiculoMB.orden}" />    
+			            </p:commandButton>  
+			        </p:column> 
+			    </p:dataTable>
+		    </h:panelGrid>
+		    <h:panelGroup id="pngDetalleOT">
+			    <p:dialog header="Detalle OT #{consultaOTVehiculoMB.orden.idOrden}" widgetVar="diaDetalleOT" modal="true" resizable="false" showEffect="drop" hideEffect="fade" width="800" height="500">  
+				    <h:panelGrid width="100%">
+				    	<p:fieldset legend="Veh&iacute;culo">
+				    		<h:panelGrid columns="7">
+				    			<h:outputText value="Patente" />
+				    			<h:outputText value=":" />
+				    			<h:outputText value="#{consultaOTVehiculoMB.orden.vehiculoOrden.vehiculo.patente}" />
+				    			<h:panelGroup layout="block" style="width:130px" />
+				    			<h:outputText value="Kilometraje" />
+				    			<h:outputText value=":" />
+				    			<h:outputText value="#{consultaOTVehiculoMB.orden.vehiculoOrden.kilometraje}">
+				    				<f:convertNumber pattern="###,###,###"/>
+				    			</h:outputText>
+				    			
+				    			<h:outputText value="Chasis" />
+				    			<h:outputText value=":" />
+				    			<h:outputText value="#{consultaOTVehiculoMB.orden.vehiculoOrden.vehiculo.chasis}" />
+				    			<h:outputText value="" />
+				    			<h:outputText value="Color" />
+				    			<h:outputText value=":" />
+				    			<h:outputText value="#{consultaOTVehiculoMB.orden.vehiculoOrden.vehiculo.color}" />
+				    			
+				    			<h:outputText value="Marca" />
+				    			<h:outputText value=":" />
+				    			<h:outputText value="#{consultaOTVehiculoMB.orden.vehiculoOrden.vehiculo.marcaVehiculo.descripcion}" />
+				    			<h:outputText value="" />
+				    			<h:outputText value="Modelo" />
+				    			<h:outputText value=":" />
+				    			<h:outputText value="#{consultaOTVehiculoMB.orden.vehiculoOrden.vehiculo.modelo}" />
+				    			
+				    			<h:outputText value="Nro. Motor" />
+				    			<h:outputText value=":" />
+				    			<h:outputText value="#{consultaOTVehiculoMB.orden.vehiculoOrden.vehiculo.nroMotor}" />
+				    			<h:outputText value="" />
+				    			<h:outputText value="A&ntilde;o" />
+				    			<h:outputText value=":" />
+				    			<h:outputText value="#{consultaOTVehiculoMB.orden.vehiculoOrden.vehiculo.acno}" />
+				    		</h:panelGrid>
+				    	</p:fieldset>
+				    	<p:fieldset legend="Cliente">
+				    		<h:panelGrid columns="7">
+				    			<h:outputText value="Rut" />
+				    			<h:outputText value=":" />
+				    			<h:outputText value="#{consultaOTVehiculoMB.orden.vehiculoOrden.cliente.rutCliente}" />
+				    			<h:panelGroup layout="block" style="width:130px" />
+				    			<h:outputText value="" />
+				    			<h:outputText value="" />
+				    			<h:outputText value="" />
+				    			
+				    			<h:outputText value="Nombre" />
+				    			<h:outputText value=":" />
+				    			<h:outputText value="#{consultaOTVehiculoMB.orden.vehiculoOrden.cliente.nombreCliente}" />
+				    			<h:outputText value="" />
+				    			<h:outputText value="E-Mail" />
+				    			<h:outputText value=":" />
+				    			<h:outputText value="#{consultaOTVehiculoMB.orden.vehiculoOrden.cliente.email}" />
+				    			
+				    			<h:outputText value="Tel&eacute;fono" />
+				    			<h:outputText value=":" />
+				    			<h:outputText value="#{consultaOTVehiculoMB.orden.vehiculoOrden.cliente.telefono}" />
+				    			<h:outputText value="" />
+				    			<h:outputText value="Celular" />
+				    			<h:outputText value=":" />
+				    			<h:outputText value="#{consultaOTVehiculoMB.orden.vehiculoOrden.cliente.celular}" />
+				    		</h:panelGrid>
+				    	</p:fieldset>
+				    	<p:dataTable 
+				    		id="dttProductos" 
+				    		var="prod" 
+				    		value="#{consultaOTVehiculoMB.resumenOT.productos}" 
+				    		rendered="#{fn:length(consultaOTVehiculoMB.resumenOT.productos) > 0}"
+				    		style="width:100%">  
+							<f:facet name="header">  
+					            Repuestos de la OT  
+					        </f:facet>  
+					        <p:column headerText="Repuesto">  
+					            <h:outputText value="#{prod.producto.descripcion}" />  
+					        </p:column>  
+					        <p:column style="text-align:right; width:60px">
+					        	<f:facet name="header">
+					        		Valor
+					        	</f:facet>
+					            <h:outputText value="#{prod.valor}">
+					            	<f:convertNumber pattern="###,###,###"/>
+					            </h:outputText>  
+					        </p:column>  
+					        <p:columnGroup type="footer">  
+					            <p:row>  
+					                <p:column footerText="Total :" style="text-align:right" />  
+					                <p:column style="text-align:right">
+					                	<f:facet name="footer">
+					                		<h:outputText value="#{consultaOTVehiculoMB.resumenOT.totalProductos}">
+					                			<f:convertNumber pattern="###,###,###"/>
+					                		</h:outputText>
+					                	</f:facet>
+					                </p:column>  
+					            </p:row>  
+					        </p:columnGroup>  
+					    </p:dataTable>
+					    <p:dataTable 
+					    	id="dttTrabajos" 
+					    	var="tra" 
+					    	rendered="#{fn:length(consultaOTVehiculoMB.resumenOT.trabajos) > 0}"
+					    	value="#{consultaOTVehiculoMB.resumenOT.trabajos}" style="width:100%">  
+							<f:facet name="header">  
+					            Trabajos de la OT  
+					        </f:facet>  
+					        <p:column headerText="Trabajo">  
+					            <h:outputText value="#{tra.trabajo.descripcion}" />  
+					        </p:column>  
+					        <p:column headerText="Estado Trabajo">
+					        	<div align="center">
+					            	<h:outputText value="#{tra.ultimoEstado.estadoTrabajo.descripcion}" />
+					            </div>  
+					        </p:column> 
+					        <p:column style="text-align:right; width:60px">
+					        	<f:facet name="header">
+					        		Valor
+					        	</f:facet>
+					            <h:outputText value="#{tra.precioManoObra}">
+					            	<f:convertNumber pattern="###,###,###"/>
+					            </h:outputText>  
+					        </p:column>  
+					        <p:columnGroup type="footer">  
+					            <p:row>  
+					                <p:column footerText="Total :" style="text-align:right" colspan="2" />  
+					                <p:column style="text-align:right">
+					                	<f:facet name="footer">
+					                		<h:outputText value="#{consultaOTVehiculoMB.resumenOT.totalTrabajos}">
+					                			<f:convertNumber pattern="###,###,###"/>
+					                		</h:outputText>
+					                	</f:facet>
+					                </p:column>  
+					            </p:row>  
+					        </p:columnGroup>  
+					    </p:dataTable>
+					    <p:dataTable 
+					    	id="dttTrabajosTercero" 
+					    	var="tra" 
+					    	value="#{consultaOTVehiculoMB.resumenOT.trabajosTerceros}" 
+					    	rendered="#{fn:length(consultaOTVehiculoMB.resumenOT.trabajosTerceros) > 0}"
+					    	style="width:100%">  
+							<f:facet name="header">  
+					            Servicios Terceros de la OT  
+					        </f:facet>  
+					        <p:column headerText="Trabajo">  
+					            <h:outputText value="#{tra.trabajo.descripcion}" />  
+					        </p:column>  
+					        <p:column headerText="Estado Trabajo">
+					        	<div align="center">
+					            	<h:outputText value="#{tra.ultimoEstado.estadoTrabajo.descripcion}" />
+					            </div>  
+					        </p:column>
+					        <p:column style="text-align:right; width:60px">
+					        	<f:facet name="header">
+					        		Valor
+					        	</f:facet>
+					            <h:outputText value="#{tra.precioManoObra}">
+					            	<f:convertNumber pattern="###,###,###"/>
+					            </h:outputText>  
+					        </p:column>
+					        <p:columnGroup type="footer">  
+					            <p:row>  
+					                <p:column footerText="Total :" style="text-align:right" colspan="2" />  
+					                <p:column style="text-align:right">
+					                	<f:facet name="footer">
+					                		<h:outputText value="#{consultaOTVehiculoMB.resumenOT.totalTrabajosServicioTerceros}">
+					                			<f:convertNumber pattern="###,###,###"/>
+					                		</h:outputText>
+					                	</f:facet>
+					                </p:column>  
+					            </p:row>  
+					        </p:columnGroup>  
+					    </p:dataTable> 
+				    </h:panelGrid>
+				    <f:facet name="footer">
+				    	<div align="center">
+			    			<p:commandButton 
+				    			icon="ui-icon-close"
+				    			process="@this"
+				    			oncomplete="PF('diaDetalleOT').hide();"
+				    			value="Cerrar" />
+				    		<p:commandButton 
+				    			icon="ui-icon-gear"
+				    			process="@this"
+				    			action="#{consultaOTVehiculoMB.generarReporteResumentOT}"
+				    			ajax="false"
+				    			value="Reporte Resumen" />	
+			    		</div>
+				    </f:facet>
+				</p:dialog>
+			</h:panelGroup>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

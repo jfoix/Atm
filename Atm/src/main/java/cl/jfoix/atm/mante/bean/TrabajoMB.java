@@ -23,6 +23,7 @@ import cl.jfoix.atm.comun.entity.TrabajoSubTipo;
 import cl.jfoix.atm.comun.entity.TrabajoTipo;
 import cl.jfoix.atm.comun.excepcion.view.ViewException;
 import cl.jfoix.atm.comun.service.IMarcaService;
+import cl.jfoix.atm.comun.service.IParametroGeneralService;
 import cl.jfoix.atm.comun.service.IProductoService;
 import cl.jfoix.atm.comun.service.ITrabajoService;
 import cl.jfoix.atm.comun.service.ITrabajoSubTipoService;
@@ -49,6 +50,9 @@ public class TrabajoMB implements Serializable {
 	@ManagedProperty(value="#{marcaService}")
 	private IMarcaService marcaService;
 	
+	@ManagedProperty(value="#{parametroGeneralService}")
+	private IParametroGeneralService parametroGeneralService;
+
 	private String trabajoDesc;
 	private String trabajoCode;
 	private Integer idTrabajoTipo;
@@ -86,6 +90,8 @@ public class TrabajoMB implements Serializable {
 		this.trabajo.setEstado(true);
 		this.trabajo.setTrabajoSubTipo(new TrabajoSubTipo());
 		this.trabajoProductos = new ArrayList<TrabajoProducto>();
+		idTrabajoTipoTrabajo = null;
+		idTrabajoSubTipoTrabajo = null;
 	}
 	
 	public void buscarTrabajo(){
@@ -94,6 +100,11 @@ public class TrabajoMB implements Serializable {
 		} catch (Exception e) {
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error", "Ocurrió un problema al buscar la información, intentelo más tarde"));
 		}
+	}
+	
+	public void calcularValorManoObra(){
+		Integer valorManoObra = parametroGeneralService.buscarInteger("valor.hh");
+		trabajo.setPrecioManoObra((new Double(valorManoObra * trabajo.getHhEstimada())).longValue());
 	}
 	
 	public void buscarTrabajoSubTipos(AjaxBehaviorEvent event){
@@ -139,8 +150,8 @@ public class TrabajoMB implements Serializable {
 		
 		if(this.trabajo.getCodigo() == null || this.trabajo.getCodigo().equals("")){
 			vEx.agregarMensaje("Debe ingresar un código para el Trabajo");
-		} else if(this.trabajo.getCodigo().length() < 7 ){
-			vEx.agregarMensaje("Código de producto inválido, debe tener 3 letras y 4 números");
+		} else if(!trabajoService.validarTrabajoPorCodigo(trabajo.getIdTrabajo(), trabajo.getCodigo())){
+			vEx.agregarMensaje("El código ingresado ya se encuentra asociado a otro trabajo");
 		}
 		
 		if(this.trabajo.getDescripcion() == null || this.trabajo.getDescripcion().equals("")){
@@ -182,12 +193,7 @@ public class TrabajoMB implements Serializable {
 			trabajo.setCodigo(trabajo.getCodigo().toUpperCase());
 			trabajo.setTrabajoSubTipo(trabajoSubTipo);
 			
-			if(this.trabajos == null){
-				this.trabajos = new ArrayList<Trabajo>();
-			}
-			
 			if(trabajo.getIdTrabajo() == null){
-				this.trabajos.add(this.trabajo);
 				msg = "Ingresado con éxito";
 			} else {
 				msg = "Modificado con éxito";
@@ -196,6 +202,8 @@ public class TrabajoMB implements Serializable {
 			trabajo.setTrabajoProductos(trabajoProductos);
 			
 			trabajoService.guardarTrabajo(trabajo);
+
+			buscarTrabajo();
 			
 			RequestContext.getCurrentInstance().addCallbackParam("done", true);
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Mensaje", msg));
@@ -592,5 +600,20 @@ public class TrabajoMB implements Serializable {
 	 */
 	public void setTrabajoProducto(TrabajoProducto trabajoProducto) {
 		this.trabajoProducto = trabajoProducto;
+	}
+
+	/**
+	 * @return the parametroGeneralService
+	 */
+	public IParametroGeneralService getParametroGeneralService() {
+		return parametroGeneralService;
+	}
+
+	/**
+	 * @param parametroGeneralService the parametroGeneralService to set
+	 */
+	public void setParametroGeneralService(
+			IParametroGeneralService parametroGeneralService) {
+		this.parametroGeneralService = parametroGeneralService;
 	}
 }

@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Administraci&oacute;n Par&aacute;metros Generales" /></ui:define>
+	<ui:define name="body">
+		<h:form id="frm">
+			<h:panelGrid columns="1" width="100%">
+				<p:fieldset legend="B&uacute;squeda">
+					<h:panelGrid columns="6" cellpadding="5" id="pniBusqueda">  
+			            <h:outputLabel value="C&oacute;digo #{parametroGeneralMB.tipoBusqueda eq 0 ? '' : 'Grupo'}" id="oplCodigoParametro" />
+			            <h:outputLabel value=":" />  
+			            <p:inputText value="#{parametroGeneralMB.codigoBusqueda}" rendered="#{parametroGeneralMB.tipoBusqueda eq 0}" id="iptCodigo" />
+			            <p:inputText value="#{parametroGeneralMB.grupoBusqueda}" rendered="#{parametroGeneralMB.tipoBusqueda eq 1}" id="iptGrupo" />
+			            <h:outputLabel value="Tipo B&uacute;squeda" />
+			            <h:outputLabel value=":" />
+			            <p:selectOneMenu value="#{parametroGeneralMB.tipoBusqueda}">
+			            	<f:selectItem itemValue="0" itemLabel="C&oacute;digo"/>
+			            	<f:selectItem itemValue="1" itemLabel="Grupo"/>
+			            	<p:ajax event="change" process="@this,iptCodigo,iptGrupo" update="pniBusqueda" />
+			            </p:selectOneMenu>
+			        </h:panelGrid>
+		            <p:commandButton value="Buscar" update="dttParametros" icon="ui-icon-search" process="@this,pniBusqueda" action="#{parametroGeneralMB.buscarParametros}" />  
+		        </p:fieldset>
+				<p:dataTable var="para" value="#{parametroGeneralMB.parametros}" id="dttParametros" emptyMessage="Sin Informaci&oacute;n">
+					<p:columnGroup type="header">  
+			            <p:row>  
+			                <p:column headerText="Codigo" />
+			                <p:column headerText="Grupo" />
+			                <p:column headerText="Descripci&oacute;n" />
+			                <p:column headerText="Valor" />
+			                <p:column headerText="" />  
+			            </p:row>  
+			        </p:columnGroup>  
+			        <p:column>  
+			            <h:outputText value="#{para.codigo}" />  
+			        </p:column>  
+			        <p:column>  
+			            <h:outputText value="#{para.grupo}" />
+			        </p:column>
+			        <p:column>  
+			            <h:outputText value="#{para.descripcion}" />
+			        </p:column>
+			        <p:column>  
+			            <h:outputText value="#{para.valor}" />
+			        </p:column>
+			        <p:column style="width:30px; text-align:center">  
+		                <p:commandButton update=":frm:pgiParametroInfo" process="@this" action="#{parametroGeneralMB.modificarParametro}" oncomplete="PF('diaParametro').show()" icon="ui-icon-pencil" title="Editar" alt="Editar">  
+			                <f:setPropertyActionListener value="#{para}" target="#{parametroGeneralMB.parametro}" />  
+			            </p:commandButton>
+					</p:column> 
+			    </p:dataTable>
+			</h:panelGrid>
+		    <p:dialog header="Par&aacute;metro General" widgetVar="diaParametro" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="3" cellpadding="4" id="pgiParametroInfo">
+			    	<h:outputText value="C&oacute;digo" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{parametroGeneralMB.parametro.codigo}" disabled="true" />
+			    	
+			    	<h:outputText value="Grupo" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{parametroGeneralMB.parametro.grupo}" disabled="true" />
+			    	
+			    	<h:outputText value="Descripci&oacute;n" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{parametroGeneralMB.parametro.descripcion}" style="width:350px" />
+			    	
+			    	<h:outputText value="Valor" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{parametroGeneralMB.parametro.valor}" style="width:350px" />
+			    </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			action="#{parametroGeneralMB.guardarParametro}"
+			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaParametro').hide(); }"
+			    			process="@this,pgiParametroInfo"
+			    			update=":frm:dttParametros"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaParametro').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>    
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

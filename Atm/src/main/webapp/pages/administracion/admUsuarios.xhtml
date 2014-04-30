@@ -5,6 +5,7 @@
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:ui="http://java.sun.com/jsf/facelets">
 <ui:composition template="../../templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Administraci&oacute;n Usuarios de la Aplicaci&oacute;n" /></ui:define>
 	<ui:define name="body">
 		<h:form id="frm">
 			<p:fragment autoUpdate="true">
@@ -98,7 +99,7 @@
 			    	<h:outputText value="Persona Nombre Completo" />
 			    	<h:outputText value=":" />
 			    	<p:inputText value="#{usuarioMB.usuario.persona.nombres} #{usuarioMB.usuario.persona.apellidos}" id="personaNombre" readonly="true" disabled="true" style="width:200px" />
-			    	
+			    	<p:watermark for="iptRut" value="11222333-4" />
 			    </h:panelGrid>
 			    <br />
 			    <p:fieldset legend="Perfiles" id="flsPerfiles">

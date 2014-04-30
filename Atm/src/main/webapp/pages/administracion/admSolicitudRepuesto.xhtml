@@ -5,6 +5,7 @@
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:ui="http://java.sun.com/jsf/facelets">
 <ui:composition template="../../templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Administraci&oacute;n Solicitudes de Repuesto" /></ui:define>
 	<ui:define name="body">
 		<h:form id="frm">
 			<h:panelGrid width="100%">
@@ -44,6 +45,7 @@
 			                <p:column headerText="Solicitante" />
 			                <p:column headerText="Fecha Solicitud" />
 			                <p:column headerText="Fecha T&eacute;rmino" />
+			                <p:column headerText="Observaci&oacute;n" />
 			                <p:column headerText="Estado" />
 			                <p:column colspan="2" headerText="Acciones" />  
 			            </p:row>  
@@ -58,6 +60,9 @@
 			        </p:column>
 			        <p:column>  
 			            <h:outputText value="#{sol.fechaTermino}" />
+			        </p:column>
+			        <p:column>  
+			            <h:outputText value="#{sol.observacion}" />
 			        </p:column>
 			        <p:column>  
 			            <h:outputText value="#{sol.estado ? 'Pendiente' : 'Terminada'}" />
@@ -147,7 +152,7 @@
 		            
 			    	<h:outputText value="Cantidad" />
 			    	<h:outputText value=":" />
-			    	<p:inputText value="#{adminSolicitudRepuestoMB.movimiento.cantidad}" disabled="true" />
+			    	<p:inputText value="#{adminSolicitudRepuestoMB.movimiento.cantidad}" />
 			    	
 			    	<h:outputLabel value="Proveedor" />
 		            <h:outputLabel value=":" />  

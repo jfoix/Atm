@@ -6,6 +6,7 @@
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:ui="http://java.sun.com/jsf/facelets">
 <ui:composition template="/templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Creaci&oacute;n Orden de Trabajo" /></ui:define>
 	<ui:define name="body">
 		<h:form id="frm">
 			<h:panelGrid columns="1" id="pngVehicle" cellspacing="3">
@@ -58,6 +59,7 @@
 	    				<h:outputText value="Kilometraje" />
 	    				<h:outputText value=":" />
 	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.kilometraje}" onkeypress="return validateNumbers(event)" id="kilometraje" />
+	    				<p:watermark for="ipmPatente" value="AA-BB-11" />
 	    			</h:panelGrid>
 	    		</p:fieldset>
 	    	</h:panelGrid>
@@ -66,11 +68,11 @@
 	    			<h:panelGrid columns="6">
 	    				<h:outputText value="Rut" />
 	    				<h:outputText value=":" />
-	    				<p:inputText id="countryId" value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.rutCliente}" />
+	    				<p:inputText id="iptRut" value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.rutCliente}" />
 	    				<p:commandButton 
 	    					title="Buscar" alt="Buscar" 
 	    					update="pngCustomer pngCreateNewCustomer" 
-	    					process="@this,countryId" 
+	    					process="@this,iptRut" 
 	    					icon="ui-icon-search" 
 	    					action="#{crearOrdenTrabajoMB.buscarCliente}" />
 	    				<h:outputText value="" rendered="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.idCliente eq null}" />
@@ -96,13 +98,14 @@
 	    				<h:outputText value="Celular" />
 	    				<h:outputText value=":" />
 	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.celular}" readonly="true" disabled="true" />
+	    				<p:watermark for="iptRut" value="11222333-4" />
 	    			</h:panelGrid>
 	    		</p:fieldset>
 	    	</h:panelGrid>
 			<h:panelGrid columns="1" id="pngWork" cellspacing="3">
 	    		<h:panelGrid cellpadding="0" cellspacing="0">
 		    		<h:outputText value="Observaci&oacute;n" />
-		    		<p:inputTextarea id="iptComments" cols="100" value="#{crearOrdenTrabajoMB.orden.observacion}"></p:inputTextarea>
+		    		<p:inputTextarea id="iptComments" cols="100" value="#{crearOrdenTrabajoMB.ordenObservacion.observacion}"></p:inputTextarea>
 	    		</h:panelGrid>
 	    		<h:panelGrid columns="3">
 		    		<p:commandButton
@@ -262,7 +265,7 @@
 					    <h:panelGrid columns="6" cellpadding="3" id="pgiWorkFilter">
 					    	<h:outputText value="C&oacute;digo" />
 					    	<h:outputText value=":" />
-					    	<p:inputText value="#{crearOrdenTrabajoMB.trabajoFiltro.codigo}" />
+					    	<p:inputText id="iptCodigoTrabajo" value="#{crearOrdenTrabajoMB.trabajoFiltro.codigo}" />
 					    	
 					    	<h:outputText value="Descripci&oacute;n" />
 					    	<h:outputText value=":" />
@@ -282,6 +285,7 @@
 					    		<f:selectItem itemValue="-1" itemLabel="Todos" />
 					    		<f:selectItems value="#{crearOrdenTrabajoMB.trabajoSubTipos}" var="wst" itemLabel="#{wst.descripcion}" itemValue="#{wst.idTrabajoSubTipo}" />
 					    	</p:selectOneMenu>
+					    	<p:watermark for="iptCodigoTrabajo" value="AAAA1111" />
 					    </h:panelGrid>
 					    <p:commandButton 
 					    	value="Buscar" 
@@ -294,7 +298,7 @@
 				    	emptyMessage="Sin informaci&oacute;n" 
 				    	id="dttFindWorks" 
 				    	var="work"
-				    	paginator="true" rows="10"
+				    	paginator="true" rows="5"
 				    	paginatorPosition="bottom"
 						paginatorTemplate="{CurrentPageReport} {PageLinks}"  
 				    	value="#{crearOrdenTrabajoMB.trabajos}">
@@ -353,7 +357,7 @@
 					    <h:panelGrid columns="6" id="pgiProducts" cellspacing="3">
 					    	<h:outputText value="C&oacute;digo" />
 					    	<h:outputText value=":" />
-					    	<p:inputText value="#{crearOrdenTrabajoMB.productoCodigo}" />
+					    	<p:inputText id="iptCodigoProducto" value="#{crearOrdenTrabajoMB.productoCodigo}" />
 					    	
 					    	<h:outputText value="Descripci&oacute;n" />
 					    	<h:outputText value=":" />
@@ -369,7 +373,7 @@
 					    	<h:outputText value="" />
 					    	<h:outputText value="" />
 					    	<h:outputText value="" />
-					    	
+					    	<p:watermark for="iptCodigoProducto" value="AAA1111" />  
 					    </h:panelGrid>
 				    	<p:commandButton 
 				    		value="Buscar" 
@@ -379,7 +383,14 @@
 				    		action="#{crearOrdenTrabajoMB.buscarProductos}" />
 			    	</p:fieldset>
 				    <h:panelGroup id="pngFindProducts">
-					    <p:dataTable id="dttFindProducts" emptyMessage="Sin productos" value="#{crearOrdenTrabajoMB.productos}" var="product">
+					    <p:dataTable 
+					    	id="dttFindProducts" 
+					    	emptyMessage="Sin productos" 
+					    	value="#{crearOrdenTrabajoMB.productos}" 
+					    	paginator="true" rows="5"
+					    	paginatorPosition="bottom"
+							paginatorTemplate="{CurrentPageReport} {PageLinks}" 
+					    	var="product">
 							<p:column style="width:10px; text-align:center">
 								<p:selectBooleanCheckbox value="#{product.seleccionado}"/>
 							</p:column> 
@@ -418,43 +429,6 @@
 		    		</div>
 			    </f:facet>
 			</p:dialog>    
-		    <p:dialog id="diaProgrammedWorks" header="Buscar Mantenciones Programadas" widgetVar="diaProgrammedWorks" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
-			    <h:panelGrid columns="6" cellpadding="4" id="pgiProgrammedWork">
-			    	<h:outputText value="C&oacute;digo" />
-			    	<h:outputText value=":" />
-			    	<p:inputText />
-			    	
-			    	<h:outputText value="Descripci&oacute;n" />
-			    	<h:outputText value=":" />
-			    	<p:inputText />
-			    </h:panelGrid>
-			    <p:dataTable id="dttFindProgrammedWork" emptyMessage="Sin programas" value="">
-					<p:columnGroup type="header">  
-			            <p:row>  
-			                <p:column headerText="C&oacute;digo" />
-			                <p:column headerText="Descripci&oacute;n" />
-			                <p:column />  
-			            </p:row>  
-			        </p:columnGroup>
-			        <p:column>  
-		                <h:outputText value="PROD" />
-					</p:column>
-					<p:column>  
-		                <h:outputText value="Producto 1" />
-					</p:column>
-					<p:column style="width:15px; text-align:center">  
-		                <p:commandButton value="Cargar" />
-					</p:column> 
-				</p:dataTable>
-			    <f:facet name="footer">
-			    	<div align="center">
-		    			<p:commandButton 
-			    			icon="ui-icon-close"
-			    			oncomplete="PF('diaProgrammedWorks').hide();"
-			    			value="Cerrar" />
-		    		</div>
-			    </f:facet>
-			</p:dialog>    
 		    <p:dialog id="diaMecanics" header="Asociar Mec&aacute;nicos" widgetVar="diaMecanics" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
 			    <p:pickList 
 			    	id="pklMecanicos" 
@@ -462,7 +436,7 @@
 			    	var="mecanico" 
 			    	effect="fade"  
                     itemValue="#{mecanico}" 
-                    itemLabel="#{mecanico.nombreUsuario}"
+                    itemLabel="#{mecanico.persona.nombres}"
                     addAllLabel="Agregar Todos"
                     addLabel="Agregar"
                     removeAllLabel="Quitar Todos"
@@ -677,6 +651,11 @@
 			    			action="#{crearOrdenTrabajoMB.saltarAAdmOT}"
 			    			ajax="false"
 			    			value="Aceptar" />
+			    		<p:commandButton 
+			    			icon="ui-icon-gear"
+			    			rendered="#{fn:length(crearOrdenTrabajoMB.mensajesStock) > 0}"
+			    			onclick="PF('diaSolicitud').show()"
+			    			value="Solicitar Productos"/>
 		    		</div>
 			    </f:facet>
 			</p:dialog>
@@ -686,10 +665,11 @@
 						<h:panelGrid columns="6" cellpadding="3" id="pniBusquedaMantProgramada">  
 				            <h:outputLabel value="C&oacute;digo" />
 				            <h:outputLabel value=":" />  
-				            <p:inputText value="#{crearOrdenTrabajoMB.mpCodigo}" />
+				            <p:inputText id="iptCodigoMantProgramada" value="#{crearOrdenTrabajoMB.mpCodigo}" />
 				            <h:outputLabel value="Descripci&oacute;n" />
 				            <h:outputLabel value=":" />  
 				            <p:inputText value="#{crearOrdenTrabajoMB.mpDescripcion}" />
+				            <p:watermark for="iptCodigoMantProgramada" value="AAAA1111" />
 				        </h:panelGrid>
 			            <p:commandButton 
 			            	value="Buscar" 
@@ -725,7 +705,94 @@
 						</p:column> 
 				    </p:dataTable>
 			    </h:panelGrid>
-			</p:dialog>    
+			</p:dialog>
+			<p:dialog header="Ingresar Solicitud" widgetVar="diaSolicitud" modal="true" resizable="false" showEffect="drop" hideEffect="fade" width="800">
+				<h:panelGrid columns="2" styleClass="tableUp" width="100%">
+			    	<p:tabView id="tabView">
+			    		<p:tab title="Productos a Solicitar">
+							<h:panelGrid columns="1" width="100%">
+								<p:fieldset legend="B&uacute;squeda de Productos">
+									<h:panelGrid columns="7" cellpadding="5" id="pniBusquedaProducto">  
+							            <h:outputLabel value="C&oacute;digo" />
+							            <h:outputLabel value=":" />  
+							            <p:inputText value="#{crearOrdenTrabajoMB.codProductoBusq}" />
+							            <h:outputLabel value="Descripci&oacute;n" />
+							            <h:outputLabel value=":" />  
+							            <p:inputText value="#{crearOrdenTrabajoMB.descProductoBusq}" />  
+							            <p:commandButton value="Buscar" 
+							            	update=":frm:tabView:dttProductos" 
+							            	process="@this,pniBusquedaProducto" action="#{crearOrdenTrabajoMB.buscarProductosSolicitud}" icon="ui-icon-search" />  
+							        </h:panelGrid>
+						        </p:fieldset>
+						        <p:dataTable
+						        	id="dttProductos"
+						        	rows="5"
+						        	paginatorPosition="bottom" paginator="true"
+									paginatorTemplate="{CurrentPageReport} {PageLinks}"
+						        	value="#{crearOrdenTrabajoMB.productosSol}" var="producto" emptyMessage="Sin productos">
+						        	<p:column style="width:30px; text-align:center">
+						        		<p:selectBooleanCheckbox value="#{producto.seleccionado}" />
+						        	</p:column>
+						        	<p:column headerText="C&oacute;digo" style="width:70px; text-align:center">
+						        		<h:outputText value="#{producto.codigo}" />
+						        	</p:column>
+						        	<p:column headerText="Descripci&oacute;n">
+						        		<h:outputText value="#{producto.descripcion}" />
+						        	</p:column>
+						        </p:dataTable>
+						        <p:commandButton process="@this,dttProductos" value="Agregar Productos" action="#{crearOrdenTrabajoMB.agregarProductosSolicitud}" update=":frm:tabView:dttProductos,:frm:tabView:dttProductosSolicitud,:frm:tabView:optCantidadProductosSolicitados" />
+							</h:panelGrid>
+						</p:tab>
+						<p:tab>
+							<f:facet name="title">
+								<h:outputText id="optCantidadProductosSolicitados" value="Productos Solicitados ##{fn:length(crearOrdenTrabajoMB.productosSolicitud)}" />
+							</f:facet>
+				        	<h:panelGrid id="pngProductosSolicitud" cellspacing="3" width="100%">
+								<p:fieldset legend="Productos">
+									<p:dataTable
+							        	id="dttProductosSolicitud" 
+							        	value="#{crearOrdenTrabajoMB.productosSolicitud}" var="producto" emptyMessage="Sin productos">
+							        	<p:column headerText="C&oacute;digo" style="width:70px; text-align:center">
+							        		<h:outputText value="#{producto.producto.codigo}" />
+							        	</p:column>
+							        	<p:column headerText="Descripci&oacute;n">
+							        		<h:outputText value="#{producto.producto.descripcion}" />
+							        	</p:column>
+							        	<p:column headerText="Cantidad" style="width:70px; text-align:center">
+							        		<p:inputText value="#{producto.cantidad}" style="width:40px; text-align:right" />
+							        	</p:column>
+							        	<p:column style="width:30px;">
+							        		<div align="center">
+							        			<p:commandButton process="@this,dttProductosSolicitud" update=":frm:tabView:optCantidadProductosSolicitados,dttProductosSolicitud" action="#{crearOrdenTrabajoMB.eliminarProductosSolicitud}" alt="Eliminar" title="Eliminar" icon="ui-icon-close">
+							        				<f:setPropertyActionListener target="#{crearOrdenTrabajoMB.productoSolicitud}" value="#{producto}" />
+							        			</p:commandButton>
+							        		</div>
+							        	</p:column>
+							        </p:dataTable>
+						        </p:fieldset>
+						        <h:outputText value="Observaci&oacute;n" />
+						        <p:inputTextarea cols="70" rows="5" value="#{crearOrdenTrabajoMB.solicitud.observacion}"></p:inputTextarea>
+							</h:panelGrid>
+						</p:tab>
+			    	</p:tabView>
+		        </h:panelGrid>
+				<f:facet name="footer">
+					<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			actionListener="#{crearOrdenTrabajoMB.guardarSolicitud}"
+			    			oncomplete="PF('diaSolicitud').hide();"
+			    			update="@none"
+			    			process="@this,:frm:tabView:pngProductosSolicitud"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaSolicitud').hide();"
+			    			value="Cancelar" />
+		    		</div>
+				</f:facet>
+		    </p:dialog>
 		</h:form>
 	</ui:define>
 </ui:composition>

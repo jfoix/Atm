@@ -1,5 +1,6 @@
 package cl.jfoix.atm.ot.bean;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,7 +14,9 @@ import javax.faces.bean.ViewScoped;
 import javax.faces.component.UIOutput;
 import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
+import javax.servlet.http.HttpServletResponse;
 
+import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.DefaultTreeNode;
 import org.primefaces.model.DualListModel;
 import org.primefaces.model.TreeNode;
@@ -41,7 +44,9 @@ import cl.jfoix.atm.ot.entity.EstadoOrden;
 import cl.jfoix.atm.ot.entity.FormaPago;
 import cl.jfoix.atm.ot.entity.MarcaVehiculo;
 import cl.jfoix.atm.ot.entity.Orden;
+import cl.jfoix.atm.ot.entity.OrdenDocumento;
 import cl.jfoix.atm.ot.entity.OrdenEstado;
+import cl.jfoix.atm.ot.entity.OrdenObservacion;
 import cl.jfoix.atm.ot.entity.OrdenTrabajo;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoEstado;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoProducto;
@@ -55,6 +60,7 @@ import cl.jfoix.atm.ot.service.IClienteService;
 import cl.jfoix.atm.ot.service.IMarcaVehiculoService;
 import cl.jfoix.atm.ot.service.IOrdenTrabajoService;
 import cl.jfoix.atm.ot.service.IVehiculoService;
+import cl.jfoix.atm.ot.util.TipoOrdenObservacionEnum;
 
 @ViewScoped
 @ManagedBean(name="admOTMB")
@@ -114,6 +120,8 @@ public class AdmOTMB implements Serializable {
 	
 	//Objects
 	private Orden orden;
+	private OrdenObservacion observacion;
+	private List<OrdenObservacion> observaciones;
 	
 	//Vars
 	private Integer idNuevoEstadoOrden;
@@ -138,6 +146,10 @@ public class AdmOTMB implements Serializable {
 	private List<Trabajo> trabajos;
 	private List<TrabajoSubTipo> trabajoSubTipos;
 	private BuscarTrabajoFiltro trabajoFiltro;
+
+	//Vars Doc
+	private List<OrdenDocumento> documentos;
+	private OrdenDocumento documento;
 	
 	public AdmOTMB(){
 		
@@ -175,10 +187,72 @@ public class AdmOTMB implements Serializable {
 		orden.getVehiculoOrden().setVehiculo(new Vehiculo());
 		orden.getVehiculoOrden().getVehiculo().setMarcaVehiculo(new MarcaVehiculo());
 		
+		observacion = new OrdenObservacion();
+		
 		List<Usuario> source = new ArrayList<Usuario>();
 		List<Usuario> target = new ArrayList<Usuario>();
 		
 		dlmMecanicos = new DualListModel<Usuario>(source, target);
+	}
+	
+	public void abrirObservacionesOT(){
+		observaciones = ordenService.buscarObservacionesPorIdOrden(orden.getIdOrden());
+		documentos = ordenService.buscarDocumentosPorIdOrden(orden.getIdOrden());
+	}
+	
+	public void nuevaObservacion(){
+		observacion = new OrdenObservacion();
+	}
+	
+	public void eliminarObservacion(){
+		ordenService.eliminarObservacion(observacion);
+		observaciones = ordenService.buscarObservacionesPorIdOrden(orden.getIdOrden());
+	}
+	
+	public void guardarObservacion(){
+		
+		observacion.setOrden(orden);
+		
+		if(observacion.getIdOrdenObservacion() == null){
+			observacion.setTipoObservacion(TipoOrdenObservacionEnum.EN_TRABAJO);
+		}
+		
+		ordenService.guardarObservacion(observacion);
+		
+		observaciones = ordenService.buscarObservacionesPorIdOrden(orden.getIdOrden());
+	}
+	
+	public void handleFileUpload(FileUploadEvent event) {
+		if(documentos == null){
+			documentos = new ArrayList<OrdenDocumento>();
+		}
+		
+		OrdenDocumento doc = new OrdenDocumento();
+		doc.setDatosArchivo(event.getFile().getContents());
+		doc.setNombreArchivo(event.getFile().getFileName());
+		doc.setOrden(orden);
+		
+		ordenService.guardarDocumento(doc);
+		documentos = ordenService.buscarDocumentosPorIdOrden(orden.getIdOrden());
+	}
+	
+	public void elminiarArchivo(){
+		ordenService.eliminarDocumento(documento);
+		documentos = ordenService.buscarDocumentosPorIdOrden(orden.getIdOrden());
+	}
+	
+	public void descargarArchivo(){
+		try{
+			HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
+	        response.setContentType("application/octet-stream");
+	        response.setHeader("Content-Disposition", "attachment;filename=" + documento.getNombreArchivo() + "");
+	        response.getOutputStream().write(documento.getDatosArchivo());
+	        response.getOutputStream().flush();
+	        response.getOutputStream().close();
+	        FacesContext.getCurrentInstance().responseComplete();
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
 	}
 	
 	public void buscarOrdenes(){
@@ -191,28 +265,42 @@ public class AdmOTMB implements Serializable {
 	
 	public void abrirCambioEstadoOrden(){
 		idNuevoEstadoOrden = orden.getUltimoOrdenEstado().getEstadoOrden().getIdEstadoOrden();
+		observacionEstado = null;
 	}
 	
 	public void guardarEstadoOrden(){
 		
 		try {
 			
-			EstadoOrden estado = new EstadoOrden();
-			estado.setIdEstadoOrden(idNuevoEstadoOrden);
+			EstadoOrden estado = ordenService.buscarEstadoOrdenPorId(idNuevoEstadoOrden);
+
 			OrdenEstado ordenEstado = new OrdenEstado();
 			ordenEstado.setEstadoOrden(estado);
 			ordenEstado.setFechaInicio(new Date());
 			ordenEstado.setObservacion(observacionEstado);
 			ordenEstado.setOrden(orden);
 			
+			TipoOrdenObservacionEnum tipoObservacion = TipoOrdenObservacionEnum.CAMBIO_ESTADO;
+			
 			FormaPago fp = null;
-			if(idNuevoEstadoOrden.equals(5)){
+			
+			if(idNuevoEstadoOrden.equals(6)){
 				fp = new FormaPago();
 				fp.setIdFormaPago(idFormaPago);
-				ordenEstado.setFechaTermino(new Date());
+			}
+			
+			if(estado.getFinalizacion()){
+				tipoObservacion = TipoOrdenObservacionEnum.FINALIZACION;
 			}
 			
 			ordenService.guardarEstadoOrden(ordenEstado, fp);
+			
+			OrdenObservacion observacion = new OrdenObservacion();
+			observacion.setOrden(orden);
+			observacion.setTipoObservacion(tipoObservacion);
+			observacion.setObservacion(observacionEstado);
+			
+			ordenService.guardarObservacion(observacion);
 			
 			buscarOrdenes();
 			
@@ -221,13 +309,33 @@ public class AdmOTMB implements Serializable {
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error", "Ocurrió un problema al guardar la información, intentelo más tarde"));
 		}
 	}
+	
+	public void generarReporteResumentOT(){
+		try{
+			
+			byte[] reportePDF = ordenService.generarResumenOT(orden, true);
+			
+			if(reportePDF != null){
+				HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
+				response.setContentLength(reportePDF.length);
+				response.setContentType("application/pdf");
+		        response.setHeader("Content-Disposition", "attachment;filename=ResumenOT_" + orden.getIdOrden().toString() + ".pdf");
+		        response.getOutputStream().write(reportePDF);
+		        response.getOutputStream().flush();
+		        response.getOutputStream().close();
+		        FacesContext.getCurrentInstance().responseComplete();
+			}
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	    }
+	}
 
 	public void eliminarOrden(){
 		
 		try {
 			
 			EstadoOrden estado = new EstadoOrden();
-			estado.setIdEstadoOrden(7);
+			estado.setIdEstadoOrden(8);
 			OrdenEstado ordenEstado = new OrdenEstado();
 			ordenEstado.setEstadoOrden(estado);
 			ordenEstado.setFechaInicio(new Date());
@@ -266,17 +374,20 @@ public class AdmOTMB implements Serializable {
 				TreeNode trabajoArbol = new DefaultTreeNode(tpDto, tnTrabajos);
 				
 				for(OrdenTrabajoProducto producto : trabajo.getOrdenTrabajoProductos()){
-					
-					Stock stock = ordenService.buscarStockPorProducto(producto.getProducto().getIdProducto(), producto.getCantidad(), orden.getIdOrden());
-					
+
 					boolean tieneStock = false;
 					
-					if(stock != null){
-						if(producto.getValor().equals(0)){
-							Integer valorVenta = ordenService.buscarValorVentaProductoStock(stock.getIdStock());
-							producto.setValor(valorVenta);
+					if(!producto.getTraidoCliente()){
+						
+						Stock stock = ordenService.buscarStockPorProducto(producto.getProducto().getIdProducto(), producto.getCantidad(), orden.getIdOrden());
+						
+						if(stock != null){
+							if(producto.getValor().equals(0)){
+								Integer valorVenta = ordenService.buscarValorVentaProductoStock(stock.getIdStock());
+								producto.setValor(valorVenta);
+							}
+							tieneStock = true;
 						}
-						tieneStock = true;
 					}
 					
 					new DefaultTreeNode(new TrabajoProductoDto(producto.getProducto(), producto.getCantidad(), producto.getValor(), null, TrabajoProductoDto.PRODUCT_TYPE, false, producto.getTraidoCliente(), tieneStock), trabajoArbol);
@@ -286,6 +397,10 @@ public class AdmOTMB implements Serializable {
 				FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error", "Ocurrió un problema al buscar la información, intentelo más tarde"));
 			}
 		}
+	}
+	
+	public void verificarProductoCliente(){
+		trabajoProductoDto.setPrecio(0l);
 	}
 	
 	public void agregarTrabajo(){
@@ -1220,5 +1335,61 @@ public class AdmOTMB implements Serializable {
 	 */
 	public void setIdFormaPago(Integer idFormaPago) {
 		this.idFormaPago = idFormaPago;
+	}
+
+	/**
+	 * @return the observacion
+	 */
+	public OrdenObservacion getObservacion() {
+		return observacion;
+	}
+
+	/**
+	 * @param observacion the observacion to set
+	 */
+	public void setObservacion(OrdenObservacion observacion) {
+		this.observacion = observacion;
+	}
+
+	/**
+	 * @return the observaciones
+	 */
+	public List<OrdenObservacion> getObservaciones() {
+		return observaciones;
+	}
+
+	/**
+	 * @param observaciones the observaciones to set
+	 */
+	public void setObservaciones(List<OrdenObservacion> observaciones) {
+		this.observaciones = observaciones;
+	}
+
+	/**
+	 * @return the documentos
+	 */
+	public List<OrdenDocumento> getDocumentos() {
+		return documentos;
+	}
+
+	/**
+	 * @param documentos the documentos to set
+	 */
+	public void setDocumentos(List<OrdenDocumento> documentos) {
+		this.documentos = documentos;
+	}
+
+	/**
+	 * @return the documento
+	 */
+	public OrdenDocumento getDocumento() {
+		return documento;
+	}
+
+	/**
+	 * @param documento the documento to set
+	 */
+	public void setDocumento(OrdenDocumento documento) {
+		this.documento = documento;
 	}	
 }

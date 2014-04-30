@@ -36,11 +36,11 @@ public class OrdenTrabajoEstado implements Serializable{
 	private EstadoTrabajo estadoTrabajo;
 	
 	@Column(name="fechaInicio")
-	@Temporal(TemporalType.DATE)
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date fechaInicio;
 	
 	@Column(name="fechaTermino")
-	@Temporal(TemporalType.DATE)
+	@Temporal(TemporalType.TIMESTAMP)
 	private Date fechaTermino;
 
 	/**

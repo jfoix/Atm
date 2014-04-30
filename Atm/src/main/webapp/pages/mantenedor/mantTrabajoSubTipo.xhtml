@@ -5,6 +5,7 @@
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:ui="http://java.sun.com/jsf/facelets">
 <ui:composition template="../../templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Mantenedor de Sub-Tipos de Trabajo" /></ui:define>
 	<ui:define name="body">
 		<h:form id="frm">
 			<p:fieldset legend="B&uacute;squeda">
@@ -43,6 +44,7 @@
 		            <p:row>  
 		                <p:column headerText="Descripci&oacute;n Sub-Tipo" />
 		                <p:column headerText="Tipo Trabajo" />
+		                <p:column headerText="Externo" />
 		                <p:column colspan="2" headerText="Acciones" />  
 		            </p:row>  
 		        </p:columnGroup>  
@@ -51,6 +53,9 @@
 		        </p:column>
 		        <p:column>  
 		            <h:outputText value="#{subType.trabajoTipo.descripcion}" />  
+		        </p:column>
+		        <p:column>  
+		            <h:outputText value="#{subType.externo ? 'Externo' : 'Interno'}" />  
 		        </p:column>  
 		        <p:column style="width:30px; text-align:center">  
 	                <p:commandButton update=":frm:pgiSubTypeInfo" process="@this" oncomplete="PF('diaSubType').show()" icon="ui-icon-pencil" title="Editar" alt="Editar">  
@@ -74,6 +79,10 @@
 			    	<h:outputText value="Descripci&oacute;n Sub-Tipo" />
 			    	<h:outputText value=":" />
 			    	<p:inputText value="#{trabajoSubTipoMB.trabajoSubTipo.descripcion}" />
+			    	
+			    	<h:outputText value="Externo" />
+			    	<h:outputText value=":" />
+			    	<p:selectBooleanCheckbox value="#{trabajoSubTipoMB.trabajoSubTipo.externo}" />
 			    	
 			    	<h:outputText value="Trabajo Tipo" />
 			    	<h:outputText value=":" />

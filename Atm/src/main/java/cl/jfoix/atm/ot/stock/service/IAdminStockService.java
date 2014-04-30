@@ -1,5 +1,6 @@
 package cl.jfoix.atm.ot.stock.service;
 
+import java.util.Date;
 import java.util.List;
 
 import cl.jfoix.atm.comun.entity.Producto;
@@ -26,4 +27,6 @@ public interface IAdminStockService {
 	Stock buscarStockPorIdProducto(Integer idProducto);
 
 	List<Integer> actualizarProductoStockValor(Movimiento movimiento);
+
+	List<Movimiento> buscarMovimientoPorRangoFechasCodigoProducto(Date fechaDesde, Date fechaHasta, String codProducto, Integer idProveedor);
 }

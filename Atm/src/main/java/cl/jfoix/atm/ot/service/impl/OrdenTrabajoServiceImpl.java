@@ -105,10 +105,13 @@ public class OrdenTrabajoServiceImpl implements IOrdenTrabajoService {
 		try {
 			OrdenTrabajo ot = ordenTrabajoDao.buscarPorId(idOrdenTrabajo);
 			
+			Date fechaEstado = new Date();
+			
 			OrdenTrabajoEstado otEstado = new OrdenTrabajoEstado();
-			otEstado.setFechaInicio(new Date());
+			otEstado.setFechaInicio(fechaEstado);
 			otEstado.setOrdenTrabajo(ot);
 			otEstado.setEstadoTrabajo(estadoTrabajo);
+			ot.getEstadosOrden().get(ot.getEstadosOrden().size() - 1).setFechaTermino(fechaEstado);
 			ot.getEstadosOrden().add(otEstado);
 			
 			if(!estadoTrabajo.getIdEstadoTrabajo().equals(2)){
@@ -120,49 +123,51 @@ public class OrdenTrabajoServiceImpl implements IOrdenTrabajoService {
 				
 				for(OrdenTrabajoProducto otp : ot.getOrdenTrabajoProductos()){
 				
-					Movimiento mov = new Movimiento();
-					mov.setFecha(new Date());
-					mov.setTipo(TipoMovimientoEnum.EGRESO);
-					
-					List<Filtro> filtros = new ArrayList<Filtro>();
-					filtros.add(new Filtro("c.producto.idProducto", TipoOperacionFiltroEnum.EQUAL, otp.getProducto().getIdProducto()));
-					
-					List<Stock> stocks = stockDao.buscarPorFiltros(filtros, null);
-					
-					if(stocks != null && stocks.size() > 0){
-						Stock stock = stocks.get(0);
-						stock.setCantidad(stock.getCantidad() - otp.getCantidad());
+					if(!otp.getTraidoCliente()){
+						Movimiento mov = new Movimiento();
+						mov.setFecha(new Date());
+						mov.setTipo(TipoMovimientoEnum.EGRESO);
 						
-						mov.setStock(stock);
-						mov.setCantidad(otp.getCantidad());
-						mov.setValorUnidad(otp.getValor());
+						List<Filtro> filtros = new ArrayList<Filtro>();
+						filtros.add(new Filtro("c.producto.idProducto", TipoOperacionFiltroEnum.EQUAL, otp.getProducto().getIdProducto()));
 						
-						movimientoDao.guardar(mov);
+						List<Stock> stocks = stockDao.buscarPorFiltros(filtros, null);
 						
-						stockDao.modificar(stock);
-						
-						List<Filtro> filtrosMov = new ArrayList<Filtro>();
-						filtrosMov.add(new Filtro("c.movimiento.stock.idStock", TipoOperacionFiltroEnum.EQUAL, stock.getIdStock()));
-						filtrosMov.add(new Filtro("c.cantidad", TipoOperacionFiltroEnum.MAYOR_QUE, 0));
-						
-						List<MovimientoIngreso> movsIngreso = movimientoIngresoDao.buscarPorFiltros(filtrosMov, null);
-						
-						Double cantidadAux = otp.getCantidad();
-						
-						while(cantidadAux > 0){
-							for(MovimientoIngreso movIngreso : movsIngreso){
-								if(movIngreso.getCantidad() > cantidadAux){
-									movIngreso.setCantidad(movIngreso.getCantidad() -  cantidadAux);
-									cantidadAux = 0d;
-								} else {
-									cantidadAux = cantidadAux - movIngreso.getCantidad();
-									movIngreso.setCantidad(0d);
-								}
-								
-								movimientoIngresoDao.modificar(movIngreso);
-								
-								if(cantidadAux.equals(0)){
-									break;
+						if(stocks != null && stocks.size() > 0){
+							Stock stock = stocks.get(0);
+							stock.setCantidad(stock.getCantidad() - otp.getCantidad());
+							
+							mov.setStock(stock);
+							mov.setCantidad(otp.getCantidad());
+							mov.setValorUnidad(otp.getValor());
+							
+							movimientoDao.guardar(mov);
+							
+							stockDao.modificar(stock);
+							
+							List<Filtro> filtrosMov = new ArrayList<Filtro>();
+							filtrosMov.add(new Filtro("c.movimiento.stock.idStock", TipoOperacionFiltroEnum.EQUAL, stock.getIdStock()));
+							filtrosMov.add(new Filtro("c.cantidad", TipoOperacionFiltroEnum.MAYOR_QUE, 0d));
+							
+							List<MovimientoIngreso> movsIngreso = movimientoIngresoDao.buscarPorFiltros(filtrosMov, null);
+							
+							Double cantidadAux = otp.getCantidad();
+							
+							while(cantidadAux > 0){
+								for(MovimientoIngreso movIngreso : movsIngreso){
+									if(movIngreso.getCantidad() > cantidadAux){
+										movIngreso.setCantidad(movIngreso.getCantidad() -  cantidadAux);
+										cantidadAux = 0d;
+									} else {
+										cantidadAux = cantidadAux - movIngreso.getCantidad();
+										movIngreso.setCantidad(0d);
+									}
+									
+									movimientoIngresoDao.modificar(movIngreso);
+									
+									if(cantidadAux.equals(0)){
+										break;
+									}
 								}
 							}
 						}
@@ -216,10 +221,11 @@ public class OrdenTrabajoServiceImpl implements IOrdenTrabajoService {
 				filtros.add(new Filtro("c.ordenTrabajo.orden.idOrden", TipoOperacionFiltroEnum.EQUAL, idOT));
 			}
 			
-			filtros.add(new Filtro("estOrden.fechaTermino", TipoOperacionFiltroEnum.EQUAL, "NULL"));
-			//TODO poner IS NULL en JPA Comun DAO
+			filtros.add(new Filtro("estOrden.fechaTermino", TipoOperacionFiltroEnum.IS_NULL, null));
+			filtros.add(new Filtro("ordenEstado.estadoOrden.idEstadoOrden", TipoOperacionFiltroEnum.NOT_IN, new Integer[] { 6, 7, 8}));
+			filtros.add(new Filtro("ordenEstado.fechaTermino", TipoOperacionFiltroEnum.IS_NULL, null));
 			
-			List<OrdenTrabajoUsuario> trabajos = ordenTrabajoUsuarioDao.buscarPorFiltros(filtros, null, "JOIN c.ordenTrabajo.estadosOrden estOrden");
+			List<OrdenTrabajoUsuario> trabajos = ordenTrabajoUsuarioDao.buscarPorFiltros(filtros, null, "JOIN c.ordenTrabajo.estadosOrden estOrden", "JOIN c.ordenTrabajo.orden.ordenEstados ordenEstado");
 			
 			for(OrdenTrabajoUsuario otUsuario : trabajos){
 				otUsuario.getOrdenTrabajo().getOrdenTrabajoProductos().size();

@@ -47,9 +47,6 @@ public class Orden implements Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date fechaOrden;
 	
-	@Column(name="observacion")
-	private String observacion;
-
 	@OneToMany(mappedBy="orden", cascade={CascadeType.ALL}, orphanRemoval=true)
 	private List<OrdenTrabajo> ordenTrabajos;
 	
@@ -58,6 +55,9 @@ public class Orden implements Serializable {
 	
 	@OneToMany(mappedBy="orden")
 	private List<OrdenDocumento> ordenDocumentos;
+	
+	@OneToMany(mappedBy="orden", cascade={CascadeType.ALL}, orphanRemoval=true)
+	private List<OrdenObservacion> ordenObservaciones;
 	
 	@Transient
 	private OrdenEstado ultimoOrdenEstado;
@@ -142,20 +142,6 @@ public class Orden implements Serializable {
 	 */
 	public void setFechaOrden(Date fechaOrden) {
 		this.fechaOrden = fechaOrden;
-	}
-
-	/**
-	 * @return the observacion
-	 */
-	public String getObservacion() {
-		return observacion;
-	}
-
-	/**
-	 * @param observacion the observacion to set
-	 */
-	public void setObservacion(String observacion) {
-		this.observacion = observacion;
 	}
 
 	/**
@@ -320,5 +306,19 @@ public class Orden implements Serializable {
 	 */
 	public void setOrdenDocumentos(List<OrdenDocumento> ordenDocumentos) {
 		this.ordenDocumentos = ordenDocumentos;
+	}
+
+	/**
+	 * @return the ordenObservaciones
+	 */
+	public List<OrdenObservacion> getOrdenObservaciones() {
+		return ordenObservaciones;
+	}
+
+	/**
+	 * @param ordenObservaciones the ordenObservaciones to set
+	 */
+	public void setOrdenObservaciones(List<OrdenObservacion> ordenObservaciones) {
+		this.ordenObservaciones = ordenObservaciones;
 	}
 }

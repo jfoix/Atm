@@ -1,6 +1,9 @@
 package cl.jfoix.atm.ot.stock.service.impl;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -9,18 +12,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import cl.jfoix.atm.comun.dao.IBodegaDao;
+import cl.jfoix.atm.comun.dao.IParametroGeneralDao;
 import cl.jfoix.atm.comun.dao.IProductoDao;
 import cl.jfoix.atm.comun.dao.IProveedorDao;
+import cl.jfoix.atm.comun.entity.ParametroGeneral;
 import cl.jfoix.atm.comun.entity.Producto;
 import cl.jfoix.atm.comun.service.IOrdenService;
 import cl.jfoix.atm.dbutil.dao.util.Filtro;
 import cl.jfoix.atm.dbutil.dao.util.TipoOperacionFiltroEnum;
 import cl.jfoix.atm.ot.dao.IMovimientoDao;
+import cl.jfoix.atm.ot.dao.IMovimientoDocumentoDao;
 import cl.jfoix.atm.ot.dao.IMovimientoIngresoDao;
 import cl.jfoix.atm.ot.dao.IOrdenTrabajoProductoDao;
 import cl.jfoix.atm.ot.dao.IStockDao;
 import cl.jfoix.atm.ot.entity.Bodega;
 import cl.jfoix.atm.ot.entity.Movimiento;
+import cl.jfoix.atm.ot.entity.MovimientoDocumento;
 import cl.jfoix.atm.ot.entity.MovimientoIngreso;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoProducto;
 import cl.jfoix.atm.ot.entity.Proveedor;
@@ -49,12 +56,18 @@ public class AdminStockServiceImpl implements IAdminStockService {
 	
 	@Autowired
 	private IMovimientoDao movimientoDao;
+	
+	@Autowired
+	private IMovimientoDocumentoDao movimientoDocumentoDao;
 
 	@Autowired
 	private IMovimientoIngresoDao movimientoIngresoDao;
 
 	@Autowired
 	private IOrdenService ordenService;
+
+	@Autowired
+	private IParametroGeneralDao parametroGeneralDao;
 	
 	@Override
 	public List<Bodega> buscarBodegas() {
@@ -106,6 +119,38 @@ public class AdminStockServiceImpl implements IAdminStockService {
 			if(stocks != null && stocks.size() > 0){
 				return stocks.get(0);
 			}
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	@Override
+	public List<Movimiento> buscarMovimientoPorRangoFechasCodigoProducto(Date fechaDesde, Date fechaHasta, String codProducto, Integer idProveedor) {
+		
+		try{
+			
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			
+			Calendar cal = Calendar.getInstance();
+			cal.setTime(fechaHasta);
+			cal.add(Calendar.HOUR_OF_DAY, 23);
+			cal.add(Calendar.MINUTE, 59);
+			cal.add(Calendar.SECOND, 59);
+			
+			filtros.add(new Filtro("c.fecha", TipoOperacionFiltroEnum.MAYOR_IGUAL_QUE, fechaDesde));
+			filtros.add(new Filtro("c.fecha", TipoOperacionFiltroEnum.MENOR_IGUAL_QUE, cal.getTime()));
+			
+			if(codProducto != null && !codProducto.equals("")){
+				filtros.add(new Filtro("c.stock.producto.codigo", TipoOperacionFiltroEnum.EQUAL, codProducto));
+			}
+			
+			if(idProveedor != null && !idProveedor.equals(-1)){
+				filtros.add(new Filtro("c.proveedor.idProveedor", TipoOperacionFiltroEnum.EQUAL, idProveedor));
+			}
+			
+			return movimientoDao.buscarPorFiltros(filtros, null);
+			
 		} catch(Exception e){
 			e.printStackTrace();
 		}
@@ -184,16 +229,22 @@ public class AdminStockServiceImpl implements IAdminStockService {
 				stockDao.modificar(stock);
 			}
 			
+			boolean ajuste = false;
+			if(movimiento.getTipo().equals(TipoMovimientoEnum.INGRESO) && movimiento.getCantidad() < 0){
+				ajuste = true;
+				movimiento.setTipo(TipoMovimientoEnum.AJUSTE);
+			}
+			
 			movimientoDao.guardar(movimiento);
 			
-			if(movimiento.getTipo().equals(TipoMovimientoEnum.INGRESO) && movimiento.getCantidad() > 0){
+			if(!ajuste){
 				MovimientoIngreso movIngreso = new MovimientoIngreso();
 				movIngreso.setMovimiento(movimiento);
 				movIngreso.setValorVenta((int)(((movimiento.getProveedor().getPorcentajeGanancia()/100) + 1) * movimiento.getValorUnidad()));
 				movIngreso.setCantidad(movimiento.getCantidad());
 				
 				movimientoIngresoDao.guardar(movIngreso);
-			} else if(movimiento.getTipo().equals(TipoMovimientoEnum.INGRESO) && movimiento.getCantidad() < 0){
+			} else if(ajuste){
 				List<Filtro> filtros = new ArrayList<Filtro>();
 				filtros.add(new Filtro("c.movimiento.stock.idStock", TipoOperacionFiltroEnum.EQUAL, stock.getIdStock()));
 				filtros.add(new Filtro("c.cantidad", TipoOperacionFiltroEnum.MAYOR_QUE, 0));
@@ -217,8 +268,31 @@ public class AdminStockServiceImpl implements IAdminStockService {
 						break;
 					}
 				}
-				movimiento.setTipo(TipoMovimientoEnum.MODIFICACION);
-				movimientoDao.modificar(movimiento);
+			}
+			
+			if(movimiento.getDocumentos() != null){
+				
+				ParametroGeneral rutaArchivosPG = parametroGeneralDao.buscarPorId("ruta.archivos");
+				String ruta = rutaArchivosPG.getValor() + "mov" + File.separator + movimiento.getIdMovimiento();
+				
+				File file = new File(ruta);
+				
+				if(!file.exists()){
+					file.mkdirs();
+				}
+				
+				for(MovimientoDocumento documento : movimiento.getDocumentos()){
+					documento.setRutaNombre(ruta + File.separator + documento.getNombreArchivo());
+					movimientoDocumentoDao.guardar(documento);
+					
+			        try {
+					    FileOutputStream fileOuputStream = new FileOutputStream(documento.getRutaNombre()); 
+					    fileOuputStream.write(documento.getDatosArchivo());
+					    fileOuputStream.close();
+			        }catch(Exception e){
+			            e.printStackTrace();
+			        }
+				}
 			}
 			
 		}catch(Exception e){

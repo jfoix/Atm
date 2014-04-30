@@ -5,6 +5,7 @@
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:ui="http://java.sun.com/jsf/facelets">
 <ui:composition template="../../templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Administraci&oacute;n Stock" /></ui:define>
 	<ui:define name="body">
 		<h:form id="frm">
 			<p:fieldset legend="B&uacute;squeda">
@@ -35,7 +36,7 @@
 				<h:panelGrid columns="4">
 					<p:commandButton 
 						oncomplete="PF('diaStock').show();"
-						update=":frm:pgiStockInfo"
+						update=":frm:pgiStockInfo, :frm:iptObservacion"
 						action="#{adminStockMB.nuevoStock}"
 						icon="ui-icon-plus"
 						process="@this"
@@ -88,7 +89,7 @@
 			    	
 			    	<h:outputText value="Cantidad" />
 			    	<h:outputText value=":" />
-			    	<p:inputText value="#{adminStockMB.movimiento.cantidad}" />
+			    	<p:inputText id="iptCantidad" value="#{adminStockMB.movimiento.cantidad}" />
 		            
 			    	<h:outputLabel value="Proveedor" rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}" />
 		            <h:outputLabel value=":" rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}" />  
@@ -107,6 +108,12 @@
 			    	<h:outputText value="Valor Compra (Unidad)" rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}" />
 			    	<h:outputText value=":"  rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}"/>
 			    	<p:inputText value="#{adminStockMB.movimiento.valorUnidad}"  rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}"/>
+			    	<p:watermark for="iptCantidad" value="&plusmn; cantidad" />
+			    </h:panelGrid>
+			    
+			    <h:panelGrid>
+			    	<h:outputText value="Observaci&oacute;n :" />
+			    	<p:inputTextarea id="iptObservacion" cols="100" value="#{adminStockMB.movimiento.observacion}"></p:inputTextarea>
 			    </h:panelGrid>
 			    <f:facet name="footer">
 			    	<div align="center">
@@ -114,9 +121,14 @@
 			    			icon="ui-icon-disk"
 			    			action="#{adminStockMB.guardarStock}"
 			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaStock').hide(); }"
-			    			process="@this,pgiStockInfo"
+			    			process="@this,pgiStockInfo,iptObservacion"
 			    			update=":frm:dttStocks"
 			    			value="Guardar" />
+			    		<p:commandButton 
+			    			icon="ui-icon-document"
+			    			process="@this"
+			    			onclick="PF('diaVerDocumentos').show();"
+			    			value="Adjuntar Documentos" />
 		    			<p:commandButton 
 			    			icon="ui-icon-close"
 			    			process="@this"
@@ -124,7 +136,37 @@
 			    			value="Cancelar" />
 		    		</div>
 			    </f:facet>
-			</p:dialog>    
+			</p:dialog>
+			<p:dialog header="Documentos Movimiento" widgetVar="diaVerDocumentos" modal="true" resizable="false" width="500" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid width="100%">
+			    	<p:fileUpload fileUploadListener="#{adminStockMB.handleFileUpload}" mode="advanced" dragDropSupport="false"  
+						multiple="true" sizeLimit="100000" fileLimit="3" auto="true" update="dttDocumentosOT" label="Elegir Archivo" />
+			    	<p:dataTable var="doc" value="#{adminStockMB.documentos}" emptyMessage="Sin Documentos" id="dttDocumentosOT">
+			    		<p:column headerText="Descargar">
+			    			<div align="center">
+				    			<p:commandLink ajax="false" immediate="true" action="#{adminStockMB.descargarArchivo}" value="#{doc.nombreArchivo}">
+				    				<f:setPropertyActionListener value="#{doc}" target="#{adminStockMB.documento}" />
+				    			</p:commandLink>
+			    			</div>
+			    		</p:column>
+			    		<p:column headerText="">
+			    			<div align="center">
+				    			<p:commandButton update="dttDocumentosOT" action="#{adminStockMB.elminiarArchivo}" alt="Eliminar" title="Eliminar" icon="ui-icon-close">
+				    				<f:setPropertyActionListener value="#{doc}" target="#{adminStockMB.documento}" />
+				    			</p:commandButton>
+			    			</div>
+			    		</p:column>
+			    	</p:dataTable>
+			    </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			oncomplete="PF('diaVerDocumentos').hide();"
+			    			value="Cerrar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
 		</h:form>
 	</ui:define>
 </ui:composition>

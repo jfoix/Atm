@@ -62,6 +62,28 @@ public class MantencionProgramadaServiceImpl implements IMantencionProgramadaSer
 	}
 
 	@Override
+	public boolean validarMantencionProgramadaPorCodigo(Integer idMantencionProgramada, String codigoMantencionProgramada){
+		try {
+			
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			
+			if(idMantencionProgramada != null){
+				filtros.add(new Filtro("idMantencionProgramada", TipoOperacionFiltroEnum.NOT_EQUAL, idMantencionProgramada));
+			}
+			
+			filtros.add(new Filtro("codigo", TipoOperacionFiltroEnum.EQUAL, codigoMantencionProgramada));
+			
+			List<?> resultado  = mantencionProgramadaDao.buscarPorFiltros(filtros, null);
+			
+			return resultado == null || resultado.size() == 0;
+		} catch (DaoException e) {
+			e.printStackTrace();
+		}
+		
+		return false;
+	}
+	
+	@Override
 	@Transactional
 	public void modificarMantencionProgramad(MantencionProgramada mantencionProgramada) {
 		try {
@@ -123,7 +145,7 @@ public class MantencionProgramadaServiceImpl implements IMantencionProgramadaSer
 			
 			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
 			
-			List<MantencionProgramada> mantenciones = mantencionProgramadaDao.buscarPorFiltros(filtros, null);
+			List<MantencionProgramada> mantenciones = mantencionProgramadaDao.buscarPorFiltros(filtros, "codigo ASC");
 			
 			for(MantencionProgramada mp : mantenciones){
 				mp.getMantencionTrabajos().size();

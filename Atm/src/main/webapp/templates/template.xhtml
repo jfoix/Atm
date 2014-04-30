@@ -17,10 +17,17 @@
 	<ui:insert name="header">
 		<div id="header" class="ui-panel ui-widget ui-header">
 			<div class="ui-panel-titlebar ui-widget-header ui-helper-clearfix">
-				<div class="ui-panel-title">ATM v1.0.0 &copy;jfoix.cl</div>
+				<table width="100%" style="height: 80px">
+					<tr>
+						<td width="20%"></td>
+						<td align="center" style="font-size:20px"><ui:insert name="subTitulo"></ui:insert></td>
+						<td width="20%"></td>
+					</tr>
+				</table>
 			</div>
 			<h:form>
 				<p:menubar style="margin:2px">
+			        <p:menuitem value="Inicio" action="home" icon="ui-icon-home" />
 			        <p:submenu label="Servicios" icon="ui-icon-wrench" rendered="#{authenticationBean.tieneRol('ROLE_OT')}">
 		                <p:menuitem value="Crear OT" url="/pages/taller/crearOT.jsf" />
 			            <p:menuitem value="Administrar OT" url="/pages/taller/adminOT.jsf" />
@@ -29,9 +36,10 @@
 		                <p:menuitem value="Trabajos" url="/pages/mecanico/trabajos.jsf" ajax="false" />
 			        </p:submenu>
 			        <p:submenu label="Consultas" icon="ui-icon-search" rendered="#{authenticationBean.tieneRol('ROLE_CONSULTAS')}">
-		                <p:menuitem value="Consultar Veh&iacute;culos" url="#" />
-			            <p:menuitem value="Consultar Stock" url="#" />
-			            <p:menuitem value="Consultar Mantenciones" url="#" />
+		                <p:menuitem value="Consulta OT/Veh&iacute;culos" url="/pages/consultas/consultaOTVehiculo.jsf" ajax="false" />
+			            <p:menuitem value="Consulta Cliente" url="/pages/consultas/consultaClientes.jsf" ajax="false" />
+			            <p:menuitem value="Consulta Movimientos" url="/pages/consultas/consultaMovimientosStock.jsf" ajax="false" />
+			            <p:menuitem value="Consulta Rendimiento Mec&aacute;nico" url="/pages/consultas/consultaMecanico.jsf" ajax="false" />
 			        </p:submenu>
 			        <p:submenu label="Mantenedores" icon="ui-icon-note" rendered="#{authenticationBean.tieneRol('ROLE_ADM_PARAM')}">
 		                <p:menuitem value="Marcas" url="/pages/mantenedor/mantMarca.jsf" />
@@ -52,7 +60,7 @@
 		                <p:menuitem value="Stock" url="/pages/administracion/admStock.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_STOCK')}" />
 		                <p:menuitem value="Solicitud Repuestos" url="/pages/administracion/admSolicitudRepuesto.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_STOCK')}" />
 			            <p:separator />
-			            <p:menuitem value="Par&aacute;metros" url="#" rendered="#{authenticationBean.tieneRol('ROLE_ADM_PARAM')}" />
+			            <p:menuitem value="Par&aacute;metros" url="/pages/administracion/admParametros.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_PARAM')}" />
 			        </p:submenu>
 			        <p:menuitem value="Cerrar Sesi&oacute;n" icon="ui-icon-power" action="#{authenticationBean.logout}" ajax="false" immediate="true" />  
 				</p:menubar>
@@ -65,7 +73,7 @@
 	<ui:insert name="footer">
 		<div id="footer" class="ui-panel ui-widget ui-footer">
 			<div class="ui-panel-titlebar ui-widget-header ui-helper-clearfix">
-				<span class="ui-panel-title">ATM v1.0.0 &copy;jfoix.cl</span>
+				<span class="ui-panel-title">ATM v<h:outputText value="#{parametrosMB.version}" /> &copy;jfoix.cl</span>
 			</div>
 		</div>
 	</ui:insert>

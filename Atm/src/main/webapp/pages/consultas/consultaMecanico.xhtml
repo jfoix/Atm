@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<ui:composition template="../../templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Consulta Rendimiento Mec&aacute;nico" /></ui:define>
+	<ui:define name="body">
+		<h:form id="frm">
+			<h:panelGrid width="100%">
+				<p:fieldset legend="B&uacute;squeda">
+					<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
+			            <h:outputLabel value="Mec&aacute;nico" />
+			            <h:outputLabel value=":" />  
+			            <p:selectOneMenu value="#{consultaMecanicosMB.usuarioMecanicoBusq}">
+			            	<f:selectItems value="#{consultaMecanicosMB.mecanicos}" var="mec" itemLabel="#{mec.persona.nombres}" itemValue="#{mec.nombreUsuario}" />
+			            </p:selectOneMenu>
+			            
+			            <h:outputLabel value="" /><h:outputLabel value="" />
+			            <h:outputLabel value="" /><h:outputLabel value="" />
+			            
+			            <h:outputLabel value="Fecha Desde" />
+			            <h:outputLabel value=":" />  
+						<p:calendar value="#{consultaMecanicosMB.fechaDesdeBusq}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
+
+			            <h:outputLabel value="Fecha Hasta" />
+			            <h:outputLabel value=":" />  
+			            <p:calendar value="#{consultaMecanicosMB.fechaHastaBusq}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
+			            <h:outputLabel value="" />
+			            
+			            <p:commandButton 
+			            	value="Buscar" 
+			            	update="pngDatosMecanico"
+			            	process="@this,pniBusqueda"
+			            	icon="ui-icon-search" 
+			            	action="#{consultaMecanicosMB.buscarRendimientoMecanico}" />  
+			        </h:panelGrid>
+		        </p:fieldset>
+		        <h:panelGroup id="pngDatosMecanico">
+					<p:fieldset rendered="#{consultaMecanicosMB.resumenDto ne null}" legend="Resumen Trabajos Mec&aacute;nico - #{consultaMecanicosMB.resumenDto.usuario.persona.nombres}">
+						<h:panelGrid style="width:100%">
+							<h:panelGrid columns="3">
+								<h:outputText value="Trabajos Ingresados" />
+								<h:outputText value=":" />
+								<h:outputText value="#{fn:length(consultaMecanicosMB.resumenDto.ingresado)}" />
+								
+								<h:outputText value="Trabajos En Proceso" />
+								<h:outputText value=":" />
+								<h:outputText value="#{fn:length(consultaMecanicosMB.resumenDto.enProceso)}" />
+								
+								<h:outputText value="Finalizados" />
+								<h:outputText value=":" />
+								<h:outputText value="#{fn:length(consultaMecanicosMB.resumenDto.finalizados)}" />
+								
+								<h:outputText value="Cancelados" />
+								<h:outputText value=":" />
+								<h:outputText value="#{fn:length(consultaMecanicosMB.resumenDto.cancelados)}" />
+							</h:panelGrid>
+							<p:fieldset legend="Detalle Por Estado de Trabajo">
+								<h:panelGrid>
+									<h:panelGrid columns="3" style="width:100%">
+										<h:outputText value="Estado Trabajo" />
+										<h:outputText value=":" />
+										<p:selectOneMenu value="#{consultaMecanicosMB.estadoTrabajo}">
+											<f:selectItem itemValue="" itemLabel="Seleccione" />
+											<f:selectItem itemValue="I" itemLabel="Ingresados" />
+											<f:selectItem itemValue="P" itemLabel="En Proceso" />
+											<f:selectItem itemValue="F" itemLabel="Finalizados" />
+											<f:selectItem itemValue="C" itemLabel="Cancelados" />
+											<p:ajax event="change" process="@this" update="dtlResumen" listener="#{consultaMecanicosMB.generarResumenMensual}" />
+											<p:ajaxStatus onstart="javascript:;" oncomplete="javascript:;" />
+										</p:selectOneMenu>
+									</h:panelGrid>
+									<p:dataList id="dtlResumen" value="#{consultaMecanicosMB.resumenMensual}" var="resu" itemType="disc" emptyMessage="Sin Detalle">
+										<h:outputText value="#{resu}" />
+									</p:dataList>
+								</h:panelGrid>
+							</p:fieldset>
+						</h:panelGrid>
+					</p:fieldset>
+				</h:panelGroup>
+		    </h:panelGrid>
+		</h:form>
+	</ui:define>
+</ui:composition>
+</html>

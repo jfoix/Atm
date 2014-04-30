@@ -6,9 +6,14 @@ body{
 	color: #4f4f4f;
 }
 
-.bodyLogin{
-	background: url('../resources/images/fondo-login-azul.jpg') no-repeat;
+.fondoLoginGrande{
+	background: url('../resources/images/fondo-login.png') repeat-x;
 }
+
+.fondoLoginGrandeBack{
+	background: url('../resources/images/fondo-login_back.png') repeat-x;
+}
+
 
 .fondoLogin{
 	background: url('../resources/images/fondo-opa-login.png') repeat;
@@ -107,6 +112,10 @@ body{
 	opacity: 1 !important;
 	filter: Alpha(Opacity=100) !important;
 	background-color: #f8fb9e !important;
+}
+
+.ui-commandlink.ui-state-disabled{
+	background-color: #fff !important;
 }
 
 .ui-dialog-buttonpane{

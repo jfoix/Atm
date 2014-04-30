@@ -22,6 +22,9 @@ public class EstadoOrden implements Serializable {
 
 	@Column(name="descripcion")
 	private String descripcion;
+
+	@Column(name="finalizacion")
+	private Boolean finalizacion;
 	
 	@Column(name="estado")
 	private Boolean estado;
@@ -66,5 +69,19 @@ public class EstadoOrden implements Serializable {
 	 */
 	public void setEstado(Boolean estado) {
 		this.estado = estado;
+	}
+
+	/**
+	 * @return the finalizacion
+	 */
+	public Boolean getFinalizacion() {
+		return finalizacion;
+	}
+
+	/**
+	 * @param finalizacion the finalizacion to set
+	 */
+	public void setFinalizacion(Boolean finalizacion) {
+		this.finalizacion = finalizacion;
 	}
 }

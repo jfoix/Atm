@@ -155,8 +155,8 @@ public class MantencionProgramadaMB implements Serializable {
 			
 			if(mantencionProgramada.getCodigo() == null || mantencionProgramada.getCodigo().equals("")){
 				messages.add(new FacesMessage(FacesMessage.SEVERITY_ERROR,"Mensaje", "Debe ingresar un código para la Mantención Programada"));
-			} else if(mantencionProgramada.getCodigo().length() < 7 ){
-				messages.add(new FacesMessage(FacesMessage.SEVERITY_ERROR,"Mensaje", "Código de Mantención Programada inválido, debe tener 3 letras y 4 números"));
+			} else if(!mantencionProgramadaService.validarMantencionProgramadaPorCodigo(mantencionProgramada.getIdMantencionProgramada(), mantencionProgramada.getCodigo())){
+				messages.add(new FacesMessage(FacesMessage.SEVERITY_ERROR,"Mensaje", "El código ingresado ya se encuentra asociado a otra Mantención Programada"));
 			}
 			
 			if(mantencionProgramada.getDescripcion() == null || mantencionProgramada.getDescripcion().equals("")){
@@ -187,7 +187,6 @@ public class MantencionProgramadaMB implements Serializable {
 				mantencionProgramada.setMantencionTrabajos(mpTrabajos);
 				
 				if(mantencionProgramada.getIdMantencionProgramada() == null){
-					mantencionesProgramadas.add(mantencionProgramada);
 					msg = "Ingresado con éxito";
 				} else {
 					msg = "Modificado con éxito";

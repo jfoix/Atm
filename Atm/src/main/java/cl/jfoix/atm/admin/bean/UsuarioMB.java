@@ -147,7 +147,7 @@ public class UsuarioMB implements Serializable {
 			if(permisosUsuario != null){
 				List<Permiso> targetUsuario = new ArrayList<Permiso>();
 				for(Permiso permiso : permisosUsuario){
-					if(permiso.getPerfil().getIdPerfil().equals(perfilId)){
+					if(permiso.getPerfil() != null && permiso.getPerfil().getIdPerfil().equals(perfilId)){
 						targetUsuario.add(permiso);
 					}
 				}
@@ -275,6 +275,16 @@ public class UsuarioMB implements Serializable {
 			usuario.setUsuarioPermisos(usuarioPermisos);
 			
 			if(!actualizarUsuario){
+				
+				UsuarioPermisoPK pk = new UsuarioPermisoPK();
+				pk.setNombreUsuario(usuario.getNombreUsuario());
+				pk.setIdPermiso(7);
+				UsuarioPermiso usuarioPermiso = new UsuarioPermiso();
+				usuarioPermiso.setPk(pk);
+				usuarioPermiso.setUsuario(usuario);
+				
+				usuarioPermisos.add(usuarioPermiso);
+				
 				usuarioService.guardarUsuario(usuario);
 				usuarios.add(usuario);
 				FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Mensaje", "Ingresado con éxito"));

@@ -39,6 +39,28 @@ public class ProveedorServiceImpl implements IProveedorService {
 			throw new ViewException("Ocurrió un problema al guardar la información, intentelo más tarde");
 		}
 	}
+	
+	@Override
+	public boolean validarProveedorPorCodigo(Integer idProveedor, String codigoProveedor){
+		try {
+			
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			
+			if(idProveedor != null){
+				filtros.add(new Filtro("idProveedor", TipoOperacionFiltroEnum.NOT_EQUAL, idProveedor));
+			}
+			
+			filtros.add(new Filtro("codigo", TipoOperacionFiltroEnum.EQUAL, codigoProveedor));
+			
+			List<?> resultado  = proveedorDao.buscarPorFiltros(filtros, null);
+			
+			return resultado == null || resultado.size() == 0;
+		} catch (DaoException e) {
+			e.printStackTrace();
+		}
+		
+		return false;
+	}
 
 	@Override
 	public List<Proveedor> buscarTodosProveedores() {

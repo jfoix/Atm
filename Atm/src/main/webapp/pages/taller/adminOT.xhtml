@@ -5,6 +5,7 @@
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:ui="http://java.sun.com/jsf/facelets">
 <ui:composition template="/templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Administraci&oacute;n Ordenes de Trabajo" /></ui:define>
 	<ui:define name="body">
 		<h:form id="frm">
 			<h:panelGrid id="pngWorkOrderSearch" cellspacing="3">
@@ -23,11 +24,11 @@
 	    				
 	    				<h:outputText value="Fecha Desde" />
 	    				<h:outputText value=":" />
-	    				<p:calendar value="#{admOTMB.filtroBusqueda.fechaInicio}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
+	    				<p:calendar id="fechaDesde" value="#{admOTMB.filtroBusqueda.fechaInicio}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
 	    				
 	    				<h:outputText value="Fecha Hasta" />
 	    				<h:outputText value=":" />
-	    				<p:calendar value="#{admOTMB.filtroBusqueda.fechaTermino}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
+	    				<p:calendar id="fechaHasta" value="#{admOTMB.filtroBusqueda.fechaTermino}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
 	    				
 	    				<h:outputText value="Estado" />
 	    				<h:outputText value=":" />
@@ -35,21 +36,24 @@
 	    					<f:selectItem itemValue="-1" itemLabel="Todos"/>
 	    					<f:selectItem itemValue="1" itemLabel="Ingresadas"/>
 	    					<f:selectItem itemValue="2" itemLabel="Taller"/>
-	    					<f:selectItem itemValue="3" itemLabel="DyP"/>
-	    					<f:selectItem itemValue="4" itemLabel="Tercero"/>
+	    					<f:selectItem itemValue="3" itemLabel="Tercero"/>
+	    					<f:selectItem itemValue="4" itemLabel="DyP"/>
+	    					<f:selectItem itemValue="5" itemLabel="Pendiente"/>
 	    				</p:selectOneMenu>
 	    				
 	    				<h:outputText value="Patente" />
 	    				<h:outputText value=":" />
-	    				<p:inputMask value="#{admOTMB.filtroBusqueda.patente}" mask="aa-**-99" styleClass="uppercase" />
+	    				<p:inputMask id="ipmPatenteB" value="#{admOTMB.filtroBusqueda.patente}" mask="aa-**-99" styleClass="uppercase" />
 	    				
-	    				<p:commandButton 
-	    					value="Buscar" 
-	    					icon="ui-icon-search" 
-	    					process="pngSearchOrders" 
-	    					action="#{admOTMB.buscarOrdenes}" 
-	    					update="dttWorks" />
+	    				<p:watermark for="ipmPatenteB" value="AA-BB-11" />
+	    				<p:watermark for="fechaDesde,fechaHasta" value="dd/mm/aaaa" />
 	    			</h:panelGrid>
+    				<p:commandButton 
+    					value="Buscar" 
+    					icon="ui-icon-search" 
+    					process="@this,pngSearchOrders" 
+    					action="#{admOTMB.buscarOrdenes}" 
+    					update="dttWorks" />
 	    		</p:fieldset>
 	    		<p:dataTable id="dttWorks" emptyMessage="Sin trabajos asociados" value="#{admOTMB.ordenes}" var="order">
 					<p:columnGroup type="header">  
@@ -62,56 +66,62 @@
 			                <p:column headerText="# Trabajos Finalizados" />
 			                <p:column headerText="# Trabajos Cancelados" />
 			                <p:column headerText="Cliente" />
-			                <p:column headerText="Patente" />
+			                <p:column headerText="Veh&iacute;culo" />
 			                <p:column headerText="Documento" />
-			                <p:column colspan="3" headerText="Acciones" />  
+			                <p:column colspan="4" headerText="Acciones" />  
 			            </p:row>  
 			        </p:columnGroup>  
-			        <p:column>  
+			        <p:column style="width:10px">  
 			            <h:outputText value="#{order.idOrden}" />  
 			        </p:column>  
 			        <p:column>  
 			            <h:outputText value="#{order.ultimoOrdenEstado.estadoOrden.descripcion}" />  
 			        </p:column>  		  
-			        <p:column>  
-			            <h:outputText value="#{order.fechaOrden}">
-			            	<f:convertDateTime pattern="dd/MM/yyyy" />
-			            </h:outputText>  
+			        <p:column style="width:90px;">  
+			            <div align="center">
+				            <h:outputText value="#{order.fechaOrden}">
+				            	<f:convertDateTime pattern="dd/MM/yyyy" />
+				            </h:outputText>  
+			            </div>
 			        </p:column>
-			        <p:column>
+			        <p:column style="width:90px;">
 			        	<div align="right"> 
 			            	<h:outputText value="#{order.trabajosPendientes}" />
 			            </div>  
 			        </p:column>
-			        <p:column>
+			        <p:column style="width:90px;">
 			            <div align="right">
 			            	<h:outputText value="#{order.trabajosEnProceso}" />
 			            </div>  
 			        </p:column>
-			        <p:column>
+			        <p:column style="width:90px;">
 			        	<div align="right">
 			            	<h:outputText value="#{order.trabajosTerminados}" />
 			            </div>  
 			        </p:column>
-			        <p:column>
+			        <p:column style="width:90px;">
 			        	<div align="right">
 			            	<h:outputText value="#{order.trabajosCancelados}" />
 			            </div>  
 			        </p:column>
 			        <p:column>  
-			            <p:commandLink
-			            	process="@this"
-			            	oncomplete="PF('diaCliente').show()"
-			            	update=":frm:pngCliente" 
-			            	value="#{order.vehiculoOrden.cliente.nombreCliente}">
-			            	<f:setPropertyActionListener target="#{admOTMB.orden}" value="#{order}" />
-			            </p:commandLink>  
+			            <div align="center">
+				            <p:commandLink
+				            	process="@this"
+				            	oncomplete="PF('diaCliente').show()"
+				            	update=":frm:pngCliente"
+				            	disabled="#{order.ultimoOrdenEstado.estadoOrden.finalizacion and not authenticationBean.tieneRol('ROLE_ADM_OT')}" 
+				            	value="#{order.vehiculoOrden.cliente.nombreCliente}">
+				            	<f:setPropertyActionListener target="#{admOTMB.orden}" value="#{order}" />
+				            </p:commandLink>
+			            </div>
 			        </p:column>
 			        <p:column>
 			            <div align="center">
 			            	<p:commandLink
 			            		process="@this"
 				            	oncomplete="PF('diaVehiculo').show()"
+				            	disabled="#{order.ultimoOrdenEstado.estadoOrden.finalizacion and not authenticationBean.tieneRol('ROLE_ADM_OT')}"
 				            	update=":frm:pngVehiculo" 
 			            		value="#{order.vehiculoOrden.vehiculo.patente}">
 				            	<f:setPropertyActionListener target="#{admOTMB.orden}" value="#{order}" /> 
@@ -120,16 +130,23 @@
 			        </p:column>
 			        <p:column>
 			            <div align="center">
-			            	<p:commandLink value="Imprimir"/>
+			            	<p:commandLink value="Resumen" icon="ui-icon-document" ajax="false" process="@this" action="#{admOTMB.generarReporteResumentOT}" title="Reporte Resumen" alt="Reporte Resumen">
+		                		<f:setPropertyActionListener value="#{order}" target="#{admOTMB.orden}" />
+		                	</p:commandLink>
 			            </div>  
 			        </p:column>
 			        <p:column style="width:30px; text-align:center">  
-		                <p:commandButton icon="ui-icon-pencil" process="@this" title="Editar Trabajos" alt="Editar Trabajos" action="#{admOTMB.abrirEditarTrabajo}" update=":frm:pngWorks" oncomplete="PF('diaTrabajosOT').show();">
+		                <p:commandButton disabled="#{order.ultimoOrdenEstado.estadoOrden.finalizacion and not authenticationBean.tieneRol('ROLE_ADM_OT')}" icon="ui-icon-document" process="@this" action="#{admOTMB.abrirObservacionesOT}" title="Ver Observaciones" alt="Ver Observaciones" update=":frm:pngAdicionales" oncomplete="PF('diaAdicionales').show();">
+		                	<f:setPropertyActionListener value="#{order}" target="#{admOTMB.orden}" />  
+			            </p:commandButton>
+					</p:column> 
+			        <p:column style="width:30px; text-align:center">  
+		                <p:commandButton disabled="#{order.ultimoOrdenEstado.estadoOrden.finalizacion and not authenticationBean.tieneRol('ROLE_ADM_OT')}" icon="ui-icon-pencil" process="@this" title="Editar Trabajos" alt="Editar Trabajos" action="#{admOTMB.abrirEditarTrabajo}" update=":frm:pngWorks" oncomplete="PF('diaTrabajosOT').show();">
 		                	<f:setPropertyActionListener value="#{order}" target="#{admOTMB.orden}" />  
 			            </p:commandButton>
 					</p:column> 
 					<p:column style="width:30px; text-align:center">  
-		                <p:commandButton icon="ui-icon-transferthick-e-w" process="@this" title="Cambiar Estado OT" alt="Cambiar Estado OT" update=":frm:pngStatusOrder" action="#{admOTMB.abrirCambioEstadoOrden}" oncomplete="PF('diaStatusOrder').show();">
+		                <p:commandButton disabled="#{order.ultimoOrdenEstado.estadoOrden.finalizacion and not authenticationBean.tieneRol('ROLE_ADM_OT')}" icon="ui-icon-transferthick-e-w" process="@this" title="Cambiar Estado OT" alt="Cambiar Estado OT" update=":frm:pngStatusOrder" action="#{admOTMB.abrirCambioEstadoOrden}" oncomplete="PF('diaStatusOrder').show();">
 		                	<f:setPropertyActionListener value="#{order}" target="#{admOTMB.orden}" />  
 			            </p:commandButton>
 					</p:column>
@@ -137,6 +154,7 @@
 		                <p:commandButton
 		                	process="@this" 
 		                	update="dttWorks"
+		                	disabled="#{order.ultimoOrdenEstado.estadoOrden.finalizacion and not authenticationBean.tieneRol('ROLE_ADM_OT')}"
 		                	action="#{admOTMB.eliminarOrden}"
 		                	icon="ui-icon-closethick" title="Eliminar" alt="Eliminar">
 		                	<p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar la orden seleccionada?" icon="ui-icon-alert" />
@@ -149,6 +167,117 @@
 			        <p:commandButton value="Cancelar" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
 			    </p:confirmDialog>
     		</h:panelGrid>
+    		<h:panelGroup id="pngAdicionales">
+	    		<p:dialog header="Adicionales OT #{admOTMB.orden.idOrden}" widgetVar="diaAdicionales" modal="true" resizable="false" showEffect="drop" hideEffect="fade" width="800">
+	    			<p:tabView id="tabView">  
+  						<p:tab title="Observaciones">  
+    						<div align="left">
+							    <p:commandButton 
+						    		value="Agregar Observaci&oacute;n" 
+						    		icon="ui-icon-search"
+						    		update=":frm:iptObservacion"
+						    		oncomplete="PF('diaNuevaObservacion').show();"
+						    		process="@this" 
+						    		action="#{admOTMB.nuevaObservacion}" />
+					    	</div>
+						    <p:dataTable id="dttObservaciones" emptyMessage="Sin observaciones" value="#{admOTMB.observaciones}" var="obs">
+						        <p:columnGroup type="header">  
+					            <p:row>  
+					                <p:column headerText="Tipo" />
+					                <p:column headerText="Fecha" />
+					                <p:column headerText="Observaci&oacute;n" />
+					                <p:column colspan="2" headerText="Acciones" />  
+					            </p:row>  
+					        </p:columnGroup>
+						        <p:column>  
+					                <h:outputText value="#{obs.tipoObservacion.description}" />
+								</p:column>
+								<p:column>  
+					                <h:outputText value="#{obs.fechaRegistro}">
+					                	<f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss"/>
+					                </h:outputText>
+								</p:column>
+								<p:column>  
+					                <h:outputText value="#{obs.observacion}" />
+								</p:column>
+								<p:column style="width:30px; text-align:center">  
+					                <p:commandButton 
+					                	icon="ui-icon-pencil" 
+					                	alt="Editar Observaci&oacute;n"
+					                	update=":frm:iptObservacion"
+					                	process="@this" 
+					                	oncomplete="PF('diaNuevaObservacion').show();"
+					                	title="Editar Observaci&oacute;n">
+					                	<f:setPropertyActionListener target="#{admOTMB.observacion}" value="#{obs}" />
+					               	</p:commandButton>
+								</p:column>
+								<p:column style="width:30px; text-align:center"> 
+					                <p:commandButton 
+					                	icon="ui-icon-close" 
+					                	alt="Eliminar Observaci&oacute;n"
+					                	process="@this" 
+					                	action="#{admOTMB.eliminarObservacion}"
+					                	update="dttObservaciones" 
+					                	title="Eliminar Observaci&oacute;n">
+					                	<p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar la observaci&oacute;n seleccionada?" icon="ui-icon-alert" />
+					                	<f:setPropertyActionListener target="#{admOTMB.observacion}" value="#{obs}" />
+					               	</p:commandButton>
+								</p:column>
+							</p:dataTable>
+						</p:tab>  
+						<p:tab title="Documentos Adjuntos">
+							<h:panelGrid width="100%">
+						    	<p:fileUpload fileUploadListener="#{admOTMB.handleFileUpload}" mode="advanced" dragDropSupport="false"  
+									multiple="true" sizeLimit="100000" fileLimit="3" auto="true" update="dttDocumentosOT" label="Elegir Archivo" />
+						    	<p:dataTable var="doc" value="#{admOTMB.documentos}" emptyMessage="Sin Documentos" id="dttDocumentosOT">
+						    		<p:column headerText="Descargar">
+						    			<div align="center">
+							    			<p:commandLink ajax="false" immediate="true" action="#{admOTMB.descargarArchivo}" value="#{doc.nombreArchivo}">
+							    				<f:setPropertyActionListener value="#{doc}" target="#{admOTMB.documento}" />
+							    			</p:commandLink>
+						    			</div>
+						    		</p:column>
+						    		<p:column headerText="">
+						    			<div align="center">
+							    			<p:commandButton update="dttDocumentosOT" action="#{admOTMB.elminiarArchivo}" alt="Eliminar" title="Eliminar" icon="ui-icon-close">
+							    				<f:setPropertyActionListener value="#{doc}" target="#{admOTMB.documento}" />
+							    			</p:commandButton>
+						    			</div>
+						    		</p:column>
+						    	</p:dataTable>
+						    </h:panelGrid>
+						</p:tab>
+					</p:tabView>
+					<f:facet name="footer">
+				    	<div align="center">
+			    			<p:commandButton 
+				    			icon="ui-icon-close"
+				    			oncomplete="PF('diaAdicionales').hide();"
+				    			process="@this"
+				    			value="Cerrar" />
+			    		</div>
+				    </f:facet>
+	    		</p:dialog>
+	    		<p:dialog id="diaNuevaObservacion" header="Observaci&oacute;n" widgetVar="diaNuevaObservacion" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+					<p:inputTextarea id="iptObservacion" cols="100" value="#{admOTMB.observacion.observacion}"></p:inputTextarea>
+	   				<f:facet name="footer">
+				    	<div align="center">
+			    			<p:commandButton 
+				    			icon="ui-icon-disk"
+				    			oncomplete="PF('diaNuevaObservacion').hide();"
+				    			process="@this,iptObservacion"
+				    			update=":frm:tabView:dttObservaciones"
+				    			action="#{admOTMB.guardarObservacion}"
+				    			value="Guardar" />
+			    			<p:commandButton 
+				    			icon="ui-icon-close"
+				    			oncomplete="PF('diaNuevaObservacion').hide();"
+				    			process="@this"
+				    			value="Cerrar" />
+			    		</div>
+				    </f:facet>
+	   			</p:dialog>
+    		</h:panelGroup>
 			<h:panelGroup id="pngStatusOrder">
 				<p:dialog id="diaStatusOrder" header="Cambiar Estado OT #{admOTMB.orden.idOrden}" widgetVar="diaStatusOrder" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
 					<div align="center">
@@ -160,17 +289,16 @@
 									<f:selectItems value="#{admOTMB.estadosOrdenes}" var="so" itemLabel="#{so.descripcion}" itemValue="#{so.idEstadoOrden}" />
 									<p:ajax event="change" update="pniEstadoOT" process="@this" />
 								</p:selectOneMenu>
-								<h:outputText value="Forma de Pago" rendered="#{admOTMB.idNuevoEstadoOrden eq 5}" />
-								<h:outputText value=":" rendered="#{admOTMB.idNuevoEstadoOrden eq 5}" />
-								<p:selectOneMenu value="#{admOTMB.idFormaPago}" rendered="#{admOTMB.idNuevoEstadoOrden eq 5}">
+								<h:outputText value="Forma de Pago" rendered="#{admOTMB.idNuevoEstadoOrden eq 6}" />
+								<h:outputText value=":" rendered="#{admOTMB.idNuevoEstadoOrden eq 6}" />
+								<p:selectOneMenu value="#{admOTMB.idFormaPago}" rendered="#{admOTMB.idNuevoEstadoOrden eq 6}">
 									<f:selectItems value="#{admOTMB.formasPago}" var="fp" itemLabel="#{fp.descripcion}" itemValue="#{fp.idFormaPago}" />
 								</p:selectOneMenu>
 							</h:panelGrid>
-							<h:panelGrid columns="3">
-								<h:outputText value="Observaci&oacute;n" />
-								<h:outputText value=":" />
-								<p:inputTextarea value="#{admOTMB.observacionEstado}" cols="30" rows="5"></p:inputTextarea>
-							</h:panelGrid>
+							<h:panelGroup style="text-align:left" layout="block">
+								<br /><h:outputText value="Observaci&oacute;n :" /><br />
+								<p:inputTextarea value="#{admOTMB.observacionEstado}" cols="80" rows="5"></p:inputTextarea>
+							</h:panelGroup>
 						</h:panelGroup>
 					</div>
 					<f:facet name="footer">
@@ -206,10 +334,15 @@
 			    				icon="ui-icon-gear"
 			    				process="@this"
 			    				action="#{admOTMB.buscarStock}"
+			    				rendered="false"
 			    				update="tetWorks"
 			    				value="Buscar Stock Productos" />
 			    		</h:panelGrid>
-						<p:treeTable id="tetWorks" value="#{admOTMB.tnTrabajos}" var="works" emptyMessage="Sin informaci&oacute;n"
+						<p:treeTable 
+							id="tetWorks" 
+							value="#{admOTMB.tnTrabajos}" 
+							var="works"
+							emptyMessage="Sin informaci&oacute;n"
 							styleClass="tetClass">  
 					        <p:column style="width:230px">   
 					            <f:facet name="header">  
@@ -237,7 +370,7 @@
 					            <f:facet name="header">  
 					                Producto
 					            </f:facet>  
-					            <h:outputText value="#{works.productoDescripcion} #{works.tieneStock ? '' : '(SIN STOCK)'}" styleClass="#{works.tieneStock ? '' : 'sinStockMec'}" />  
+					            <h:outputText value="#{works.productoDescripcion} #{works.productoCliente or works.tieneStock ? '' : '(SIN STOCK)'}" styleClass="#{works.productoCliente or works.tieneStock ? '' : 'sinStockMec'}" />  
 					        </p:column>
 					        <p:column style="width:60px">   
 					            <f:facet name="header">  
@@ -245,8 +378,13 @@
 					            </f:facet>  
 					            <div align="center">
 					            	<p:selectBooleanCheckbox value="#{works.productoCliente}" rendered="#{works.tipo eq 2}">
-					            		<p:ajax event="change" />
+					            		<p:ajax event="change" process="@this" oncomplete="clickBtnTraidoCliente(this)" />
 					            	</p:selectBooleanCheckbox>
+					            	<div style="display:none">
+						            	<p:commandButton action="#{admOTMB.verificarProductoCliente}" process="@this" widgetVar="btnCliente" update=":frm:tetWorks:iptPrecio" styleClass="btnProdCliente" value="c">
+						            		<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
+						            	</p:commandButton>
+					            	</div>
 					            </div>  
 					        </p:column>
 					        <p:column>  
@@ -264,7 +402,7 @@
 					                Precio
 					            </f:facet>  
 					            <div align="right">
-						            <p:inputText value="#{works.precio}" onkeypress="return validateNumbers(event)" style="width:40px; text-align:right">
+						            <p:inputText value="#{works.precio}" id="iptPrecio" onkeypress="return validateNumbers(event)" style="width:40px; text-align:right">
 						            	<p:ajax event="change" />
 						            </p:inputText> 
 					            </div> 
@@ -356,7 +494,7 @@
 			    	var="mecanico" 
 			    	effect="fade"  
                     itemValue="#{mecanico}" 
-                    itemLabel="#{mecanico.nombreUsuario}"
+                    itemLabel="#{mecanico.persona.nombres}"
                     addAllLabel="Agregar Todos"
                     addLabel="Agregar"
                     removeAllLabel="Quitar Todos"
@@ -372,7 +510,7 @@
 			    			process="@this,pklMecanicos"
 			    			oncomplete="PF('diaMecanics').hide();"
 			    			action="#{admOTMB.guardarAsignacionMecanico}"
-			    			value="Guardar" />
+			    			value="Aceptar" />
 		    			<p:commandButton 
 			    			icon="ui-icon-close"
 			    			process="@this"
@@ -381,11 +519,11 @@
 		    		</div>
 			    </f:facet>
 			</p:dialog>
-			 <p:dialog id="diaTrabajos" header="Buscar Trabajos" widgetVar="diaTrabajos" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			<p:dialog id="diaTrabajos" header="Buscar Trabajos" widgetVar="diaTrabajos" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
 			    <h:panelGrid columns="6" cellpadding="4" id="pgiWorkFilter">
 			    	<h:outputText value="C&oacute;digo" />
 			    	<h:outputText value=":" />
-			    	<p:inputText value="#{admOTMB.trabajoFiltro.codigo}" />
+			    	<p:inputText id="iptCodigoTrabajo" value="#{admOTMB.trabajoFiltro.codigo}" />
 			    	
 			    	<h:outputText value="Descripci&oacute;n" />
 			    	<h:outputText value=":" />
@@ -405,6 +543,7 @@
 			    		<f:selectItem itemValue="-1" itemLabel="Todos" />
 			    		<f:selectItems value="#{admOTMB.trabajoSubTipos}" var="wst" itemLabel="#{wst.descripcion}" itemValue="#{wst.idTrabajoSubTipo}" />
 			    	</p:selectOneMenu>
+			    	<p:watermark for="iptCodigoTrabajo" value="AAAA1111" />
 			    </h:panelGrid>
 			    <p:commandButton 
 			    	value="Buscar" 
@@ -472,7 +611,7 @@
 			    <h:panelGrid columns="6" id="pgiProducts">
 			    	<h:outputText value="C&oacute;digo" />
 			    	<h:outputText value=":" />
-			    	<p:inputText value="#{admOTMB.productoCodigo}" />
+			    	<p:inputText id="iptCodigoProducto" value="#{admOTMB.productoCodigo}" />
 			    	
 			    	<h:outputText value="Descripci&oacute;n" />
 			    	<h:outputText value=":" />
@@ -488,7 +627,7 @@
 			    	<h:outputText value="" />
 			    	<h:outputText value="" />
 			    	<h:outputText value="" />
-			    	
+			    	<p:watermark for="iptCodigoProducto" value="AAA1111" />
 			    </h:panelGrid>
 		    	<p:commandButton 
 		    		value="Buscar" 
@@ -534,7 +673,7 @@
 			    			value="Cerrar" />
 		    		</div>
 			    </f:facet>
-			</p:dialog> 
+			</p:dialog>			
 			<h:panelGroup id="pngVehiculo">
 				<p:dialog header="Vehiculo del Trabajo #{admOTMB.orden.idOrden}" widgetVar="diaVehiculo" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
 					<h:panelGrid columns="6" id="pngVehiculoActual">
@@ -682,11 +821,11 @@
 					<h:panelGrid columns="6" id="pngCustomer">
 	    				<h:outputText value="Rut" />
 	    				<h:outputText value=":" />
-	    				<p:inputText id="countryId" value="#{admOTMB.orden.vehiculoOrden.cliente.rutCliente}" />
+	    				<p:inputText id="iptRut" value="#{admOTMB.orden.vehiculoOrden.cliente.rutCliente}" />
 	    				<p:commandButton 
 	    					title="Buscar" alt="Buscar" 
 	    					update="pngCustomer,:frm:pngCreateNewCustomer" 
-	    					process="@this,countryId" 
+	    					process="@this,iptRut" 
 	    					icon="ui-icon-search" 
 	    					action="#{admOTMB.buscarCliente}" />
 	    				<h:outputText value="" rendered="#{admOTMB.orden.vehiculoOrden.cliente.idCliente eq null}" />

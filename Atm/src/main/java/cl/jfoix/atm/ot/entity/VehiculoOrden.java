@@ -1,6 +1,7 @@
 package cl.jfoix.atm.ot.entity;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,7 +10,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name="vehiculo_orden")
@@ -33,6 +36,12 @@ public class VehiculoOrden implements Serializable {
 	@Column(name="kilometraje")
 	private Integer kilometraje;
 
+	@OneToMany(mappedBy="vehiculoOrden")
+	private List<Orden> ordenes;
+	
+	@Transient
+	private Orden orden;
+	
 	/**
 	 * @return the idVehiculoOrden
 	 */
@@ -87,5 +96,34 @@ public class VehiculoOrden implements Serializable {
 	 */
 	public void setKilometraje(Integer kilometraje) {
 		this.kilometraje = kilometraje;
+	}
+
+	/**
+	 * @return the ordenes
+	 */
+	public List<Orden> getOrdenes() {
+		return ordenes;
+	}
+
+	/**
+	 * @param ordenes the ordenes to set
+	 */
+	public void setOrdenes(List<Orden> ordenes) {
+		this.ordenes = ordenes;
+	}
+
+	/**
+	 * @return the orden
+	 */
+	public Orden getOrden() {
+		orden = ordenes.get(0);
+		return orden;
+	}
+
+	/**
+	 * @param orden the orden to set
+	 */
+	public void setOrden(Orden orden) {
+		this.orden = orden;
 	}
 }

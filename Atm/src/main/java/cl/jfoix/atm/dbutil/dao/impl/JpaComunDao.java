@@ -190,6 +190,13 @@ public class JpaComunDao<T extends Serializable, ID extends Serializable> extend
 			            consulta.append(filtro.getValorFiltro().toString());
 			            consulta.append("%'");
 						break;
+					case IS_NULL:
+						break;
+					case EXISTS:
+					case NOT_EXISTS:
+						consulta.append("(");
+			            consulta.append((String)filtro.getValorFiltro());
+			            consulta.append(")");
 					default:
 						values.add(filtro.getValorFiltro());
 						consulta.append("?"+(values.size()));

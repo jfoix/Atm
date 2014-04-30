@@ -48,15 +48,17 @@ public class ProveedorMB implements Serializable {
 		ViewException vEx = new ViewException();
 		
 		if(this.proveedor.getCodigo() == null || this.proveedor.getCodigo().equals("")){
-			vEx.agregarMensaje("Debe ingresar un código al proveedor");
+			vEx.agregarMensaje("Debe ingresar un código al Proveedor");
+		} else if(!proveedorService.validarProveedorPorCodigo(proveedor.getIdProveedor(), proveedor.getCodigo())){
+			vEx.agregarMensaje("El código ingresado ya se encuentra asociado a otro Proveedor");
 		}
 		
 		if(this.proveedor.getDescripcion() == null || this.proveedor.getDescripcion().equals("")){
-			vEx.agregarMensaje("Debe ingresar una descripción a el proveedor");
+			vEx.agregarMensaje("Debe ingresar una descripción a el Proveedor");
 		}
 		
 		if(this.proveedor.getPorcentajeGanancia().equals(0d)){
-			vEx.agregarMensaje("Debe ingresar el porcentaje de ganancia");
+			vEx.agregarMensaje("Debe ingresar el Porcentaje de Ganancia");
 		}
 		
 		if(vEx.tieneMensajes()){

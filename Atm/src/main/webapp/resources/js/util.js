@@ -24,3 +24,15 @@ function validateText(e) {
 	reg = /\d/;
 	return !reg.test(keychar);
 }
+
+function clickBtnTraidoCliente(curr){
+	var obj = $(PrimeFaces.escapeClientId(curr.source));
+	
+	var i = 9;
+	while(i > 0 && !obj.is('td')){
+		obj = obj.parent();
+		i--;
+	}
+	
+	obj.find('.btnProdCliente').click();
+}

@@ -50,9 +50,12 @@ import cl.jfoix.atm.ot.entity.Cliente;
 import cl.jfoix.atm.ot.entity.MarcaVehiculo;
 import cl.jfoix.atm.ot.entity.Orden;
 import cl.jfoix.atm.ot.entity.OrdenDocumento;
+import cl.jfoix.atm.ot.entity.OrdenObservacion;
 import cl.jfoix.atm.ot.entity.OrdenTrabajo;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoEstado;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoProducto;
+import cl.jfoix.atm.ot.entity.OrdenTrabajoSolicitud;
+import cl.jfoix.atm.ot.entity.OrdenTrabajoSolicitudProducto;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoUsuario;
 import cl.jfoix.atm.ot.entity.Stock;
 import cl.jfoix.atm.ot.entity.Vehiculo;
@@ -62,6 +65,7 @@ import cl.jfoix.atm.ot.service.IClienteService;
 import cl.jfoix.atm.ot.service.IMarcaVehiculoService;
 import cl.jfoix.atm.ot.service.IOrdenTrabajoService;
 import cl.jfoix.atm.ot.service.IVehiculoService;
+import cl.jfoix.atm.ot.util.TipoOrdenObservacionEnum;
 
 @ViewScoped
 @ManagedBean(name="crearOrdenTrabajoMB")
@@ -127,11 +131,13 @@ public class CrearOrdenTrabajoMB implements Serializable {
 	private List<TrabajoSubTipo> trabajoSubTipos;
 	private List<MantencionProgramada> mantencionesProgramadas;
 	private List<Producto> productos;
+	private List<Producto> productosSol;
 	private List<Marca> marcas;
 	private List<OrdenDocumento> documentos;
 	private List<String> mensajesStock;
 	
 	private OrdenDocumento documento;
+	private OrdenObservacion ordenObservacion;
 	
 	//Objects
 	private Orden orden;
@@ -144,7 +150,14 @@ public class CrearOrdenTrabajoMB implements Serializable {
 	private DualListModel<Usuario> dlmMecanicos;
 
 	private TreeNode tnTrabajos;
-	 
+
+	//Solicitud Productos
+	private String codProductoBusq;
+	private String descProductoBusq;
+	private List<OrdenTrabajoSolicitudProducto> productosSolicitud;
+	private OrdenTrabajoSolicitudProducto productoSolicitud;
+	private OrdenTrabajoSolicitud solicitud;
+	
 	@PostConstruct
 	public void init(){
 		orden = new Orden();
@@ -166,6 +179,10 @@ public class CrearOrdenTrabajoMB implements Serializable {
 		List<Usuario> target = new ArrayList<Usuario>();
 		
 		dlmMecanicos = new DualListModel<Usuario>(source, target);
+		
+		ordenObservacion = new OrdenObservacion();
+		
+		nuevaSolicitud();
 	}
 	
 	public void nuevoVehiculo(){
@@ -368,9 +385,19 @@ public class CrearOrdenTrabajoMB implements Serializable {
 			throw vEx;
 		}
 		
-		List<OrdenTrabajo> ordenesTrabajo = new ArrayList<OrdenTrabajo>();
-
+		if(ordenObservacion.getObservacion() != null && !ordenObservacion.getObservacion().equals("")){
+			List<OrdenObservacion> observaciones = new ArrayList<OrdenObservacion>();
+			ordenObservacion.setFechaRegistro(new Date());
+			ordenObservacion.setOrden(orden);
+			ordenObservacion.setTipoObservacion(TipoOrdenObservacionEnum.INGRESO);
+			
+			observaciones.add(ordenObservacion);
+			
+			orden.setOrdenObservaciones(observaciones);
+		}
 		
+		
+		List<OrdenTrabajo> ordenesTrabajo = new ArrayList<OrdenTrabajo>();
 		
 		UsuarioAtenticacion auth = (UsuarioAtenticacion) SecurityContextHolder.getContext().getAuthentication();
 		Usuario usuario = (Usuario) auth.getUsuario();
@@ -439,13 +466,15 @@ public class CrearOrdenTrabajoMB implements Serializable {
 					
 					producto.setValor(0);
 					
-					Stock stock = ordenService.buscarStockPorProducto(producto.getProducto().getIdProducto(), producto.getCantidad(), -1);
-					
-					if(stock != null){
-						Integer valorVenta = ordenService.buscarValorVentaProductoStock(stock.getIdStock());
-						producto.setValor(valorVenta);
-					} else {
-						mensajesStock.add("No hay Stock para el producto " + producto.getProducto().getDescripcion());
+					if(!producto.getTraidoCliente()){
+						Stock stock = ordenService.buscarStockPorProducto(producto.getProducto().getIdProducto(), producto.getCantidad(), -1);
+						
+						if(stock != null){
+							Integer valorVenta = ordenService.buscarValorVentaProductoStock(stock.getIdStock());
+							producto.setValor(valorVenta);
+						} else {
+							mensajesStock.add("No hay Stock para el producto " + producto.getProducto().getDescripcion());
+						}
 					}
 				}
 			}
@@ -467,6 +496,71 @@ public class CrearOrdenTrabajoMB implements Serializable {
 		FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("idOrden", orden.getIdOrden());
 		
 		return "admOT";
+	}
+	
+	public void buscarProductosSolicitud(){
+		productosSol = ordenTrabajoService.buscarProductos(codProductoBusq, descProductoBusq);
+	}
+	
+	public void nuevaSolicitud(){
+		
+		productosSol = new ArrayList<Producto>();
+		productosSolicitud = new ArrayList<OrdenTrabajoSolicitudProducto>();
+		
+		solicitud = new OrdenTrabajoSolicitud();
+		UsuarioAtenticacion auth = (UsuarioAtenticacion) SecurityContextHolder.getContext().getAuthentication();
+		Usuario usuario = (Usuario) auth.getUsuario();
+		
+		solicitud.setUsuario(usuario);
+	}
+	
+	public void eliminarProductosSolicitud(){
+		productosSolicitud.remove(productoSolicitud);
+	}
+		
+	public void agregarProductosSolicitud(){
+		if(productosSolicitud == null){
+			productosSolicitud = new ArrayList<OrdenTrabajoSolicitudProducto>();
+		}
+		
+		for(Producto producto : productosSol){
+			if(producto.isSeleccionado()){
+				
+				boolean existeProducto = false;
+				
+				for(OrdenTrabajoSolicitudProducto productoSolicitud:  productosSolicitud){
+					if(productoSolicitud.getProducto().getIdProducto().equals(producto.getIdProducto())){
+						FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Mensaje", "El producto " + producto.getDescripcion() + " ya se encuentra agregado a la solicitud"));
+						existeProducto = true;
+						break;
+					}
+				}
+				
+				if(!existeProducto){
+					OrdenTrabajoSolicitudProducto solicitudProducto = new OrdenTrabajoSolicitudProducto();
+					Producto productoSel = new Producto();
+					productoSel.setIdProducto(producto.getIdProducto());
+					productoSel.setDescripcion(producto.getDescripcion());
+					productoSel.setCodigo(producto.getCodigo());
+					solicitudProducto.setProducto(productoSel);
+					solicitudProducto.setSolicitud(solicitud);
+					solicitudProducto.setEstado(true);
+					productosSolicitud.add(solicitudProducto);
+				}
+			}
+		}
+		
+		productosSol = new ArrayList<Producto>();
+	}
+	
+	public void guardarSolicitud() throws ViewException{
+		solicitud.setProductos(productosSolicitud);
+		solicitud.setFechaSolicitud(new Date());
+		solicitud.setEstado(true);
+		ordenTrabajoService.guardarOrdenTrabajoSolicitud(solicitud);
+		solicitud = new OrdenTrabajoSolicitud();
+		productosSolicitud = new ArrayList<OrdenTrabajoSolicitudProducto>();
+		FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Mensaje", "Solicitud guardada correctamente"));
 	}
 	
 	public void quitarTrabajo(){
@@ -1216,5 +1310,104 @@ public class CrearOrdenTrabajoMB implements Serializable {
 	 */
 	public void setMensajesStock(List<String> mensajesStock) {
 		this.mensajesStock = mensajesStock;
+	}
+
+	/**
+	 * @return the ordenObservacion
+	 */
+	public OrdenObservacion getOrdenObservacion() {
+		return ordenObservacion;
+	}
+
+	/**
+	 * @param ordenObservacion the ordenObservacion to set
+	 */
+	public void setOrdenObservacion(OrdenObservacion ordenObservacion) {
+		this.ordenObservacion = ordenObservacion;
+	}
+
+	/**
+	 * @return the productosSol
+	 */
+	public List<Producto> getProductosSol() {
+		return productosSol;
+	}
+
+	/**
+	 * @param productosSol the productosSol to set
+	 */
+	public void setProductosSol(List<Producto> productosSol) {
+		this.productosSol = productosSol;
+	}
+
+	/**
+	 * @return the codProductoBusq
+	 */
+	public String getCodProductoBusq() {
+		return codProductoBusq;
+	}
+
+	/**
+	 * @param codProductoBusq the codProductoBusq to set
+	 */
+	public void setCodProductoBusq(String codProductoBusq) {
+		this.codProductoBusq = codProductoBusq;
+	}
+
+	/**
+	 * @return the descProductoBusq
+	 */
+	public String getDescProductoBusq() {
+		return descProductoBusq;
+	}
+
+	/**
+	 * @param descProductoBusq the descProductoBusq to set
+	 */
+	public void setDescProductoBusq(String descProductoBusq) {
+		this.descProductoBusq = descProductoBusq;
+	}
+
+	/**
+	 * @return the productosSolicitud
+	 */
+	public List<OrdenTrabajoSolicitudProducto> getProductosSolicitud() {
+		return productosSolicitud;
+	}
+
+	/**
+	 * @param productosSolicitud the productosSolicitud to set
+	 */
+	public void setProductosSolicitud(
+			List<OrdenTrabajoSolicitudProducto> productosSolicitud) {
+		this.productosSolicitud = productosSolicitud;
+	}
+
+	/**
+	 * @return the productoSolicitud
+	 */
+	public OrdenTrabajoSolicitudProducto getProductoSolicitud() {
+		return productoSolicitud;
+	}
+
+	/**
+	 * @param productoSolicitud the productoSolicitud to set
+	 */
+	public void setProductoSolicitud(OrdenTrabajoSolicitudProducto productoSolicitud) {
+		this.productoSolicitud = productoSolicitud;
+	}
+
+	/**
+	 * @return the solicitud
+	 */
+	public OrdenTrabajoSolicitud getSolicitud() {
+		return solicitud;
+	}
+
+	/**
+	 * @param solicitud the solicitud to set
+	 */
+	public void setSolicitud(OrdenTrabajoSolicitud solicitud) {
+		this.solicitud = solicitud;
 	}
 }

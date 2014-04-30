@@ -13,4 +13,6 @@ public interface IProductoService {
 	public List<Producto> buscarProductosPorCodigoDescripcionMarca(String codigo, String descripcion, Integer idMarca) throws Exception;
 
 	public List<TrabajoProducto> buascarTrabajoProductosPorCodigoDescripcionMarca(String codigo, String descripcion, Integer idMarca) throws Exception;
+
+	boolean validarProductoPorCodigo(Integer idProducto, String codigoProducto);
 }

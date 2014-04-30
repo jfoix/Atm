@@ -5,6 +5,7 @@
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:ui="http://java.sun.com/jsf/facelets">
 <ui:composition template="../../templates/template.xhtml">
+	<ui:define name="subTitulo"><h:outputText value="Administraci&oacute;n Personal" /></ui:define>
 	<ui:define name="body">
 		<h:form id="frm">
 			<p:fragment autoUpdate="true">
@@ -28,7 +29,7 @@
 						value="Agregar Persona"/>
 				</h:panelGrid>
 			</div>
-			<p:dataTable var="persona" value="#{personaMB.personas}" id="dttPersonas">
+			<p:dataTable var="persona" value="#{personaMB.personas}" id="dttPersonas" emptyMessage="Sin Informaci&oacute;n">
 				<p:columnGroup type="header">  
 		            <p:row>  
 		                <p:column headerText="Nombres" />
@@ -59,7 +60,7 @@
 		            </h:outputText>
 		        </p:column>
 		        <p:column style="width:30px; text-align:center">  
-	                <p:commandButton update=":frm:pgiPersonaInfo" action="#{personaMB.modPersona}" oncomplete="PF('diaPersona').show()" icon="ui-icon-pencil" title="Editar" alt="Editar">  
+	                <p:commandButton update=":frm:pgiPersonaInfo" process="@this" action="#{personaMB.modPersona}" oncomplete="PF('diaPersona').show()" icon="ui-icon-pencil" title="Editar" alt="Editar">  
 		                <f:setPropertyActionListener value="#{persona}" target="#{personaMB.persona}" />  
 		            </p:commandButton>
 				</p:column> 
@@ -79,7 +80,7 @@
 			    <h:panelGrid columns="3" cellpadding="4" id="pgiPersonaInfo">
 			    	<h:outputText value="RUT" />
 			    	<h:outputText value=":" />
-			    	<p:inputText value="#{personaMB.persona.rut}" disabled="#{personaMB.modificarPersona}" readonly="#{personaMB.modificarPersona}" />
+			    	<p:inputText value="#{personaMB.persona.rut}" id="iptRut" disabled="#{personaMB.modificarPersona}" readonly="#{personaMB.modificarPersona}" />
 			    	
 			    	<h:outputText value="Nombres" />
 			    	<h:outputText value=":" />
@@ -91,15 +92,17 @@
 			    	
 			    	<h:outputText value="Fecha Nacimiento" />
 			    	<h:outputText value=":" />
-			    	<p:calendar value="#{personaMB.persona.fechaNacimiento}" yearRange="c-70:c+10" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
+			    	<p:calendar id="fechaNacimiento" value="#{personaMB.persona.fechaNacimiento}" yearRange="c-70:c+10" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
 			    	
 			    	<h:outputText value="Fecha Contrato" />
 			    	<h:outputText value=":" />
-			    	<p:calendar value="#{personaMB.persona.fechaContrato}" navigator="true" yearRange="c-70:c+10" locale="es" pattern="dd/MM/yyyy" showOn="button" />
+			    	<p:calendar id="fechaContrato" value="#{personaMB.persona.fechaContrato}" navigator="true" yearRange="c-70:c+10" locale="es" pattern="dd/MM/yyyy" showOn="button" />
 			    	
 			    	<h:outputText value="Fecha T&eacute;rmino Contrato" />
 			    	<h:outputText value=":" />
-			    	<p:calendar value="#{personaMB.persona.fechaFinal}" navigator="true" yearRange="c-70:c+10" locale="es" pattern="dd/MM/yyyy" showOn="button" />
+			    	<p:calendar id="fechaTerminoContrato" value="#{personaMB.persona.fechaFinal}" navigator="true" yearRange="c-70:c+10" locale="es" pattern="dd/MM/yyyy" showOn="button" />
+			    	<p:watermark for="iptRut" value="11222333-4" />
+			    	<p:watermark for="fechaNacimiento,fechaContrato,fechaTerminoContrato" value="dd/mm/aaaa" />
 			    </h:panelGrid>
 			    <f:facet name="footer">
 			    	<div align="center">

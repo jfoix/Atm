@@ -74,7 +74,11 @@ public class Filtro {
 	}
 	@Override
 	public String toString() {
-		return "Filtro:{ propiedad:"+propiedad+", tipoOperacion:"+tipoOperacion.name()+", valorFiltro:"+valorFiltro.toString()+"}\n";
+		if(valorFiltro == null){
+			return "Filtro:{ propiedad:" + propiedad + ", tipoOperacion:" + tipoOperacion.name() + "}\n";
+		} else {
+			return "Filtro:{ propiedad:" + propiedad + ", tipoOperacion:" + tipoOperacion.name()+", valorFiltro:" + valorFiltro.toString() + "}\n";
+		}
 	}
 	
 }

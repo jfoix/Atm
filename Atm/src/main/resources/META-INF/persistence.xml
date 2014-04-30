@@ -39,6 +39,8 @@
 		<class>cl.jfoix.atm.comun.entity.MantencionProgramadaTrabajo</class>
 		<class>cl.jfoix.atm.ot.entity.MovimientoIngreso</class>
 		<class>cl.jfoix.atm.ot.entity.OrdenTrabajoEstado</class>
+		<class>cl.jfoix.atm.comun.entity.ParametroGeneral</class>
+		<class>cl.jfoix.atm.ot.entity.OrdenObservacion</class>
 		<exclude-unlisted-classes>false</exclude-unlisted-classes>
 		<properties>
 			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />

@@ -4,7 +4,7 @@ public enum TipoMovimientoEnum {
 
 	INGRESO("Ingreso"),
 	EGRESO("Egreso"),
-	MODIFICACION("Modificacion");
+	AJUSTE("Ajuste");
 	
 	private final String descripcion;
 	

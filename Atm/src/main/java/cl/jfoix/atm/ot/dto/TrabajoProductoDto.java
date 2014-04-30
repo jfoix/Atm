@@ -54,7 +54,7 @@ public class TrabajoProductoDto implements Serializable {
 	public TrabajoProductoDto(OrdenTrabajo ot, Producto producto, Double cantidad, Double hhEstimadas, Integer tipo, boolean garantia, boolean productoCliente){
 		this.ot = ot;
 		this.trabajo = ot.getTrabajo();
-		this.precio = ot.getTrabajo() != null ? ot.getTrabajo().getPrecioManoObra() : 0;
+		this.precio = ot.getPrecioManoObra().longValue();
 		this.producto = producto;
 		this.cantidad = cantidad;
 		this.hhEstimadas = hhEstimadas;

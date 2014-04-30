@@ -40,6 +40,28 @@ public class ProductoServiceImpl implements IProductoService {
 			e.printStackTrace();
 		}
 	}
+	
+	@Override
+	public boolean validarProductoPorCodigo(Integer idProducto, String codigoProducto){
+		try {
+			
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			
+			if(idProducto != null){
+				filtros.add(new Filtro("idProducto", TipoOperacionFiltroEnum.NOT_EQUAL, idProducto));
+			}
+			
+			filtros.add(new Filtro("codigo", TipoOperacionFiltroEnum.EQUAL, codigoProducto));
+			
+			List<?> resultado  = productoDao.buscarPorFiltros(filtros, null);
+			
+			return resultado == null || resultado.size() == 0;
+		} catch (DaoException e) {
+			e.printStackTrace();
+		}
+		
+		return false;
+	}
 
 	@Override
 	public List<Producto> buscarProductosPorCodigoDescripcionMarca(String codigo, String descripcion, Integer idMarca) throws Exception {
@@ -61,7 +83,7 @@ public class ProductoServiceImpl implements IProductoService {
 			
 			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
 			
-			return productoDao.buscarPorFiltros(filtros, null);
+			return productoDao.buscarPorFiltros(filtros, "codigo ASC");
 		} catch (DaoException e) {
 			e.printStackTrace();
 		}
