@@ -14,11 +14,17 @@ import javax.faces.context.FacesContext;
 
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import cl.jfoix.atm.comun.dto.ProductoDto;
 import cl.jfoix.atm.comun.entity.EstadoTrabajo;
+import cl.jfoix.atm.comun.entity.Marca;
 import cl.jfoix.atm.comun.entity.Producto;
+import cl.jfoix.atm.comun.entity.ProductoGrupo;
 import cl.jfoix.atm.comun.excepcion.view.ViewException;
 import cl.jfoix.atm.comun.seguridad.proveedor.UsuarioAtenticacion;
+import cl.jfoix.atm.comun.service.IMarcaService;
 import cl.jfoix.atm.comun.service.IOrdenService;
+import cl.jfoix.atm.comun.service.IProductoGrupoService;
+import cl.jfoix.atm.comun.service.IProductoService;
 import cl.jfoix.atm.login.entity.Usuario;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoProducto;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoSolicitud;
@@ -39,10 +45,21 @@ public class TrabajoMecanicoMB implements Serializable {
 	@ManagedProperty(value="#{ordenService}")
 	private IOrdenService ordenService;
 	
+	@ManagedProperty(value="#{productoService}")
+	private IProductoService productoService;
+
+	@ManagedProperty(value="#{marcaService}")
+	private IMarcaService marcaService;
+	
+	@ManagedProperty(value="#{productoGrupoService}")
+	private IProductoGrupoService productoGrupoService;
+
 	private List<OrdenTrabajoUsuario> trabajos;
 	private List<EstadoTrabajo> estadosTrabajo;
 	private List<Producto> productos;
 	private List<OrdenTrabajoSolicitudProducto> productosSolicitud;
+	private List<Marca> marcas;
+	private List<ProductoGrupo> grupos;
 	
 	private OrdenTrabajoUsuario trabajo;
 	private OrdenTrabajoSolicitud solicitud;
@@ -56,24 +73,34 @@ public class TrabajoMecanicoMB implements Serializable {
 
 	private String codProductoBusq;
 	private String descProductoBusq;
+	private String descGrupoSel;
+	
+	private Integer idProductoMarcaBusq;
+	private Integer idProductoGrupoBusq;
 	
 	@PostConstruct
 	public void init(){
 		UsuarioAtenticacion auth = (UsuarioAtenticacion) SecurityContextHolder.getContext().getAuthentication();
 		Usuario usuario = (Usuario) auth.getUsuario();
-		trabajos = ordenTrabajoService.buscarTrabajosUsuario(usuario.getNombreUsuario(), null, new Date(), null);
+//		fechBusq = new Date();
+		trabajos = ordenTrabajoService.buscarTrabajosUsuario(usuario.getNombreUsuario(), null, fechBusq, null);
 		
 		if(trabajos != null){
 			for(OrdenTrabajoUsuario otUsuario : trabajos){
-				for(OrdenTrabajoProducto otp : otUsuario.getOrdenTrabajo().getOrdenTrabajoProductos()){
-					Stock stock = ordenService.buscarStockPorProducto(otp.getProducto().getIdProducto(), otp.getCantidad(), otUsuario.getOrdenTrabajo().getOrden().getIdOrden());
-					otp.setTieneStock(stock != null);
+				if(otUsuario.getOrdenTrabajo().getProductosGrupo() != null){
+					for(ProductoDto productoDto : otUsuario.getOrdenTrabajo().getProductosGrupo()){
+						Stock stock = ordenService.buscarStockPorProducto(productoDto.getIdProducto(), productoDto.getCantidad(), productoDto.getIdOrden());
+						productoDto.setTieneStock(stock != null);
+					}
 				}
 			}
 		}
 		
 		estadosTrabajo = ordenTrabajoService.obtenerEstadosTrabajo();
 		solicitud = new OrdenTrabajoSolicitud();
+		
+		marcas = marcaService.buscarTodasMarcas();
+		grupos = productoGrupoService.buscarProductosGrupo();
 	}
 	
 	public void buscarTrabajos(){
@@ -83,9 +110,9 @@ public class TrabajoMecanicoMB implements Serializable {
 		
 		if(trabajos != null){
 			for(OrdenTrabajoUsuario otUsuario : trabajos){
-				for(OrdenTrabajoProducto otp : otUsuario.getOrdenTrabajo().getOrdenTrabajoProductos()){
-					Stock stock = ordenService.buscarStockPorProducto(otp.getProducto().getIdProducto(), otp.getCantidad(), otUsuario.getOrdenTrabajo().getOrden().getIdOrden());
-					otp.setTieneStock(stock != null);
+				for(ProductoDto productoDto : otUsuario.getOrdenTrabajo().getProductosGrupo()){
+					Stock stock = ordenService.buscarStockPorProducto(productoDto.getIdProducto(), productoDto.getCantidad(), productoDto.getIdOrden());
+					productoDto.setTieneStock(stock != null);
 				}
 			}
 		}
@@ -96,7 +123,11 @@ public class TrabajoMecanicoMB implements Serializable {
 	}
 	
 	public void buscarProductos(){
-		productos = ordenTrabajoService.buscarProductos(codProductoBusq, descProductoBusq);
+		try{
+			productos =  productoService.buscarProductosPorCodigoDescripcionMarca(codProductoBusq, descProductoBusq, idProductoMarcaBusq, idProductoGrupoBusq);
+		} catch (Exception e) {
+			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error", "Ocurrió un problema al buscar la información, intentelo más tarde"));
+		}
 	}
 	
 	public void guardarEstadoOrdenTrabajo() throws ViewException{
@@ -128,6 +159,11 @@ public class TrabajoMecanicoMB implements Serializable {
 		
 		solicitud.setUsuario(usuario);
 		solicitud.setOrdenTrabajo(trabajo.getOrdenTrabajo());
+		
+		descProductoBusq = null;
+		codProductoBusq = null;
+		idProductoGrupoBusq = null;
+		idProductoMarcaBusq = null;
 	}
 	
 	public void eliminarProductos(){
@@ -388,5 +424,129 @@ public class TrabajoMecanicoMB implements Serializable {
 	 */
 	public void setProductoSolicitud(OrdenTrabajoSolicitudProducto productoSolicitud) {
 		this.productoSolicitud = productoSolicitud;
+	}
+
+	/**
+	 * @return the idProductoMarcaBusq
+	 */
+	public Integer getIdProductoMarcaBusq() {
+		return idProductoMarcaBusq;
+	}
+
+	/**
+	 * @param idProductoMarcaBusq the idProductoMarcaBusq to set
+	 */
+	public void setIdProductoMarcaBusq(Integer idProductoMarcaBusq) {
+		this.idProductoMarcaBusq = idProductoMarcaBusq;
+	}
+
+	/**
+	 * @return the idProductoGrupoBusq
+	 */
+	public Integer getIdProductoGrupoBusq() {
+		return idProductoGrupoBusq;
+	}
+
+	/**
+	 * @param idProductoGrupoBusq the idProductoGrupoBusq to set
+	 */
+	public void setIdProductoGrupoBusq(Integer idProductoGrupoBusq) {
+		this.idProductoGrupoBusq = idProductoGrupoBusq;
+	}
+
+	/**
+	 * @return the marcas
+	 */
+	public List<Marca> getMarcas() {
+		return marcas;
+	}
+
+	/**
+	 * @param marcas the marcas to set
+	 */
+	public void setMarcas(List<Marca> marcas) {
+		this.marcas = marcas;
+	}
+
+	/**
+	 * @return the grupos
+	 */
+	public List<ProductoGrupo> getGrupos() {
+		return grupos;
+	}
+
+	/**
+	 * @param grupos the grupos to set
+	 */
+	public void setGrupos(List<ProductoGrupo> grupos) {
+		this.grupos = grupos;
+	}
+
+	/**
+	 * @return the productoService
+	 */
+	public IProductoService getProductoService() {
+		return productoService;
+	}
+
+	/**
+	 * @param productoService the productoService to set
+	 */
+	public void setProductoService(IProductoService productoService) {
+		this.productoService = productoService;
+	}
+
+	/**
+	 * @return the marcaService
+	 */
+	public IMarcaService getMarcaService() {
+		return marcaService;
+	}
+
+	/**
+	 * @param marcaService the marcaService to set
+	 */
+	public void setMarcaService(IMarcaService marcaService) {
+		this.marcaService = marcaService;
+	}
+
+	/**
+	 * @return the productoGrupoService
+	 */
+	public IProductoGrupoService getProductoGrupoService() {
+		return productoGrupoService;
+	}
+
+	/**
+	 * @param productoGrupoService the productoGrupoService to set
+	 */
+	public void setProductoGrupoService(IProductoGrupoService productoGrupoService) {
+		this.productoGrupoService = productoGrupoService;
+	}
+
+	/**
+	 * @return the descGrupoSel
+	 */
+	public String getDescGrupoSel() {
+		if(idProductoGrupoBusq != null){
+			if(idProductoGrupoBusq.equals(-1)){
+				descGrupoSel = "";
+			} else {
+				for(ProductoGrupo grupo : grupos){
+					if(grupo.getIdProductoGrupo().equals(idProductoGrupoBusq)){
+						descGrupoSel = grupo.getCodigo();
+						break;
+					}
+				}
+			}
+		}
+		return descGrupoSel;
+	}
+
+	/**
+	 * @param descGrupoSel the descGrupoSel to set
+	 */
+	public void setDescGrupoSel(String descGrupoSel) {
+		this.descGrupoSel = descGrupoSel;
 	}
 }

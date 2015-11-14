@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
@@ -25,6 +27,7 @@ import cl.jfoix.atm.admin.service.IUsuarioService;
 import cl.jfoix.atm.comun.entity.EstadoTrabajo;
 import cl.jfoix.atm.comun.entity.Marca;
 import cl.jfoix.atm.comun.entity.Producto;
+import cl.jfoix.atm.comun.entity.ProductoGrupo;
 import cl.jfoix.atm.comun.entity.Trabajo;
 import cl.jfoix.atm.comun.entity.TrabajoProducto;
 import cl.jfoix.atm.comun.entity.TrabajoSubTipo;
@@ -32,6 +35,7 @@ import cl.jfoix.atm.comun.entity.TrabajoTipo;
 import cl.jfoix.atm.comun.service.IEstadoOrdenService;
 import cl.jfoix.atm.comun.service.IMarcaService;
 import cl.jfoix.atm.comun.service.IOrdenService;
+import cl.jfoix.atm.comun.service.IProductoGrupoService;
 import cl.jfoix.atm.comun.service.IProductoService;
 import cl.jfoix.atm.comun.service.ITrabajoService;
 import cl.jfoix.atm.comun.service.ITrabajoSubTipoService;
@@ -92,6 +96,9 @@ public class AdmOTMB implements Serializable {
 	@ManagedProperty(value="#{trabajoTipoService}")
 	private ITrabajoTipoService trabajoTipoService;
 
+	@ManagedProperty(value="#{productoGrupoService}")
+	private IProductoGrupoService productoGrupoService;
+
 	@ManagedProperty(value="#{trabajoService}")
 	private ITrabajoService trabajoService;
 
@@ -112,6 +119,7 @@ public class AdmOTMB implements Serializable {
 	//Lists
 	private List<Orden> ordenes;
 	private List<Producto> productos;
+	private List<ProductoGrupo> gruposProducto;
 	private List<EstadoOrden> estadosOrdenes;
 	private List<MarcaVehiculo> marcasVehiculo;
 	private List<TrabajoTipo> trabajoTipos;
@@ -129,7 +137,21 @@ public class AdmOTMB implements Serializable {
 	private String productoCodigo;
 	private String productoDesc;
 	private Integer idMarca;
+	private Integer idProductoGrupo;
 	private Integer idFormaPago;
+	
+	//Var Termino
+	private double desRepuesto;
+	private double desManoObra;
+	private double desSTercero;
+	
+	private String tipoDesRepuesto = "%";
+	private String tipoDesManoObra = "%";
+	private String tipoDesSTercero = "%";
+
+	private boolean ivaRepuesto;
+	private boolean ivaManoObra;
+	private boolean ivaSTercero;
 	
 	//Vars Cliente
 	private boolean crearNuevoCliente;
@@ -178,6 +200,7 @@ public class AdmOTMB implements Serializable {
 		marcas = marcaService.buscarTodasMarcas();
 		estadosOrdenes = estadoOrdenService.buscarTodosEstadosOrden();
 		formasPago = ordenService.buscarFormasPago();
+		gruposProducto = productoGrupoService.buscarProductosGrupo();
 		
 		trabajoFiltro = new BuscarTrabajoFiltro();
 		
@@ -266,6 +289,29 @@ public class AdmOTMB implements Serializable {
 	public void abrirCambioEstadoOrden(){
 		idNuevoEstadoOrden = orden.getUltimoOrdenEstado().getEstadoOrden().getIdEstadoOrden();
 		observacionEstado = null;
+		
+		if(idNuevoEstadoOrden.equals(6)){
+			desRepuesto = orden.getDescuentoRepuestos() == null ? 0d : orden.getDescuentoRepuestos();
+			desManoObra = orden.getDescuentoManoObra() == null ? 0d : orden.getDescuentoManoObra();
+			desSTercero = orden.getDescuentoTerceros() == null ? 0d : orden.getDescuentoTerceros();
+			
+			tipoDesRepuesto = orden.getTipoDescRepuestos();
+			tipoDesManoObra = orden.getTipoDescManoObra();
+			tipoDesSTercero = orden.getTipoDescTerceros();
+			
+			idFormaPago = orden.getFormaPago().getIdFormaPago();
+			
+			observacionEstado = orden.getUltimoOrdenEstado().getObservacion();
+			
+		} else {
+			desRepuesto = 0d;
+			desManoObra = 0d;
+			desSTercero = 0d;
+			
+			tipoDesRepuesto = "%";
+			tipoDesManoObra = "%";
+			tipoDesSTercero = "%";
+		}
 	}
 	
 	public void guardarEstadoOrden(){
@@ -283,19 +329,40 @@ public class AdmOTMB implements Serializable {
 			TipoOrdenObservacionEnum tipoObservacion = TipoOrdenObservacionEnum.CAMBIO_ESTADO;
 			
 			FormaPago fp = null;
+			Map<String, String> descuentos = null;
 			
 			if(idNuevoEstadoOrden.equals(6)){
 				fp = new FormaPago();
 				fp.setIdFormaPago(idFormaPago);
+				
+				descuentos = new HashMap<String, String>();
+				
+				descuentos.put("desRepuesto", String.valueOf(desRepuesto) + "-" + tipoDesRepuesto);
+				descuentos.put("desManoObra", String.valueOf(desManoObra) + "-" + tipoDesManoObra);
+				descuentos.put("desSTercero", String.valueOf(desSTercero) + "-" + tipoDesSTercero);
 			}
 			
 			if(estado.getFinalizacion()){
 				tipoObservacion = TipoOrdenObservacionEnum.FINALIZACION;
 			}
 			
-			ordenService.guardarEstadoOrden(ordenEstado, fp);
+			ordenService.guardarEstadoOrden(ordenEstado, fp, descuentos);
 			
-			OrdenObservacion observacion = new OrdenObservacion();
+			OrdenObservacion observacion = null;
+			
+			if(idNuevoEstadoOrden.equals(ordenEstado.getEstadoOrden().getIdEstadoOrden())){
+				observaciones = ordenService.buscarObservacionesPorIdOrden(orden.getIdOrden());
+				
+				if(observaciones.size() == 0){
+					observacion = new OrdenObservacion();
+				} else {
+					observacion = observaciones.get(observaciones.size() - 1);
+				}
+				
+			} else { 
+				observacion = new OrdenObservacion();
+			}
+		
 			observacion.setOrden(orden);
 			observacion.setTipoObservacion(tipoObservacion);
 			observacion.setObservacion(observacionEstado);
@@ -310,10 +377,22 @@ public class AdmOTMB implements Serializable {
 		}
 	}
 	
+	public void limpiarVarsConIva(){
+		ivaManoObra = true;
+		ivaRepuesto = true;
+		ivaSTercero = true;
+	}
+	
 	public void generarReporteResumentOT(){
 		try{
 			
-			byte[] reportePDF = ordenService.generarResumenOT(orden, true);
+			Map<String, Boolean> totalesIVA = new HashMap<String, Boolean>();
+			
+			totalesIVA.put("ivaRepuesto", ivaRepuesto);
+			totalesIVA.put("ivaManoObra", ivaManoObra);
+			totalesIVA.put("ivaSTercero", ivaSTercero);
+			
+			byte[] reportePDF = ordenService.generarResumenOT(orden, totalesIVA);
 			
 			if(reportePDF != null){
 				HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
@@ -339,11 +418,10 @@ public class AdmOTMB implements Serializable {
 			OrdenEstado ordenEstado = new OrdenEstado();
 			ordenEstado.setEstadoOrden(estado);
 			ordenEstado.setFechaInicio(new Date());
-			ordenEstado.setFechaTermino(new Date());
 			ordenEstado.setObservacion("");
 			ordenEstado.setOrden(orden);
 			
-			ordenService.guardarEstadoOrden(ordenEstado, null);
+			ordenService.guardarEstadoOrden(ordenEstado, null, null);
 			
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Mensaje", "Orden eliminada correctamente"));
 			
@@ -351,6 +429,35 @@ public class AdmOTMB implements Serializable {
 			
 		} catch (Exception e) {
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error", "Ocurrió un problema al guardar la información, intentelo más tarde"));
+		}
+	}
+	
+	public void buscarValorHHPorCantidad(TrabajoProductoDto trabajoDto){
+		Integer precioHH = trabajoDto.getTrabajo().getPrecioManoObra().intValue();
+		trabajoDto.setPrecio((long)Math.round(precioHH * trabajoDto.getHhEstimadas()));
+	}
+	
+	public void buscarPrecioPorCantidad(TrabajoProductoDto productoDto){
+		
+		OrdenTrabajoProducto producto = ordenTrabajoService.buscarOrdenTrabajoProductoPorOrden(productoDto.getOt().getIdOrdenTrabajo(), productoDto.getProducto().getIdProducto());
+		
+		boolean tieneStock = false;
+		
+		if(!producto.getTraidoCliente()){
+			
+			Stock stock = ordenService.buscarStockPorProducto(producto.getProducto().getIdProducto(), producto.getCantidad(), orden.getIdOrden());
+			
+			if(stock != null){
+				Integer valorVenta = ordenService.buscarValorVentaProductoStock(stock.getIdStock());
+				producto.setValor(valorVenta);
+				tieneStock = true;
+			}
+		}
+		
+		productoDto.setTieneStock(tieneStock);
+		
+		if(tieneStock){
+			productoDto.setPrecio((long)Math.round(producto.getValor().longValue() * productoDto.getCantidad()));
 		}
 	}
 	
@@ -377,7 +484,7 @@ public class AdmOTMB implements Serializable {
 
 					boolean tieneStock = false;
 					
-					if(!producto.getTraidoCliente()){
+					if(!producto.getTraidoCliente() && (trabajo.getUltimoEstado().getEstadoTrabajo().getIdEstadoTrabajo().equals(1) || trabajo.getUltimoEstado().getEstadoTrabajo().getIdEstadoTrabajo().equals(2))){
 						
 						Stock stock = ordenService.buscarStockPorProducto(producto.getProducto().getIdProducto(), producto.getCantidad(), orden.getIdOrden());
 						
@@ -388,9 +495,14 @@ public class AdmOTMB implements Serializable {
 							}
 							tieneStock = true;
 						}
+					} else {
+						tieneStock = true;
 					}
+					TrabajoProductoDto tpDtoArbol = new TrabajoProductoDto(producto.getProducto(), producto.getCantidad(), producto.getValor(), null, TrabajoProductoDto.PRODUCT_TYPE, false, producto.getTraidoCliente(), tieneStock);
+					tpDtoArbol.setTrabajo(trabajo.getTrabajo());
+					tpDtoArbol.setOt(trabajo);
 					
-					new DefaultTreeNode(new TrabajoProductoDto(producto.getProducto(), producto.getCantidad(), producto.getValor(), null, TrabajoProductoDto.PRODUCT_TYPE, false, producto.getTraidoCliente(), tieneStock), trabajoArbol);
+					new DefaultTreeNode(tpDtoArbol, trabajoArbol);
 				}
 			
 			} catch (Exception e) {
@@ -449,7 +561,7 @@ public class AdmOTMB implements Serializable {
 	
 	public void buscarProductos(){
 		try{
-			productos =  productoService.buscarProductosPorCodigoDescripcionMarca(productoCodigo, productoDesc, idMarca);
+			productos =  productoService.buscarProductosPorCodigoDescripcionMarca(productoCodigo, productoDesc, idMarca, idProductoGrupo);
 		} catch (Exception e) {
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error", "Ocurrió un problema al buscar la información, intentelo más tarde"));
 		}
@@ -547,6 +659,7 @@ public class AdmOTMB implements Serializable {
 			
 			orden.setOrdenTrabajos(ordenesTrabajo);
 			ordenService.guardarOrden(orden);
+			buscarOrdenes();
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Mensaje", "Orden de Trabajo modificada correctamente"));
 		} catch (Exception e) {
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error", "Ocurrió un problema al guardar la información, intentelo más tarde"));
@@ -556,12 +669,13 @@ public class AdmOTMB implements Serializable {
 	public void agregarProductos(){
 		
 		TreeNode workTreeNode = null;
-		
+		TrabajoProductoDto wpDtoSelec = null;
 		if(trabajoProductoDto.getTrabajo() != null){
 			for(TreeNode node : tnTrabajos.getChildren()){
 				TrabajoProductoDto wpDto = (TrabajoProductoDto)node.getData();
 				if(wpDto.getTrabajo() != null && wpDto.getTrabajo().getIdTrabajo().equals(trabajoProductoDto.getTrabajo().getIdTrabajo())){
 					workTreeNode = node;
+					wpDtoSelec = wpDto;
 					break;
 				}
 			}
@@ -582,7 +696,24 @@ public class AdmOTMB implements Serializable {
 						}
 						
 						if(!exist){
-							new DefaultTreeNode(new TrabajoProductoDto(trabajoProductoDto.getTrabajo(), product, (double)1, null, TrabajoProductoDto.PRODUCT_TYPE), workTreeNode);
+							
+							boolean tieneStock = false;
+							
+							Stock stock = ordenService.buscarStockPorProducto(product.getIdProducto(), 1d, orden.getIdOrden());
+							
+							Integer valorVenta = 0;
+							
+							if(stock != null){
+								valorVenta = ordenService.buscarValorVentaProductoStock(stock.getIdStock());
+								tieneStock = true;
+							}
+							
+							TrabajoProductoDto tpDtoArbol = new TrabajoProductoDto(product, 1d, valorVenta, null, TrabajoProductoDto.PRODUCT_TYPE, false, false, tieneStock);
+							
+							tpDtoArbol.setTrabajo(wpDtoSelec.getTrabajo());
+							tpDtoArbol.setOt(wpDtoSelec.getOt());
+							
+							new DefaultTreeNode(tpDtoArbol, workTreeNode);
 						}
 					}
 				}
@@ -633,8 +764,8 @@ public class AdmOTMB implements Serializable {
 			
 		} else if(trabajoProductoDto.getTrabajo() != null){
 			for(TreeNode node : tnTrabajos.getChildren()){
-				TrabajoProductoDto wpDto = (TrabajoProductoDto)node.getData();
-				if(wpDto.getTrabajo() != null && wpDto.getTrabajo().getIdTrabajo().equals(trabajoProductoDto.getTrabajo().getIdTrabajo())){
+				TrabajoProductoDto tpDto = (TrabajoProductoDto)node.getData();
+				if(tpDto.getTrabajo() != null && tpDto.getTrabajo().getIdTrabajo().equals(trabajoProductoDto.getTrabajo().getIdTrabajo())){
 					objToRemove.add(node);
 				}
 			}
@@ -642,16 +773,6 @@ public class AdmOTMB implements Serializable {
 			for(TreeNode node : objToRemove){
 				tnTrabajos.getChildren().remove(node);
 			}
-			
-			Trabajo workDeleted = null;
-			for(Trabajo work : this.trabajosAgregados){
-				if(work.getIdTrabajo().equals(trabajoProductoDto.getTrabajo().getIdTrabajo())){
-					workDeleted = work;
-					break;
-				}
-			}
-			
-			trabajosAgregados.remove(workDeleted);
 		}
 	}
 	
@@ -721,7 +842,7 @@ public class AdmOTMB implements Serializable {
 			vehiculoService.guardarVehiculo(orden.getVehiculoOrden().getVehiculo());
 			vehiculoService.guardarVehiculoOrden(orden.getVehiculoOrden());
 			buscarOrdenes();
-			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Mensaje", "Vehiculo almacenado correctamente"));
+			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Mensaje", "Vehículo almacenado correctamente"));
 		} catch (Exception e) {
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error", "Ocurrió un problema al almacenar la información, intentelo más tarde"));
 		}
@@ -1391,5 +1512,173 @@ public class AdmOTMB implements Serializable {
 	 */
 	public void setDocumento(OrdenDocumento documento) {
 		this.documento = documento;
+	}
+
+	/**
+	 * @return the idProductoGrupo
+	 */
+	public Integer getIdProductoGrupo() {
+		return idProductoGrupo;
+	}
+
+	/**
+	 * @param idProductoGrupo the idProductoGrupo to set
+	 */
+	public void setIdProductoGrupo(Integer idProductoGrupo) {
+		this.idProductoGrupo = idProductoGrupo;
+	}
+
+	/**
+	 * @return the productoGrupoService
+	 */
+	public IProductoGrupoService getProductoGrupoService() {
+		return productoGrupoService;
+	}
+
+	/**
+	 * @param productoGrupoService the productoGrupoService to set
+	 */
+	public void setProductoGrupoService(IProductoGrupoService productoGrupoService) {
+		this.productoGrupoService = productoGrupoService;
+	}
+
+	/**
+	 * @return the grupoProducto
+	 */
+	public List<ProductoGrupo> getGruposProducto() {
+		return gruposProducto;
+	}
+
+	/**
+	 * @param grupoProducto the grupoProducto to set
+	 */
+	public void setGruposProducto(List<ProductoGrupo> gruposProducto) {
+		this.gruposProducto = gruposProducto;
+	}
+
+	/**
+	 * @return the desRepuesto
+	 */
+	public Double getDesRepuesto() {
+		return desRepuesto;
+	}
+
+	/**
+	 * @param desRepuesto the desRepuesto to set
+	 */
+	public void setDesRepuesto(Double desRepuesto) {
+		this.desRepuesto = desRepuesto;
+	}
+
+	/**
+	 * @return the desManoObra
+	 */
+	public Double getDesManoObra() {
+		return desManoObra;
+	}
+
+	/**
+	 * @param desManoObra the desManoObra to set
+	 */
+	public void setDesManoObra(Double desManoObra) {
+		this.desManoObra = desManoObra;
+	}
+
+	/**
+	 * @return the desSTercero
+	 */
+	public Double getDesSTercero() {
+		return desSTercero;
+	}
+
+	/**
+	 * @param desSTercero the desSTercero to set
+	 */
+	public void setDesSTercero(Double desSTercero) {
+		this.desSTercero = desSTercero;
+	}
+
+	/**
+	 * @return the tipoDesRepuesto
+	 */
+	public String getTipoDesRepuesto() {
+		return tipoDesRepuesto;
+	}
+
+	/**
+	 * @param tipoDesRepuesto the tipoDesRepuesto to set
+	 */
+	public void setTipoDesRepuesto(String tipoDesRepuesto) {
+		this.tipoDesRepuesto = tipoDesRepuesto;
+	}
+
+	/**
+	 * @return the tipoDesManoObra
+	 */
+	public String getTipoDesManoObra() {
+		return tipoDesManoObra;
+	}
+
+	/**
+	 * @param tipoDesManoObra the tipoDesManoObra to set
+	 */
+	public void setTipoDesManoObra(String tipoDesManoObra) {
+		this.tipoDesManoObra = tipoDesManoObra;
+	}
+
+	/**
+	 * @return the tipoDesSTercero
+	 */
+	public String getTipoDesSTercero() {
+		return tipoDesSTercero;
+	}
+
+	/**
+	 * @param tipoDesSTercero the tipoDesSTercero to set
+	 */
+	public void setTipoDesSTercero(String tipoDesSTercero) {
+		this.tipoDesSTercero = tipoDesSTercero;
+	}
+
+	/**
+	 * @return the ivaRepuesto
+	 */
+	public boolean isIvaRepuesto() {
+		return ivaRepuesto;
+	}
+
+	/**
+	 * @param ivaRepuesto the ivaRepuesto to set
+	 */
+	public void setIvaRepuesto(boolean ivaRepuesto) {
+		this.ivaRepuesto = ivaRepuesto;
+	}
+
+	/**
+	 * @return the ivaManoObra
+	 */
+	public boolean isIvaManoObra() {
+		return ivaManoObra;
+	}
+
+	/**
+	 * @param ivaManoObra the ivaManoObra to set
+	 */
+	public void setIvaManoObra(boolean ivaManoObra) {
+		this.ivaManoObra = ivaManoObra;
+	}
+
+	/**
+	 * @return the ivaSTercero
+	 */
+	public boolean isIvaSTercero() {
+		return ivaSTercero;
+	}
+
+	/**
+	 * @param ivaSTercero the ivaSTercero to set
+	 */
+	public void setIvaSTercero(boolean ivaSTercero) {
+		this.ivaSTercero = ivaSTercero;
 	}	
 }

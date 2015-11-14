@@ -1,6 +1,7 @@
 package cl.jfoix.atm.ot.service.impl;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -9,9 +10,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import cl.jfoix.atm.comun.dao.IEstadoTrabajoDao;
+import cl.jfoix.atm.comun.dao.IMarcaDao;
 import cl.jfoix.atm.comun.dao.IProductoDao;
+import cl.jfoix.atm.comun.dao.IProductoGrupoDao;
 import cl.jfoix.atm.comun.entity.EstadoTrabajo;
+import cl.jfoix.atm.comun.entity.Marca;
 import cl.jfoix.atm.comun.entity.Producto;
+import cl.jfoix.atm.comun.entity.ProductoGrupo;
 import cl.jfoix.atm.comun.excepcion.dao.DaoException;
 import cl.jfoix.atm.comun.excepcion.view.ViewException;
 import cl.jfoix.atm.dbutil.dao.util.Filtro;
@@ -19,6 +24,7 @@ import cl.jfoix.atm.dbutil.dao.util.TipoOperacionFiltroEnum;
 import cl.jfoix.atm.ot.dao.IMovimientoDao;
 import cl.jfoix.atm.ot.dao.IMovimientoIngresoDao;
 import cl.jfoix.atm.ot.dao.IOrdenTrabajoDao;
+import cl.jfoix.atm.ot.dao.IOrdenTrabajoProductoDao;
 import cl.jfoix.atm.ot.dao.IOrdenTrabajoSolicitudDao;
 import cl.jfoix.atm.ot.dao.IOrdenTrabajoSolicitudProductoDao;
 import cl.jfoix.atm.ot.dao.IOrdenTrabajoUsuarioDao;
@@ -41,9 +47,18 @@ public class OrdenTrabajoServiceImpl implements IOrdenTrabajoService {
 
 	@Autowired
 	private IOrdenTrabajoDao ordenTrabajoDao;
-	
+
+	@Autowired
+	private IOrdenTrabajoProductoDao ordenTrabajoProductoDao;
+
 	@Autowired
 	private IStockDao stockDao;
+	
+	@Autowired
+	private IMarcaDao marcaDao;
+	
+	@Autowired
+	private IProductoGrupoDao productoGrupoDao;
 	
 	@Autowired
 	private IMovimientoDao movimientoDao;
@@ -99,6 +114,16 @@ public class OrdenTrabajoServiceImpl implements IOrdenTrabajoService {
 		}
 	}
 	
+	@Transactional
+	@Override
+	public void guardarOrdenTrabajoProducto(OrdenTrabajoProducto ordenTrabajoProducto) throws ViewException {
+		try {
+			ordenTrabajoProductoDao.guardar(ordenTrabajoProducto);
+		} catch (DaoException e) {
+			throw new ViewException("Ocurrió un problema al guardar la información, intentelo más tarde");
+		}
+	}
+	
 	@Override
 	@Transactional
 	public OrdenTrabajo cambiarEstadoOrdenTrabajo(EstadoTrabajo estadoTrabajo, Integer idOrdenTrabajo) throws ViewException {
@@ -115,7 +140,7 @@ public class OrdenTrabajoServiceImpl implements IOrdenTrabajoService {
 			ot.getEstadosOrden().add(otEstado);
 			
 			if(!estadoTrabajo.getIdEstadoTrabajo().equals(2)){
-				otEstado.setFechaTermino(new Date());
+//				otEstado.setFechaTermino(new Date());
 				ot.setFechaTermino(new Date());
 			}
 			
@@ -188,12 +213,134 @@ public class OrdenTrabajoServiceImpl implements IOrdenTrabajoService {
 	@Transactional
 	public List<Producto> buscarProductos(String codProducto, String descProducto){
 		try {
+//			List<Filtro> filtros = new ArrayList<Filtro>();
+//			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
+//			filtros.add(new Filtro("descripcion", TipoOperacionFiltroEnum.LIKE_COMPLETO, codProducto));
+//			filtros.add(new Filtro("codigo", TipoOperacionFiltroEnum.LIKE_COMPLETO, descProducto));
+			
+//			return productoDao.buscarPorFiltros(filtros, null);
+			
+			return productoDao.buscarProductosPorFiltros(null, null, null, codProducto, true, descProducto);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public List<ProductoGrupo> buscarProductoGrupos(){
+		try {
 			List<Filtro> filtros = new ArrayList<Filtro>();
 			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
-			filtros.add(new Filtro("descripcion", TipoOperacionFiltroEnum.LIKE_COMPLETO, codProducto));
-			filtros.add(new Filtro("codigo", TipoOperacionFiltroEnum.LIKE_COMPLETO, descProducto));
 			
-			return productoDao.buscarPorFiltros(filtros, null);
+			return productoGrupoDao.buscarPorFiltros(filtros, null);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public List<Producto> buscarProductoPorGrupo(Integer idProductoGrupo){
+		try {
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			filtros.add(new Filtro("c.productoGrupo.idProductoGrupo", TipoOperacionFiltroEnum.EQUAL, idProductoGrupo));
+			filtros.add(new Filtro("c.estado", TipoOperacionFiltroEnum.EQUAL, true));
+			
+			return productoDao.buscarPorFiltros(filtros, null, true);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public List<Marca> buscarMarcasPorIdProductoGrupo(Integer idProductoGrupo){
+		try {
+			return marcaDao.buscarMarcasPorGrupoProducto(idProductoGrupo);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public EstadoTrabajo buscarEstadoTrabajo(Integer idEstadoTrabajo){
+		try {
+			return estadoTrabajoDao.buscarPorId(idEstadoTrabajo);
+		} catch (DaoException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	@Override
+	@Transactional
+	public OrdenTrabajo buscarOrdenTrabajo(Integer idOrdenTrabajo){
+		try {
+			OrdenTrabajo ot = ordenTrabajoDao.buscarPorId(idOrdenTrabajo);
+			
+			ot.getOrdenTrabajoProductos().size();
+			ot.getEstadosOrden().size();
+			
+			return ot;
+		} catch (DaoException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	@Override
+	@Transactional
+	public OrdenTrabajo buscarOrdenTrabajoMecanico(String mecanico){
+		try {
+			
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			filtros.add(new Filtro("usu.usuario.nombreUsuario", TipoOperacionFiltroEnum.EQUAL, mecanico));
+			
+			List<OrdenTrabajo> trabajos = ordenTrabajoDao.buscarPorFiltros(filtros, "c.idOrdenTrabajo ASC", "JOIN c.ordenTrabajoUsuarios usu");
+			
+			//Buscar trabajo en proceso
+			for(OrdenTrabajo ot : trabajos){
+				if(ot.getUltimoEstado().getEstadoTrabajo().getIdEstadoTrabajo().equals(2)){
+					ot.getOrdenTrabajoProductos().size();
+					return ot;
+				}
+			}
+			
+			//Buscar trabajo ingresado
+			for(OrdenTrabajo ot : trabajos){
+				if(ot.getUltimoEstado().getEstadoTrabajo().getIdEstadoTrabajo().equals(1)){
+					ot.getOrdenTrabajoProductos().size();
+					return ot;
+				}
+			}
+			
+		} catch (DaoException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	@Override
+	@Transactional
+	public OrdenTrabajoProducto buscarOrdenTrabajoProductoPorOrden(Integer idOrdenTrabajo, Integer idProducto){
+		try {
+			
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			filtros.add(new Filtro("c.ordenTrabajo.idOrdenTrabajo", TipoOperacionFiltroEnum.EQUAL, idOrdenTrabajo));
+			filtros.add(new Filtro("c.producto.idProducto", TipoOperacionFiltroEnum.EQUAL, idProducto));
+			
+			List<OrdenTrabajoProducto> otps = ordenTrabajoProductoDao.buscarPorFiltros(filtros, null);
+			
+			if(otps != null && otps.size() > 0){
+				return otps.get(0);
+			}
 		} catch (DaoException e) {
 			e.printStackTrace();
 		}
@@ -210,7 +357,15 @@ public class OrdenTrabajoServiceImpl implements IOrdenTrabajoService {
 			filtros.add(new Filtro("c.usuario.nombreUsuario", TipoOperacionFiltroEnum.EQUAL, nombreUsuario));
 			
 			if(fecha != null){
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(fecha);
+				cal.add(Calendar.HOUR_OF_DAY, 23);
+				cal.add(Calendar.MINUTE, 59);
+				cal.add(Calendar.SECOND, 59);
+				
+				//Durante el día
 				filtros.add(new Filtro("c.ordenTrabajo.fechaInicio", TipoOperacionFiltroEnum.MAYOR_IGUAL_QUE, fecha));
+				filtros.add(new Filtro("c.ordenTrabajo.fechaInicio", TipoOperacionFiltroEnum.MENOR_IGUAL_QUE, cal.getTime()));
 			}
 			
 			if(idEstadoTrabajo != null && !idEstadoTrabajo.equals(-1)){
@@ -223,13 +378,16 @@ public class OrdenTrabajoServiceImpl implements IOrdenTrabajoService {
 			
 			filtros.add(new Filtro("estOrden.fechaTermino", TipoOperacionFiltroEnum.IS_NULL, null));
 			filtros.add(new Filtro("ordenEstado.estadoOrden.idEstadoOrden", TipoOperacionFiltroEnum.NOT_IN, new Integer[] { 6, 7, 8}));
-			filtros.add(new Filtro("ordenEstado.fechaTermino", TipoOperacionFiltroEnum.IS_NULL, null));
+			filtros.add(new Filtro("ordenEstado."
+					+ "fechaTermino", TipoOperacionFiltroEnum.IS_NULL, null));
 			
-			List<OrdenTrabajoUsuario> trabajos = ordenTrabajoUsuarioDao.buscarPorFiltros(filtros, null, "JOIN c.ordenTrabajo.estadosOrden estOrden", "JOIN c.ordenTrabajo.orden.ordenEstados ordenEstado");
+			List<OrdenTrabajoUsuario> trabajos = ordenTrabajoUsuarioDao.buscarPorFiltros(filtros, "c.ordenTrabajo.idOrdenTrabajo ASC", "JOIN c.ordenTrabajo.estadosOrden estOrden", "JOIN c.ordenTrabajo.orden.ordenEstados ordenEstado");
 			
 			for(OrdenTrabajoUsuario otUsuario : trabajos){
 				otUsuario.getOrdenTrabajo().getOrdenTrabajoProductos().size();
 				otUsuario.getOrdenTrabajo().getEstadosOrden().size();
+				
+				otUsuario.getOrdenTrabajo().setProductosGrupo(productoDao.buscarProductosAgrupados(otUsuario.getOrdenTrabajo().getIdOrdenTrabajo()));
 			}
 			
 			return trabajos;

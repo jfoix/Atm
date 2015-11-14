@@ -12,7 +12,7 @@
 				<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
 		            <h:outputLabel value="Descripci&oacute;n Tipo" />
 		            <h:outputLabel value=":" />  
-		            <p:inputText value="#{trabajoTipoMB.tipoDesc}" />
+		            <p:inputText value="#{trabajoTipoMB.tipoDesc}" style="width:300px" />
 		            <p:commandButton 
 		            	value="Buscar" 
 		            	update="dttTypes"
@@ -64,7 +64,7 @@
 				    <h:panelGrid columns="3" cellpadding="4">
 				    	<h:outputText value="Descripci&oacute;n Tipo" />
 				    	<h:outputText value=":" />
-				    	<p:inputText value="#{trabajoTipoMB.trabajoTipo.descripcion}" />
+				    	<p:inputText value="#{trabajoTipoMB.trabajoTipo.descripcion}" style="width:300px" />
 				    </h:panelGrid>
                 </h:panelGroup>
 			    <f:facet name="footer">

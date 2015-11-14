@@ -129,19 +129,19 @@ public class TrabajoServiceImpl implements ITrabajoService {
 
 			List<Filtro> filtros = new ArrayList<Filtro>();
 			
-			if(!descripcion.equals("")){
+			if(descripcion != null && !descripcion.equals("")){
 				filtros.add(new Filtro("descripcion", TipoOperacionFiltroEnum.LIKE_COMPLETO, descripcion));
 			}
 			
-			if(!codigo.equals("")){
+			if(codigo != null && !codigo.equals("")){
 				filtros.add(new Filtro("codigo", TipoOperacionFiltroEnum.LIKE_COMPLETO, codigo));
 			}
 			
-			if(idTrabajoTipo != -1){
+			if(idTrabajoTipo != null && idTrabajoTipo != -1){
 				filtros.add(new Filtro("c.trabajoSubTipo.trabajoTipo.idTrabajoTipo", TipoOperacionFiltroEnum.EQUAL, idTrabajoTipo));
 			}
 			
-			if(idTrabajoSubTipo != -1){
+			if(idTrabajoSubTipo != null  && idTrabajoSubTipo != -1){
 				filtros.add(new Filtro("c.trabajoSubTipo.idTrabajoSubTipo", TipoOperacionFiltroEnum.EQUAL, idTrabajoSubTipo));
 			}
 			

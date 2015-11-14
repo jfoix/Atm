@@ -12,7 +12,7 @@
 				<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
 		            <h:outputLabel value="Nombre Marca" />
 		            <h:outputLabel value=":" />  
-		            <p:inputText value="#{marcaMB.nombreMarca}" />
+		            <p:inputText value="#{marcaMB.nombreMarca}" style="width:300px" />
 		            <p:commandButton 
 		            	value="Buscar" 
 		            	update="dttStamps"
@@ -63,7 +63,7 @@
 			    <h:panelGrid columns="3" cellpadding="4" id="pgiStampInfo">
 			    	<h:outputText value="Nombre Marca" />
 			    	<h:outputText value=":" />
-			    	<p:inputText id="stampDesc" value="#{marcaMB.marca.descripcion}" />
+			    	<p:inputText id="stampDesc" value="#{marcaMB.marca.descripcion}" style="width:300px" />
 			    </h:panelGrid>
 			    <f:facet name="footer">
 			    	<div align="center">

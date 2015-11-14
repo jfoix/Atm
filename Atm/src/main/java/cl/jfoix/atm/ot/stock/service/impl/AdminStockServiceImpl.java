@@ -12,11 +12,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import cl.jfoix.atm.comun.dao.IBodegaDao;
+import cl.jfoix.atm.comun.dao.IMarcaDao;
 import cl.jfoix.atm.comun.dao.IParametroGeneralDao;
 import cl.jfoix.atm.comun.dao.IProductoDao;
+import cl.jfoix.atm.comun.dao.IProductoGrupoDao;
 import cl.jfoix.atm.comun.dao.IProveedorDao;
+import cl.jfoix.atm.comun.entity.Marca;
 import cl.jfoix.atm.comun.entity.ParametroGeneral;
 import cl.jfoix.atm.comun.entity.Producto;
+import cl.jfoix.atm.comun.entity.ProductoGrupo;
 import cl.jfoix.atm.comun.service.IOrdenService;
 import cl.jfoix.atm.dbutil.dao.util.Filtro;
 import cl.jfoix.atm.dbutil.dao.util.TipoOperacionFiltroEnum;
@@ -47,6 +51,12 @@ public class AdminStockServiceImpl implements IAdminStockService {
 
 	@Autowired
 	private IProductoDao productoDao;
+	
+	@Autowired
+	private IProductoGrupoDao productoGrupoDao;
+	
+	@Autowired
+	private IMarcaDao marcaDao;
 	
 	@Autowired
 	private IStockDao stockDao;
@@ -81,6 +91,54 @@ public class AdminStockServiceImpl implements IAdminStockService {
 		}
 		return null;
 	}
+	
+	@Override
+	public List<ProductoGrupo> buscarProductoGrupo() {
+		try{
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
+			
+			return productoGrupoDao.buscarPorFiltros(filtros, "descripcion ASC");
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	@Override
+	public List<Producto> buscarProductosPorGrupo(Integer idProductoGrupo, String nombreProd, String codigo) {
+		try{
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
+			filtros.add(new Filtro("productoGrupo.idProductoGrupo", TipoOperacionFiltroEnum.EQUAL, idProductoGrupo));
+			
+			if(codigo != null && !codigo.equals("")){
+				filtros.add(new Filtro("codigo", TipoOperacionFiltroEnum.LIKE_COMPLETO, codigo));
+			}
+			
+			if(nombreProd != null && !nombreProd.equals("")){
+				filtros.add(new Filtro("descripcion", TipoOperacionFiltroEnum.LIKE_COMPLETO, nombreProd));
+			}
+			
+			return productoDao.buscarPorFiltros(filtros, "codigo ASC");
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	@Override
+	public List<Marca> buscarMarcas() {
+		try{
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
+			
+			return marcaDao.buscarPorFiltros(filtros, "descripcion asc");
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 	@Override
 	public List<Proveedor> buscarProveedores() {
@@ -88,7 +146,7 @@ public class AdminStockServiceImpl implements IAdminStockService {
 			List<Filtro> filtros = new ArrayList<Filtro>();
 			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
 			
-			return proveedorDao.buscarPorFiltros(filtros, null);
+			return proveedorDao.buscarPorFiltros(filtros, "descripcion asc");
 		} catch(Exception e){
 			e.printStackTrace();
 		}
@@ -101,7 +159,24 @@ public class AdminStockServiceImpl implements IAdminStockService {
 			List<Filtro> filtros = new ArrayList<Filtro>();
 			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
 			
-			return productoDao.buscarPorFiltros(filtros, null);
+			return productoDao.buscarProductosPorFiltros(null, null, null, null, true, null);
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	@Override
+	public List<Producto> buscarProductosFiltros(String desc, Integer idGrupo, Integer idMarca) {
+		try{
+			return productoDao.buscarProductosPorFiltros(
+					null, 
+					(idGrupo != null && !idGrupo.equals(-1) ? idGrupo : null), 
+					(idMarca != null && !idMarca.equals(-1) ? idMarca : null), 
+					null, 
+					true, 
+					(desc != null && !desc.equals("") ? desc : null));
+			
 		} catch(Exception e){
 			e.printStackTrace();
 		}
@@ -113,6 +188,25 @@ public class AdminStockServiceImpl implements IAdminStockService {
 		try{
 			List<Filtro> filtros = new ArrayList<Filtro>();
 			filtros.add(new Filtro("c.producto.idProducto", TipoOperacionFiltroEnum.EQUAL, idProducto));
+			filtros.add(new Filtro("c.producto.estado", TipoOperacionFiltroEnum.EQUAL, true));
+			
+			List<Stock> stocks = stockDao.buscarPorFiltros(filtros, null);
+			
+			if(stocks != null && stocks.size() > 0){
+				return stocks.get(0);
+			}
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	@Override
+	public Stock buscarStockPorIdProductoIdBodega(Integer idProducto, Integer idBodega) {
+		try{
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			filtros.add(new Filtro("c.producto.idProducto", TipoOperacionFiltroEnum.EQUAL, idProducto));
+			filtros.add(new Filtro("c.bodega.idBodega", TipoOperacionFiltroEnum.EQUAL, idBodega));
 			
 			List<Stock> stocks = stockDao.buscarPorFiltros(filtros, null);
 			
@@ -158,6 +252,22 @@ public class AdminStockServiceImpl implements IAdminStockService {
 	}
 	
 	@Override
+	public List<Movimiento> buscarMovimientoPorIdStock(Integer idStock) {
+		
+		try{
+			
+			List<Filtro> filtros = new ArrayList<Filtro>();
+			filtros.add(new Filtro("c.stock.idStock", TipoOperacionFiltroEnum.EQUAL, idStock));
+			
+			return movimientoDao.buscarPorFiltros(filtros, "c.fecha desc");
+			
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	@Override
 	@Transactional
 	public List<Integer> actualizarProductoStockValor(Movimiento movimiento) {
 		try{
@@ -193,20 +303,63 @@ public class AdminStockServiceImpl implements IAdminStockService {
 		List<Stock> stocks = null;
 		
 		try{
-			List<Filtro> filtros = new ArrayList<Filtro>();
+			stocks = stockDao.buscarProductosPorFiltros(
+					filtro.getIdProductoGrupo(), 
+					filtro.getIdMarca(), 
+					filtro.getCodigo(), 
+					true, 
+					filtro.getDescripcion(), 
+					filtro.getIdBodega(), 
+					filtro.getCoordBodega());
 			
-			if(filtro.getIdProducto() != null && !filtro.getIdProducto().equals(-1)){
-				filtros.add(new Filtro("c.producto.idProducto", TipoOperacionFiltroEnum.EQUAL, filtro.getIdProducto()));
-			}
-			
-			if(filtro.getIdBodega() != null && !filtro.getIdBodega().equals(-1)){
-				filtros.add(new Filtro("c.bodega.idBodega", TipoOperacionFiltroEnum.EQUAL, filtro.getIdBodega()));
-			}
-			
-			if(filtros.size() > 0){
-				stocks = stockDao.buscarPorFiltros(filtros, null);
-			} else {
-				stocks = stockDao.buscarTodos();
+			if(stocks != null && stocks.size() > 0){
+				
+				ParametroGeneral param = parametroGeneralDao.buscarPorId("stock.movimientos.limit");
+				Integer limite = Integer.parseInt(param.getValor());
+				
+				for(Stock stock : stocks){
+					List<Movimiento> movimientos = movimientoDao.buscarMovimientos(stock.getIdStock(), limite);
+					
+					double cantidadActual = stock.getCantidad().doubleValue();
+					
+					Integer ultimoPrecioVenta = null;
+					Integer mayorPrecioCompra = null;
+					
+					int i = 0;
+					
+					Movimiento movCompra = null;
+					
+					while(i < movimientos.size()){
+						
+						if(movimientos.get(i).getTipo().equals(TipoMovimientoEnum.INGRESO) && cantidadActual > 0){
+							cantidadActual = cantidadActual - movimientos.get(i).getCantidad().doubleValue();
+							
+							if(mayorPrecioCompra == null){
+								mayorPrecioCompra = movimientos.get(i).getValorUnidad();
+								movCompra = movimientos.get(i);
+							} else {
+								if(mayorPrecioCompra.intValue() < movimientos.get(i).getValorUnidad().intValue()){
+									mayorPrecioCompra = movimientos.get(i).getValorUnidad();
+									movCompra = movimientos.get(i);
+								}
+							}
+							
+						} else if(movimientos.get(i).getTipo().equals(TipoMovimientoEnum.EGRESO) && ultimoPrecioVenta == null){
+							ultimoPrecioVenta = movimientos.get(i).getValorUnidad();
+						}
+						
+						i++;
+					}
+					
+					stock.setUltimoPrecioVenta(ultimoPrecioVenta);
+					stock.setMayorPrecioCompra(mayorPrecioCompra);
+					
+					if(movCompra != null){
+						int porcProveedor = (int)Math.round(mayorPrecioCompra * (movCompra.getProveedor().getPorcentajeGanancia() / 100));
+						int iva = (int)Math.round((porcProveedor + mayorPrecioCompra) * 0.19);
+						stock.setPrecioVenta(porcProveedor + iva + mayorPrecioCompra);
+					}
+				}
 			}
 		} catch(Exception e){
 			e.printStackTrace();
@@ -214,6 +367,19 @@ public class AdminStockServiceImpl implements IAdminStockService {
 		return stocks;
 	}
 
+	@Transactional
+	@Override
+	public void modificarStock(Stock stock){
+		try{
+			String tmpCoodBodega = stock.getCoordBodega();
+			stock = stockDao.buscarPorId(stock.getIdStock());
+			stock.setCoordBodega(tmpCoodBodega);
+			stockDao.modificar(stock);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
 	@Transactional
 	@Override
 	public void guardarStock(Stock stock, Movimiento movimiento){
@@ -318,4 +484,6 @@ public class AdminStockServiceImpl implements IAdminStockService {
 			e.printStackTrace();
 		}
 	}
+	
+	
 }

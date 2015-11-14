@@ -2,6 +2,7 @@ package cl.jfoix.atm.comun.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import cl.jfoix.atm.comun.excepcion.view.ViewException;
 import cl.jfoix.atm.ot.dto.ResumentMecanicoDto;
@@ -13,7 +14,6 @@ import cl.jfoix.atm.ot.entity.Orden;
 import cl.jfoix.atm.ot.entity.OrdenDocumento;
 import cl.jfoix.atm.ot.entity.OrdenEstado;
 import cl.jfoix.atm.ot.entity.OrdenObservacion;
-import cl.jfoix.atm.ot.entity.OrdenTrabajoUsuario;
 import cl.jfoix.atm.ot.entity.Stock;
 import cl.jfoix.atm.ot.entity.VehiculoOrden;
 
@@ -27,7 +27,7 @@ public interface IOrdenService {
 
 	void guardarClienteVehiculoOrden(Cliente cliente, Integer idVehiculoOrden) throws ViewException;
 
-	void guardarEstadoOrden(OrdenEstado ordenEstado, FormaPago formaPago) throws ViewException;
+	void guardarEstadoOrden(OrdenEstado ordenEstado, FormaPago formaPago, Map<String, String> descuento) throws ViewException;
 
 	Stock buscarStockPorProducto(Integer idProducto, Double cantidad, Integer idOT);
 
@@ -47,9 +47,9 @@ public interface IOrdenService {
 
 	void eliminarDocumento(OrdenDocumento documento);
 
-	byte[] generarResumenOT(Orden orden, boolean finalizado);
+	byte[] generarResumenOT(Orden orden, Map<String, Boolean> totalesIVA);
 
-	ResumentOTDto buscarResumenOT(Orden ot, boolean finalizado);
+	ResumentOTDto buscarResumenOT(Orden ot);
 
 	List<Orden> consultaOTVehiculo(Integer idOrden, String patente);
 

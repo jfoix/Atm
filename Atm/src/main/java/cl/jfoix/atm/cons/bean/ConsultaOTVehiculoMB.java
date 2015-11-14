@@ -2,7 +2,9 @@ package cl.jfoix.atm.cons.bean;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ManagedProperty;
@@ -36,13 +38,19 @@ public class ConsultaOTVehiculoMB implements Serializable {
 	}
 	
 	public void generarResumenOT(){
-		resumenOT = ordenService.buscarResumenOT(orden, false); 
+		resumenOT = ordenService.buscarResumenOT(orden); 
 	}
 	
 	public void generarReporteResumentOT(){
 		try{
 			
-			byte[] reportePDF = ordenService.generarResumenOT(orden, false);
+			Map<String, Boolean> totalesIVA = new HashMap<String, Boolean>();
+			
+			totalesIVA.put("ivaRepuesto", true);
+			totalesIVA.put("ivaManoObra", true);
+			totalesIVA.put("ivaSTercero", true);
+			
+			byte[] reportePDF = ordenService.generarResumenOT(orden, totalesIVA);
 			
 			if(reportePDF != null){
 				HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();

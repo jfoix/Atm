@@ -5,4 +5,6 @@ import cl.jfoix.atm.login.entity.Usuario;
 public interface ILoginService {
 
 	public Usuario login(String userName, String password);
+
+	boolean ipLeapMotion(String ip);
 }

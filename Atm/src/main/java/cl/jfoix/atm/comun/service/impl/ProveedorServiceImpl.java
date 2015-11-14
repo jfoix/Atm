@@ -70,7 +70,7 @@ public class ProveedorServiceImpl implements IProveedorService {
 			List<Filtro> filtros = new ArrayList<Filtro>();
 			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
 
-			return proveedorDao.buscarPorFiltros(filtros, null);
+			return proveedorDao.buscarPorFiltros(filtros, "descripcion asc");
 		} catch (DaoException e) {
 			e.printStackTrace();
 		}
@@ -91,7 +91,7 @@ public class ProveedorServiceImpl implements IProveedorService {
 			
 			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
 
-			return proveedorDao.buscarPorFiltros(filtros, null);
+			return proveedorDao.buscarPorFiltros(filtros, "descripcion asc");
 		} catch (DaoException e) {
 			e.printStackTrace();
 		}

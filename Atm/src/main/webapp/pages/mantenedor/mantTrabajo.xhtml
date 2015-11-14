@@ -12,12 +12,13 @@
 		<h:form id="frm">
 			<p:fieldset legend="B&uacute;squeda">
 				<h:panelGrid columns="6" cellpadding="5" id="pniBusqueda">  
-		            <h:outputLabel value="Descripci&oacute;n Trabajo" />
-		            <h:outputLabel value=":" />  
-		            <p:inputText value="#{trabajoMB.trabajoDesc}" />
 		            <h:outputLabel value="C&oacute;digo Trabajo" />
 		            <h:outputLabel value=":" />  
 		            <p:inputText value="#{trabajoMB.trabajoCode}" />
+		            
+		            <h:outputLabel value="Descripci&oacute;n Trabajo" />
+		            <h:outputLabel value=":" />  
+		            <p:inputText value="#{trabajoMB.trabajoDesc}" style="width:300px" />
 		            
 		            <h:outputLabel value="Trabajo Tipo" />
 		            <h:outputLabel value=":" />  
@@ -114,7 +115,7 @@
 				    	
 				    	<h:outputText value="Descripci&oacute;n Tipo" />
 				    	<h:outputText value=":" />
-				    	<p:inputText value="#{trabajoMB.trabajo.descripcion}" />
+				    	<p:inputText value="#{trabajoMB.trabajo.descripcion}" style="width:300px" />
 				    	
 				    	<h:outputText value="HH Estimadas" />
 				    	<h:outputText value=":" />
@@ -214,8 +215,14 @@
 					    	<h:outputText value=":" />
 					    	<p:selectOneMenu value="#{trabajoMB.idMarca}">
 				            	<f:selectItem itemValue="-1" itemLabel="Todas" />
-				            	<f:selectItem itemValue="-2" itemLabel="Sin Marca" />
 				            	<f:selectItems value="#{trabajoMB.marcas}" var="stamp" itemLabel="#{stamp.descripcion}" itemValue="#{stamp.idMarca}" />
+				            </p:selectOneMenu>
+				            
+				            <h:outputText value="Grupo" />
+					    	<h:outputText value=":" />
+					    	<p:selectOneMenu value="#{trabajoMB.idProductoGrupo}">
+				            	<f:selectItem itemValue="-1" itemLabel="Todas" />
+				            	<f:selectItems value="#{trabajoMB.gruposProducto}" var="gp" itemLabel="#{gp.descripcion}" itemValue="#{gp.idProductoGrupo}" />
 				            </p:selectOneMenu>
 					    </h:panelGrid>
 			            <p:commandButton 
@@ -225,7 +232,14 @@
 			            	process="@this,pniBusquedaProductos" 
 			            	action="#{trabajoMB.searchProducts}" />
 				    </p:fieldset>
-	    			<p:dataTable var="product" value="#{trabajoMB.productos}" id="dttProducts" emptyMessage="Sin informaci&oacute;n">
+	    			<p:dataTable 
+	    				var="product" 
+	    				value="#{trabajoMB.productos}" 
+	    				id="dttProducts" 
+	    				paginator="true" rows="5"
+				    	paginatorPosition="bottom"
+						paginatorTemplate="{CurrentPageReport} {PageLinks}"
+	    				emptyMessage="Sin informaci&oacute;n">
 						<p:columnGroup type="header">  
 				            <p:row>
 				            	<p:column>#</p:column>  
@@ -240,7 +254,7 @@
 				        <p:column>  
 				            <h:outputText value="#{product.codigo}" />  
 				        </p:column>
-				        <p:column>  
+				        <p:column style="width:600px;">  
 				            <h:outputText value="#{product.descripcion}" />  
 				        </p:column>
 				        <p:column>  

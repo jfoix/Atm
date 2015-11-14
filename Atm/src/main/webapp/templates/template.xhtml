@@ -26,13 +26,13 @@
 				</table>
 			</div>
 			<h:form>
-				<p:menubar style="margin:2px">
+				<p:menubar style="margin:2px" autoDisplay="false">
 			        <p:menuitem value="Inicio" action="home" icon="ui-icon-home" />
 			        <p:submenu label="Servicios" icon="ui-icon-wrench" rendered="#{authenticationBean.tieneRol('ROLE_OT')}">
 		                <p:menuitem value="Crear OT" url="/pages/taller/crearOT.jsf" />
 			            <p:menuitem value="Administrar OT" url="/pages/taller/adminOT.jsf" />
 			        </p:submenu>
-			        <p:submenu label="Mec&aacute;nico" icon="ui-icon-wrench" rendered="#{authenticationBean.tieneRol('ROLE_TRABAJO')}">
+			        <p:submenu label="Mec&aacute;nico" icon="ui-icon-gear" rendered="#{authenticationBean.tieneRol('ROLE_TRABAJO')}">
 		                <p:menuitem value="Trabajos" url="/pages/mecanico/trabajos.jsf" ajax="false" />
 			        </p:submenu>
 			        <p:submenu label="Consultas" icon="ui-icon-search" rendered="#{authenticationBean.tieneRol('ROLE_CONSULTAS')}">
@@ -43,6 +43,7 @@
 			        </p:submenu>
 			        <p:submenu label="Mantenedores" icon="ui-icon-note" rendered="#{authenticationBean.tieneRol('ROLE_ADM_PARAM')}">
 		                <p:menuitem value="Marcas" url="/pages/mantenedor/mantMarca.jsf" />
+		                <p:menuitem value="Grupo Productos" url="/pages/mantenedor/mantProductoGrupo.jsf" />
 		                <p:menuitem value="Productos" url="/pages/mantenedor/mantProducto.jsf" />
 						<p:separator />
 		                <p:menuitem value="Trabajo Tipo" url="/pages/mantenedor/mantTrabajoTipo.jsf" />
@@ -53,12 +54,15 @@
 		                <p:menuitem value="Bodega" url="/pages/mantenedor/mantBodega.jsf" />
 		                <p:menuitem value="Proveedor" url="/pages/mantenedor/mantProveedor.jsf" />
 			        </p:submenu>
+			        <p:submenu label="Inventario" icon="ui-icon-wrench">
+		                <p:menuitem value="Venta Productos" url="/pages/inventario/venta.jsf" ajax="false" rendered="false" />
+		                <p:separator rendered="false" />
+		                <p:menuitem value="Stock" url="/pages/administracion/admStock.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_STOCK')}" />
+		                <p:menuitem value="Solicitud Repuestos" url="/pages/administracion/admSolicitudRepuesto.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_STOCK')}" />
+			        </p:submenu>
 			        <p:submenu label="Administraci&oacute;n" icon="ui-icon-suitcase" rendered="#{authenticationBean.tieneRol('ROLE_ADM_PARAM') or authenticationBean.tieneRol('ROLE_ADM_STOCK') or authenticationBean.tieneRol('ROLE_ADM_PERSONAL') or authenticationBean.tieneRol('ROLE_ADM_USUARIOS')}">
 			            <p:menuitem value="Personas" url="/pages/administracion/admPersonas.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_PERSONAL')}" />
 			            <p:menuitem value="Usuarios" url="/pages/administracion/admUsuarios.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_USUARIOS')}" />
-		                <p:separator />
-		                <p:menuitem value="Stock" url="/pages/administracion/admStock.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_STOCK')}" />
-		                <p:menuitem value="Solicitud Repuestos" url="/pages/administracion/admSolicitudRepuesto.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_STOCK')}" />
 			            <p:separator />
 			            <p:menuitem value="Par&aacute;metros" url="/pages/administracion/admParametros.jsf" rendered="#{authenticationBean.tieneRol('ROLE_ADM_PARAM')}" />
 			        </p:submenu>

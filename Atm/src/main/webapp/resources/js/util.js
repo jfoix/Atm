@@ -36,3 +36,13 @@ function clickBtnTraidoCliente(curr){
 	
 	obj.find('.btnProdCliente').click();
 }
+
+function buscarNuevoTrabajoOT(codigo){
+	$('.iptCodigoTrabajo').val(codigo);
+	$('.btnBuscarTrabajo').get(0).click();
+}
+
+function buscarNuevoProductoOT(codigo){
+	$('.iptCodigoProducto').val(codigo);
+	$('.btnBuscarProducto').get(0).click();
+}

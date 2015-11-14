@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -53,6 +54,9 @@ public class OrdenTrabajoSolicitud implements Serializable{
 	
 	@OneToMany(mappedBy="solicitud")
 	private List<OrdenTrabajoSolicitudProducto> productos;
+	
+	@OneToMany(mappedBy="solicitud", cascade=CascadeType.ALL)
+	private List<OrdenTrabajoSolicitudProductoGrupo> productosGrupo;
 
 	/**
 	 * @return the idOrdenTrabajoSolicitud
@@ -164,5 +168,20 @@ public class OrdenTrabajoSolicitud implements Serializable{
 	 */
 	public void setEstado(Boolean estado) {
 		this.estado = estado;
+	}
+
+	/**
+	 * @return the productosGrupo
+	 */
+	public List<OrdenTrabajoSolicitudProductoGrupo> getProductosGrupo() {
+		return productosGrupo;
+	}
+
+	/**
+	 * @param productosGrupo the productosGrupo to set
+	 */
+	public void setProductosGrupo(
+			List<OrdenTrabajoSolicitudProductoGrupo> productosGrupo) {
+		this.productosGrupo = productosGrupo;
 	}
 }

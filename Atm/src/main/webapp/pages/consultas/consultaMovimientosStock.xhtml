@@ -53,6 +53,12 @@
 					emptyMessage="Sin informaci&oacute;n">
 			        <p:column>
 			        	<f:facet name="header">
+			        		Producto
+			        	</f:facet>
+			            <h:outputText value="#{mov.stock.producto.productoGrupo.codigo}#{mov.stock.producto.codigo} - #{mov.stock.producto.descripcion}" />
+			        </p:column>
+			        <p:column>
+			        	<f:facet name="header">
 			        		Fecha Movimiento
 			        	</f:facet>
 			            <h:outputText value="#{mov.fecha}">
@@ -70,7 +76,8 @@
 			        		Cantidad
 			        	</f:facet>
 			            <div align="right">
-			            	<h:outputText value="#{mov.cantidad}" />
+			            	<h:outputText rendered="#{mov.tipo eq 'EGRESO'}" value="-#{mov.cantidad}" />
+			            	<h:outputText rendered="#{mov.tipo ne 'EGRESO'}" value="#{mov.cantidad}" />
 			            </div>  
 			        </p:column>
 			        <p:column>  

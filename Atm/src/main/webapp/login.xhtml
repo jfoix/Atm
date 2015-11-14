@@ -7,6 +7,9 @@
 	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
 	template="/templates/login.xhtml">
 <ui:define name="body">
+	<h:outputScript rendered="#{loginLeapMB.leapMotion}">
+		window.location.href = 'login_lm.jsf';
+	</h:outputScript>
 		<h:form id="loginForm">
 				<div align="center">
 					<br /><br /><br /><br /><br />
@@ -17,7 +20,7 @@
 								<tr>
 									<td align="center">
 										<br /><br /><br />
-										<img src="http://www.servi-parts.cl/images/SP_CHICO.jpg" border="0" />
+										<p:graphicImage library="images" name="logoSp.jpg" />
 										<br /><br /><br />
 									</td>
 								</tr>

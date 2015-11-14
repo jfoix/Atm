@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:ui="http://java.sun.com/jsf/facelets">
 <ui:composition template="../../templates/template.xhtml">
@@ -9,12 +10,27 @@
 	<ui:define name="body">
 		<h:form id="frm">
 			<p:fieldset legend="B&uacute;squeda">
-				<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
-		            <h:outputLabel value="Producto" />
+				<h:panelGrid columns="6" cellpadding="5" id="pniBusqueda">  
+		            <h:outputLabel value="C&oacute;digo Producto" />
 		            <h:outputLabel value=":" />  
-		            <p:selectOneMenu value="#{adminStockMB.filtro.idProducto}">
+		            <p:inputText value="#{adminStockMB.filtro.codigo}" maxlength="20" />
+		            
+		            <h:outputLabel value="Descripci&oacute;n Producto" />
+		            <h:outputLabel value=":" />  
+		            <p:inputText value="#{adminStockMB.filtro.descripcion}" />
+		            
+		            <h:outputLabel value="Grupo Producto" />
+		            <h:outputLabel value=":" />  
+		            <p:selectOneMenu value="#{adminStockMB.filtro.idProductoGrupo}">
 		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
-		            	<f:selectItems value="#{adminStockMB.productos}" var="prod" itemLabel="#{prod.descripcion}" itemValue="#{prod.idProducto}" />
+		            	<f:selectItems value="#{adminStockMB.grupos}" var="grupo" itemLabel="#{grupo.descripcion}" itemValue="#{grupo.idProductoGrupo}" />
+		            </p:selectOneMenu>
+		            
+		            <h:outputLabel value="Marca" />
+		            <h:outputLabel value=":" />  
+		            <p:selectOneMenu value="#{adminStockMB.filtro.idMarca}">
+		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+		            	<f:selectItems value="#{adminStockMB.marcas}" var="mar" itemLabel="#{mar.descripcion}" itemValue="#{mar.idMarca}" />
 		            </p:selectOneMenu>
 		            
 		            <h:outputLabel value="Bodega" />
@@ -24,16 +40,20 @@
 		            	<f:selectItems value="#{adminStockMB.bodegas}" var="bod" itemLabel="#{bod.descripcion}" itemValue="#{bod.idBodega}" />
 		            </p:selectOneMenu>
 		            
+		            <h:outputLabel value="Coordenada Bodega" />
+		            <h:outputLabel value=":" />  
+		            <p:inputText value="#{adminStockMB.filtro.coordBodega}" />
+		            
 		            <p:commandButton 
 		            	value="Buscar" 
-		            	update="dttStocks" 
+		            	update="dttStocks pnlBotones" 
 		            	icon="ui-icon-search" 
 		            	process="pniBusqueda" 
 		            	action="#{adminStockMB.buscarStock}" />  
 		        </h:panelGrid>
 	        </p:fieldset>
 			<div align="left">
-				<h:panelGrid columns="4">
+				<h:panelGrid columns="4" id="pnlBotones">
 					<p:commandButton 
 						oncomplete="PF('diaStock').show();"
 						update=":frm:pgiStockInfo, :frm:iptObservacion"
@@ -41,36 +61,100 @@
 						icon="ui-icon-plus"
 						process="@this"
 						value="Agregar Stock"/>
+					<p:commandButton ajax="false" value="Exportar" icon="ui-icon-arrowthickstop-1-s" rendered="#{fn:length(adminStockMB.stocks) > 0}">
+						<p:dataExporter type="xls" target="dttStocks" fileName="Stocks" postProcessor="#{adminStockMB.postProcessXLS}" />
+					</p:commandButton>
 				</h:panelGrid>
 			</div>
-			<p:dataTable var="stock" value="#{adminStockMB.stocks}" id="dttStocks" emptyMessage="Sin Informaci&oacute;n">
+			<p:dataTable 
+				rows="10"
+                paginator="true"
+                paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+				var="stock" 
+				value="#{adminStockMB.stocks}" 
+				id="dttStocks" 
+				emptyMessage="Sin Informaci&oacute;n">
 				<p:columnGroup type="header">  
 		            <p:row> 
 		                <p:column headerText="Producto" />
 		                <p:column headerText="Bodega" />
+		                <p:column headerText="Coordenada Bodega" />
 		                <p:column headerText="Cantidad" />
-		                <p:column colspan="2" headerText="Acciones" rendered="false" />  
+		                <p:column headerText="Mayor Precio Compra" />
+		                <p:column headerText="Precio Venta" />
+		                <p:column headerText="&Uacute;ltimo Precio Venta" />
+		                <p:column headerText="" />
 		            </p:row>  
 		        </p:columnGroup>  
 		        <p:column>  
-		            <h:outputText value="#{stock.producto.codigo} - #{stock.producto.descripcion}" />
+		        	<f:facet name="header">
+		        		<h:outputText value="Producto" />
+		        	</f:facet>
+		            <h:outputText value="#{stock.producto.productoGrupo.codigo}#{stock.producto.codigo} - #{stock.producto.descripcion} (#{stock.producto.marca.descripcion})" />
 		        </p:column>
 		        <p:column>  
+		            <f:facet name="header">
+		        		<h:outputText value="Bodega" />
+		        	</f:facet>
 		            <h:outputText value="#{stock.bodega.descripcion}" />
 		        </p:column>
-		        <p:column>  
-		            <h:outputText value="#{stock.cantidad}" />
+		        <p:column>
+		        	<f:facet name="header">
+		        		<h:outputText value="Coordenada Bodega" />
+		        	</f:facet>
+		        	<div align="center">
+			        	<p:commandLink value="#{stock.coordBodega eq null or stock.coordBodega eq '' ? 'Sin Informaci&oacute;n' : stock.coordBodega}">
+			        		<p:ajax event="click" update=":frm:pnlCoordenadaBodega" process="@this" listener="#{adminStockMB.modificarCoordenadaStock(stock)}" oncomplete="PF('diaCoordBodega').show()" />
+			        	</p:commandLink>
+		        	</div> 
 		        </p:column>
-		        <p:column style="width:30px; text-align:center" rendered="false">  
-	                <p:commandButton update=":frm:pgiStockInfo"  action="#{adminStockMB.ajusteIngresoStock}" oncomplete="PF('diaStock').show()" icon="ui-icon-plus" title="Ajuste Ingreso" alt="Ajuste Ingreso">  
-		                <f:setPropertyActionListener value="#{stock}" target="#{adminStockMB.stock}" />  
-		            </p:commandButton>
-				</p:column> 
-		        <p:column style="width:30px; text-align:center" rendered="false">
-		            <p:commandButton update=":frm:pgiStockInfo"  action="#{adminStockMB.ajusteEgresoStock}" oncomplete="PF('diaStock').show()" icon="ui-icon-minus" title="Ajuste Egreso" alt="Ajuste Egreso">  
-		                <f:setPropertyActionListener value="#{stock}" target="#{adminStockMB.stock}" />  
-		            </p:commandButton>  
-		        </p:column> 
+		        <p:column>
+		        	<f:facet name="header">
+		        		<h:outputText value="Cantidad" />
+		        	</f:facet>
+		        	<div align="right">  
+		            	<h:outputText value="#{stock.cantidad}" />
+		            </div>
+		        </p:column>
+		        <p:column>
+		        	<f:facet name="header">
+		        		<h:outputText value="Mayor Precio Compra" />
+		        	</f:facet>
+		        	<div align="right">  
+		            	<h:outputText value="#{stock.mayorPrecioCompra}" />
+		            </div>
+		        </p:column>
+		        <p:column>
+		        	<f:facet name="header">
+		        		<h:outputText value="Precio Venta" />
+		        	</f:facet>
+		        	<div align="right">  
+		            	<h:outputText value="#{stock.precioVenta}">
+		            	</h:outputText>
+		            </div>
+		        </p:column>
+		        <p:column>
+		        	<f:facet name="header">
+		        		<h:outputText value="&Uacute;ltimo Precio Venta">
+		            	</h:outputText>
+		        	</f:facet>
+		        	<div align="right">  
+		            	<h:outputText value="#{stock.ultimoPrecioVenta}">
+		            	</h:outputText>
+		            </div>
+		        </p:column>
+				<p:column style="width:30px" exportable="false">
+					<div align="center">
+			            <p:commandButton 
+			            	process="@this" 
+			            	update=":frm:pngStockMovimiento" 
+			            	icon="ui-icon-pencil"
+			            	oncomplete="PF('diaStockMovimientos').show()" 
+			            	action="#{adminStockMB.iniciarMovimientoStock()}">
+			            	<f:setPropertyActionListener target="#{adminStockMB.stock}" value="#{stock}" />
+			            </p:commandButton>
+					</div>  
+		        </p:column>
 		    </p:dataTable>
 		    
 		    <p:confirmDialog global="true">  
@@ -78,25 +162,115 @@
 		        <p:commandButton value="No" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
 		    </p:confirmDialog>
 		    
+		    <p:dialog header="Modificar Coordenada Bodega" widgetVar="diaCoordBodega" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+		    	<h:panelGrid id="pnlCoordenadaBodega">
+		    		<h:outputText value="Coordenada Bodega : " />
+		    		<p:inputText value="#{adminStockMB.stock.coordBodega}" style="width:400px" />
+		    	</h:panelGrid>
+		    	<f:facet name="footer">
+		    		<div align="center">
+		    			<p:commandButton 
+		    				value="Guardar" 
+		    				icon="ui-icon-disk" 
+		    				process="@this,pnlCoordenadaBodega"
+		    				update="dttStocks"
+		    				action="#{adminStockMB.guardarCoordenadaStock}"
+		    				oncomplete="if(args &amp;&amp; args.done){ PF('diaCoordBodega').hide(); }" />
+		    			<p:commandButton 
+		    				value="Cancelar" 
+		    				icon="ui-icon-close" 
+		    				onclick="PF('diaCoordBodega').hide();" />
+		    		</div>
+		    	</f:facet>
+		    </p:dialog>
+		    
+		    <p:dialog header="Buscar Producto" widgetVar="diaBuscarProducto" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+		    	<h:panelGrid>
+			    	<p:fieldset legend="B&uacute;squeda">
+				    	<h:panelGrid columns="10" id="pngBusqProducto">
+				    		<h:outputText value="Descripci&oacute;n : " />
+				    		<p:inputText value="#{adminStockMB.busqProdDesc}" />
+				    		<h:outputText value="Grupo : " />
+				    		<p:selectOneMenu value="#{adminStockMB.busqProdIdGrupo}">
+				    			<f:selectItem itemValue="-1" itemLabel="Todos" />
+				    			<f:selectItems value="#{adminStockMB.grupos}" var="gru" itemLabel="#{gru.descripcion}" itemValue="#{gru.idProductoGrupo}"  />
+				    		</p:selectOneMenu>
+				    		<h:outputText value="Marca : " />
+				    		<p:selectOneMenu value="#{adminStockMB.busqProdIdMarca}">
+				    			<f:selectItem itemValue="-1" itemLabel="Todos" />
+				    			<f:selectItems value="#{adminStockMB.marcas}" var="mar" itemLabel="#{mar.descripcion}" itemValue="#{mar.idMarca}"  />
+				    		</p:selectOneMenu>
+				    		<p:commandButton 
+				    			icon="ui-icon-search" 
+				    			value="Buscar" 
+				    			process="@this,pngBusqProducto" 
+				    			action="#{adminStockMB.buscarProductos()}"
+				    			update="dttProductosBusqueda" />
+				    	</h:panelGrid>
+			    	</p:fieldset>
+			    	<p:dataTable id="dttProductosBusqueda"
+							paginator="true"
+		    				paginatorPosition="bottom"
+	    					rows="5"
+			    			emptyMessage="Sin Productos" 
+			    			value="#{adminStockMB.productosBusqueda}" 
+			    			var="pro">
+			    		<p:column headerText="C&oacute;digo">
+			    			<h:outputText value="#{pro.productoGrupo.codigo}#{pro.codigo}" />
+			    		</p:column>
+			    		<p:column headerText="Descripci&oacute;n">
+			    			<h:outputText value="#{pro.descripcion}" />
+			    		</p:column>
+			    		<p:column headerText="Marca">
+			    			<h:outputText value="#{pro.marca.descripcion}" />
+			    		</p:column>
+			    		<p:column>
+			    			<div align="center">
+			    				<p:commandButton 
+			    					value="Seleccionar" 
+			    					process="@this" 
+			    					update=":frm:pngProductoSeleccionado"
+			    					oncomplete="if(args &amp;&amp; args.done){ PF('diaBuscarProducto').hide(); } else { PF('diaMensajeProducto').show() }"
+			    					action="#{adminStockMB.seleccionarProducto()}">
+			    					<f:setPropertyActionListener target="#{adminStockMB.producto}" value="#{pro}" />
+			    				</p:commandButton>
+			    			</div>
+			    		</p:column>
+			    	</p:dataTable>
+		    	</h:panelGrid>
+		    	<f:facet name="footer">
+		    		<div align="center">
+		    			<p:commandButton value="Cerrar" icon="ui-icon-close" onclick="PF('diaBuscarProducto').hide();" />
+		    		</div>
+		    	</f:facet>
+		    </p:dialog>
+			<p:dialog header="Stock Producto Existente" widgetVar="diaMensajeProducto" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+				<div align="center">
+					<b>El producto ya tiene stock ingresado, ¿Desea ingresar ajustes/ingresos?</b> 
+				</div>
+				<f:facet name="footer">
+					<div align="center">
+						<p:commandButton
+							process="@this"
+							action="#{adminStockMB.cambiarMovimientoStock()}"
+							oncomplete="PF('diaMensajeProducto').hide(); PF('diaBuscarProducto').hide(); PF('diaStock').hide(); PF('diaStockMovimientos').show();"
+							update="pngStockMovimiento"
+							value="Aceptar" />
+						<p:commandButton
+							onclick="PF('diaMensajeProducto').hide()"
+							value="Cancelar" />
+					</div>
+				</f:facet>
+			</p:dialog>
 		    <p:dialog header="Stock Producto" widgetVar="diaStock" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
 			    <h:panelGrid columns="3" cellpadding="4" id="pgiStockInfo">
 		            <h:outputLabel value="Producto" />
-		            <h:outputLabel value=":" />  
-		            <p:selectOneMenu value="#{adminStockMB.stock.producto.idProducto}">
-		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
-		            	<f:selectItems value="#{adminStockMB.productos}" var="prod" itemLabel="#{prod.descripcion}" itemValue="#{prod.idProducto}" />
-		            </p:selectOneMenu>
-			    	
-			    	<h:outputText value="Cantidad" />
-			    	<h:outputText value=":" />
-			    	<p:inputText id="iptCantidad" value="#{adminStockMB.movimiento.cantidad}" />
-		            
-			    	<h:outputLabel value="Proveedor" rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}" />
-		            <h:outputLabel value=":" rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}" />  
-		            <p:selectOneMenu value="#{adminStockMB.movimiento.proveedor.idProveedor}" rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}">
-		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
-		            	<f:selectItems value="#{adminStockMB.proveedores}" var="prov" itemLabel="#{prov.descripcion}" itemValue="#{prov.idProveedor}" />
-		            </p:selectOneMenu>
+		            <h:outputLabel value=":" />
+		            <h:panelGrid columns="3" id="pngProductoSeleccionado">
+		            	<p:inputText style="width:100px" disabled="true" value="#{adminStockMB.producto.productoGrupo.codigo}#{adminStockMB.producto.codigo}" />
+		            	<p:commandButton icon="ui-icon-search" onclick="PF('diaBuscarProducto').show()" update="pngBusqProducto,dttProductosBusqueda" process="@this" action="#{adminStockMB.limpiarBusquedaProducto()}" />
+		            	<p:inputText style="width:300px" disabled="true" value="#{adminStockMB.producto.descripcion}" />
+		            </h:panelGrid>  
 		            
 		            <h:outputLabel value="Bodega" />
 		            <h:outputLabel value=":" />  
@@ -105,9 +279,24 @@
 		            	<f:selectItems value="#{adminStockMB.bodegas}" var="bod" itemLabel="#{bod.descripcion}" itemValue="#{bod.idBodega}" />
 		            </p:selectOneMenu>
 			    	
-			    	<h:outputText value="Valor Compra (Unidad)" rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}" />
-			    	<h:outputText value=":"  rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}"/>
-			    	<p:inputText value="#{adminStockMB.movimiento.valorUnidad}"  rendered="#{adminStockMB.tipoMovimiento eq 'INGRESO'}"/>
+			    	<h:outputText value="Coordenada Bodega" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{adminStockMB.stock.coordBodega}" style="width:250px" />
+		            
+			    	<h:outputLabel value="Proveedor" />
+		            <h:outputLabel value=":" />  
+		            <p:selectOneMenu value="#{adminStockMB.movimiento.proveedor.idProveedor}" style="width:250px" >
+		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+		            	<f:selectItems value="#{adminStockMB.proveedores}" var="prov" itemLabel="#{prov.descripcion}" itemValue="#{prov.idProveedor}" />
+		            </p:selectOneMenu>
+		            
+		            <h:outputText value="Cantidad" />
+			    	<h:outputText value=":" />
+			    	<p:inputText id="iptCantidad" value="#{adminStockMB.movimiento.cantidad}" style="text-align:right" />
+			    	
+			    	<h:outputText value="Valor Compra (Unidad)" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{adminStockMB.movimiento.valorUnidad}" style="text-align:right" onkeypress="return validateNumbers(event)" />
 			    	<p:watermark for="iptCantidad" value="&plusmn; cantidad" />
 			    </h:panelGrid>
 			    
@@ -166,6 +355,104 @@
 			    			value="Cerrar" />
 		    		</div>
 			    </f:facet>
+			</p:dialog>
+			<p:dialog header="Stock Movimientos" widgetVar="diaStockMovimientos" modal="true" resizable="false" showEffect="drop" hideEffect="fade" dynamic="true"> 
+				<h:panelGrid id="pngStockMovimiento">
+					<h:panelGrid columns="3">
+						<h:outputText value="Proucto" />
+						<h:outputText value=":" />
+						<p:inputText style="width:500px" disabled="true" value="#{adminStockMB.stock.producto.productoGrupo.codigo}#{adminStockMB.stock.producto.codigo} - #{adminStockMB.stock.producto.descripcion}" />
+
+						<h:outputText value="Cantidad " />
+						<h:outputText value=":" />
+						<p:inputText id="iptCantidadProductoStock" style="width:60px" disabled="true" value="#{adminStockMB.cantidadStock}" />
+						
+						<h:outputLabel value="Bodega" />
+			            <h:outputLabel value=":" />  
+			            <p:selectOneMenu value="#{adminStockMB.stock.bodega.idBodega}" id="somBodegaStock">
+			            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+			            	<f:selectItems value="#{adminStockMB.bodegas}" var="bod" itemLabel="#{bod.descripcion}" itemValue="#{bod.idBodega}" />
+			            	<p:ajax event="change" process="@this" update="dttMovimientosStockProducto iptCantidadProductoStock" listener="#{adminStockMB.buscarMovimientosProductoBodega}" />
+			            </p:selectOneMenu>
+					</h:panelGrid>
+					<h:panelGroup layout="block">
+						<table>
+							<tr>
+								<td valign="top">
+									<h:panelGrid columns="3" id="plgAgregarStock">
+								    	<h:outputLabel value="Proveedor" />
+							            <h:outputLabel value=":" />  
+							            <p:selectOneMenu value="#{adminStockMB.movimiento.proveedor.idProveedor}" style="width:250px">
+							            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+							            	<f:selectItems value="#{adminStockMB.proveedores}" var="prov" itemLabel="#{prov.descripcion}" itemValue="#{prov.idProveedor}" />
+							            </p:selectOneMenu>
+							            
+							            <h:outputText value="Cantidad a Agregar" />
+								    	<h:outputText value=":" />
+								    	<p:inputText id="iptCantidadMov" value="#{adminStockMB.movimiento.cantidad}" style="text-align:right" />
+								    	
+								    	<h:outputText value="Valor Compra (Unidad)" />
+								    	<h:outputText value=":" />
+								    	<p:inputText value="#{adminStockMB.movimiento.valorUnidad}" style="text-align:right" />
+								    	<p:watermark for="iptCantidadMov" value="&plusmn; cantidad" />
+									</h:panelGrid>
+									<h:panelGrid>
+								    	<h:outputText value="Observaci&oacute;n :" />
+								    	<p:inputTextarea id="itaObservacionMovStock" cols="35" value="#{adminStockMB.movimiento.observacion}"></p:inputTextarea>
+								    	<p:commandButton 
+							    			icon="ui-icon-document"
+							    			process="@this"
+							    			onclick="PF('diaVerDocumentos').show();"
+							    			value="Adjuntar Docs" />
+								    	<p:commandButton 
+								    		value="Agregar"
+								    		action="#{adminStockMB.guardarStock()}"
+								    		update="plgAgregarStock,dttMovimientosStockProducto,iptCantidadProductoStock,itaObservacionMovStock"
+								    		process="@this,plgAgregarStock,itaObservacionMovStock,somBodegaStock" 
+								    		icon="ui-icon-plus" />
+								    </h:panelGrid>
+								</td>
+								<td valign="top">
+									<h:panelGroup layout="block">
+										<b><h:outputText value="Movimientos" /></b><br/>
+										<p:dataTable
+											id="dttMovimientosStockProducto" 
+											emptyMessage="Sin Movimientos" 
+											paginator="true"
+						    				paginatorPosition="bottom"
+						    				rows="5"
+											value="#{adminStockMB.movimientos}" 
+											var="mov">
+											<p:column headerText="Tipo">
+												<h:outputText value="#{mov.tipo.description}" />
+											</p:column>
+											<p:column headerText="Fecha">
+												<h:outputText value="#{mov.fecha}">
+													<f:convertDateTime pattern="dd/MM/yyyy hh:mm"/>
+												</h:outputText>
+											</p:column>
+											<p:column headerText="Cantidad">
+												<div align="right">
+													<h:outputText value="-" rendered="#{mov.tipo.description eq 'Egreso'}" /><h:outputText value="#{mov.cantidad}" />
+												</div>
+											</p:column>
+											<p:column headerText="Valor Unidad">
+												<div align="right">
+													<h:outputText value="#{mov.valorUnidad}" />
+												</div>
+											</p:column>
+										</p:dataTable>
+									</h:panelGroup>
+								</td>
+							</tr>
+						</table>
+					</h:panelGroup>
+				</h:panelGrid>
+				<f:facet name="footer">
+					<div align="center">
+						<p:commandButton onclick="PF('diaStockMovimientos').hide()" process="@this" update="@none" value="Cerrar" icon="ui-icon-close" />
+					</div>
+				</f:facet>
 			</p:dialog>
 		</h:form>
 	</ui:define>

@@ -41,6 +41,8 @@
 		<class>cl.jfoix.atm.ot.entity.OrdenTrabajoEstado</class>
 		<class>cl.jfoix.atm.comun.entity.ParametroGeneral</class>
 		<class>cl.jfoix.atm.ot.entity.OrdenObservacion</class>
+		<class>cl.jfoix.atm.comun.entity.ProductoGrupo</class>
+		<class>cl.jfoix.atm.ot.entity.OrdenTrabajoSolicitudProductoGrupo</class>
 		<exclude-unlisted-classes>false</exclude-unlisted-classes>
 		<properties>
 			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect" />

@@ -8,19 +8,24 @@
 	<ui:define name="subTitulo"><h:outputText value="Administraci&oacute;n Solicitudes de Repuesto" /></ui:define>
 	<ui:define name="body">
 		<h:form id="frm">
+			<p:poll interval="10" listener="#{adminSolicitudRepuestoMB.buscarSolicitudes}" update="dttSolicitudes" process="pniBusqueda" global="false" />
 			<h:panelGrid width="100%">
-				<p:fieldset legend="B&uacute;squeda">
+				<p:fieldset legend="1 B&uacute;squeda">
 					<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
-			            <h:outputLabel value="Producto" />
+			            <h:outputLabel value="Grupo Producto" />
 			            <h:outputLabel value=":" />  
-			            <p:selectOneMenu value="#{adminSolicitudRepuestoMB.idProducto}">
+			            <p:selectOneMenu value="#{adminSolicitudRepuestoMB.idProductoGrupo}">
 			            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
-			            	<f:selectItems value="#{adminSolicitudRepuestoMB.productos}" var="prod" itemLabel="#{prod.descripcion}" itemValue="#{prod.idProducto}" />
+			            	<f:selectItems value="#{adminSolicitudRepuestoMB.productoGrupos}" var="prod" itemLabel="#{prod.descripcion}" itemValue="#{prod.idProductoGrupo}" />
+			            	<p:ajax event="change" process="@this" global="false" />
 			            </p:selectOneMenu>
 			            
 			            <h:outputLabel value="Fecha Solicitud" />
 			            <h:outputLabel value=":" />  
-			            <p:calendar value="#{adminSolicitudRepuestoMB.fechaSolicitud}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button" />
+			            <p:calendar value="#{adminSolicitudRepuestoMB.fechaSolicitud}" locale="es" navigator="true" pattern="dd/MM/yyyy" showOn="button">
+			            	<p:ajax event="change" process="@this" global="false" />
+			            	<p:ajax event="dateSelect" process="@this" global="false" />
+			            </p:calendar>
 			            <h:outputLabel value="" />
 			            
 			            <h:outputLabel value="Estado Solicitud" />
@@ -29,6 +34,7 @@
 			            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
 			            	<f:selectItem itemValue="1" itemLabel="Pendientes" />
 			            	<f:selectItem itemValue="0" itemLabel="Terminadas" />
+			            	<p:ajax event="change" process="@this" global="false" />
 			            </p:selectOneMenu>
 			            
 			        </h:panelGrid>
@@ -38,20 +44,19 @@
 		            	icon="ui-icon-search" 
 		            	process="@this,pniBusqueda" 
 		            	action="#{adminSolicitudRepuestoMB.buscarSolicitudes}" />  
-		        </p:fieldset>
+		        </p:fieldset>		        
 				<p:dataTable var="sol" value="#{adminSolicitudRepuestoMB.solicitudes}" id="dttSolicitudes" emptyMessage="Sin Informaci&oacute;n">
 					<p:columnGroup type="header">  
 			            <p:row>
 			                <p:column headerText="Solicitante" />
 			                <p:column headerText="Fecha Solicitud" />
 			                <p:column headerText="Fecha T&eacute;rmino" />
-			                <p:column headerText="Observaci&oacute;n" />
 			                <p:column headerText="Estado" />
 			                <p:column colspan="2" headerText="Acciones" />  
 			            </p:row>  
 			        </p:columnGroup>  
 			        <p:column>  
-			            <h:outputText value="#{sol.usuario.persona.nombres}" />
+			            <h:outputText value="#{sol.usuario.persona.nombres} #{sol.usuario.persona.apellidos}" />
 			        </p:column>
 			        <p:column>  
 			            <h:outputText value="#{sol.fechaSolicitud}">
@@ -59,9 +64,11 @@
 			            </h:outputText>
 			        </p:column>
 			        <p:column>  
-			            <h:outputText value="#{sol.fechaTermino}" />
+			            <h:outputText value="#{sol.fechaTermino}">
+			            	<f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss"/>
+			            </h:outputText>
 			        </p:column>
-			        <p:column>  
+			        <p:column rendered="false">  
 			            <h:outputText value="#{sol.observacion}" />
 			        </p:column>
 			        <p:column>  
@@ -74,7 +81,7 @@
 			            </p:commandButton>
 					</p:column> 
 			        <p:column style="width:30px; text-align:center">
-			            <p:commandButton disabled="#{not sol.estado}" update=":frm:dttProductosSolicitados" oncomplete="PF('repuestosSolicitados').show()" icon="ui-icon-pencil" title="Repuestos Solicitados" alt="Repuestos Solicitados">  
+			            <p:commandButton disabled="#{not sol.estado}" update=":frm:pniRepuestosSolicitados" oncomplete="PF('repuestosSolicitados').show()" icon="ui-icon-gear" title="Repuestos Solicitados" alt="Repuestos Solicitados">  
 			                <f:setPropertyActionListener value="#{sol}" target="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud}" />    
 			            </p:commandButton>  
 			        </p:column> 
@@ -86,31 +93,85 @@
 		    </p:confirmDialog>
 		    
 		    <p:dialog header="Repuestos Solicitados" widgetVar="repuestosSolicitados" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
-		    	<p:dataTable var="prodSol" value="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.productos}" id="dttProductosSolicitados">
-					<p:columnGroup type="header">  
-			            <p:row>  
-			                <p:column headerText="Producto" />
-			                <p:column headerText="Cantidad Solicitada" />
-			                <p:column headerText="Estado" />
-			                <p:column headerText="" />  
-			            </p:row>  
-			        </p:columnGroup>  
-			        <p:column>  
-			            <h:outputText value="#{prodSol.producto.codigo} - #{prodSol.producto.descripcion}" />
-			        </p:column>
-			        <p:column>  
-			            <h:outputText value="#{prodSol.cantidad}" />
-			        </p:column>
-			        <p:column>  
-			            <h:outputText value="#{prodSol.estado ? 'Pendiente' : 'Agregado'}" />
-			        </p:column>
-			        <p:column style="width:30px; text-align:center">  
-		                <p:commandButton disabled="#{not prodSol.estado}" update=":frm:dttProductosSolicitados" action="#{adminSolicitudRepuestoMB.cambiarEstadoSolProducto}" icon="ui-icon-transferthick-e-w" title="Agregar" alt="Agregar" oncomplete="PF('diaAgregarStock').show()">  
-			                <p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro que marcar como agregado el producto seleccionado?" icon="ui-icon-alert" />
-			                <f:setPropertyActionListener value="#{prodSol}" target="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitudProducto}" />  
-			            </p:commandButton>
-					</p:column> 
-			    </p:dataTable>
+		    	<h:panelGrid width="100%" id="pniRepuestosSolicitados">
+		    		<p:fieldset legend="Datos Orden">
+		    			<h:panelGrid columns="7">
+		    				<h:outputText value="Nro. Orden Trabajo" />
+		    				<h:outputText value=":" />
+		    				<h:outputText value="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.ordenTrabajo.orden.idOrden}" />
+		    				<h:panelGroup style="width:40px" layout="block" />
+		    				<h:outputText value="Trabajo" />
+		    				<h:outputText value=":" />
+		    				<h:outputText value="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.ordenTrabajo.trabajo.codigo} - #{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.ordenTrabajo.trabajo.descripcion}" />
+		    				
+		    				<h:outputText value="Veh&iacute;culo Marca" />
+		    				<h:outputText value=":" />
+		    				<h:outputText value="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.ordenTrabajo.orden.vehiculoOrden.vehiculo.marcaVehiculo.descripcion}" />
+		    				<h:panelGroup style="width:40px" layout="block" />
+		    				<h:outputText value="Veh&iacute;culo Modelo" />
+		    				<h:outputText value=":" />
+		    				<h:outputText value="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.ordenTrabajo.orden.vehiculoOrden.vehiculo.modelo}" />
+		    				
+		    				<h:outputText value="Veh&iacute;culo A&ntilde;o" />
+		    				<h:outputText value=":" />
+		    				<h:outputText value="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.ordenTrabajo.orden.vehiculoOrden.vehiculo.acno}" />
+		    				<h:panelGroup style="width:40px" layout="block" />
+		    				<h:outputText value="Veh&iacute;culo Chasis" />
+		    				<h:outputText value=":" />
+		    				<h:outputText value="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.ordenTrabajo.orden.vehiculoOrden.vehiculo.chasis}" />
+		    				
+		    				<h:outputText value="Veh&iacute;culo Nro. Motor" />
+		    				<h:outputText value=":" />
+		    				<h:outputText value="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.ordenTrabajo.orden.vehiculoOrden.vehiculo.nroMotor}" />
+		    				<h:panelGroup style="width:40px" layout="block" />
+		    				<h:outputText value="Veh&iacute;culo Patente" />
+		    				<h:outputText value=":" />
+		    				<h:outputText value="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.ordenTrabajo.orden.vehiculoOrden.vehiculo.patente}" />
+		    				
+		    				<h:outputText value="Veh&iacute;culo Color" />
+		    				<h:outputText value=":" />
+		    				<h:outputText value="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.ordenTrabajo.orden.vehiculoOrden.vehiculo.color}" />
+		    				<h:panelGroup style="width:40px" layout="block" />
+		    				<h:outputText value="Veh&iacute;culo Kilometraje" />
+		    				<h:outputText value=":" />
+		    				<h:outputText value="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.ordenTrabajo.orden.vehiculoOrden.kilometraje}">
+		    					<f:convertNumber pattern="#,#00" />
+		    				</h:outputText>
+		    			</h:panelGrid>
+		    		</p:fieldset>
+			    	<p:dataTable 
+			    		var="prodSol" 
+			    		value="#{adminSolicitudRepuestoMB.ordenTrabajoSolicitud.productosGrupo}" 
+			    		id="dttProductosSolicitados">
+						<p:columnGroup type="header">  
+				            <p:row>  
+				                <p:column headerText="Grupo Producto" />
+				                <p:column headerText="Cantidad Solicitada" />
+				                <p:column headerText="Estado" />
+				                <p:column headerText="" />  
+				            </p:row>  
+				        </p:columnGroup>  
+				        <p:column>  
+				            <h:outputText value="#{prodSol.productoGrupo.codigo}#{prodSol.productoGrupo.descripcion}" />
+				        </p:column>
+				        <p:column>  
+				            <h:outputText value="#{prodSol.cantidad}" />
+				        </p:column>
+				        <p:column>  
+				            <h:outputText value="#{not prodSol.estado ? 'Pendiente' : 'Agregado'}" />
+				        </p:column>
+				        <p:column style="width:30px; text-align:center">  
+			                <p:commandButton
+			                	disabled="#{prodSol.estado}" 
+			                	action="#{adminSolicitudRepuestoMB.buscarProductosPorGrupo(prodSol)}" 
+			                	process="@this"
+			                	update=":frm:pngCantidadAgregar,:frm:btnGuardar" 
+			                	oncomplete="PF('cantidadAgregar').show()" 
+			                	icon="ui-icon-plus" 
+			                	title="Agregar" alt="Agregar" />
+						</p:column>
+				    </p:dataTable>
+			    </h:panelGrid>
 			    <f:facet name="footer">
 			    	<div align="center">
 		    			<p:commandButton 
@@ -121,73 +182,119 @@
 		    		</div>
 			    </f:facet>
 		    </p:dialog>
-		    
-		    <p:dialog header="Stock Producto" widgetVar="diaAgregarStock" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
-		    	<div align="center">
-		    		<h:outputText value="¿Desea agregar el producto al stock?" style="font-weight:bold" />
-		    	</div>
+		    <p:dialog header="Productos a Agregar" widgetVar="cantidadAgregar" modal="true" resizable="false" showEffect="drop" hideEffect="fade" dynamic="true" width="900">
+		    	<h:panelGroup id="pngCantidadAgregar">
+			    	<table>
+			    		<tr>
+			    			<td width="50%" valign="top">
+			    				<p:panel header="Productos Disponibles">
+			    					<h:panelGrid>
+			    						<h:panelGroup id="pngFiltroProductosGrupo">
+			    							<table>
+			    								<tr>
+			    									<td>Nombre</td>
+			    									<td>:</td>
+			    									<td colspan="2">
+			    										<p:inputText value="#{adminSolicitudRepuestoMB.filtroNomProd}" style="width:200px" />
+			    									</td>
+			    								</tr>
+			    								<tr>
+			    									<td><h:outputText value="C&oacute;digo" /></td>
+			    									<td>:</td>
+			    									<td>
+			    										<p:inputText value="#{adminSolicitudRepuestoMB.filtroCodigo}" maxlength="10" style="width: 93px" />
+			    									</td>
+			    									<td>
+			    										<p:commandButton 
+			    											process="pngFiltroProductosGrupo"
+			    											update="dttProductos"
+			    											action="#{adminSolicitudRepuestoMB.filtroProductoAgregar()}"
+			    											value="Filtrar" />
+			    									</td>
+			    								</tr>
+			    							</table>
+			    						</h:panelGroup>
+					    				<p:dataTable
+					    					rows="6"
+					                        paginator="true"
+					                        paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+					    					id="dttProductos" 
+					    					paginatorPosition="bottom"
+					    					value="#{adminSolicitudRepuestoMB.productos}" 
+					    					var="p" 
+					    					emptyMessage="Sin Productos">
+					    					<p:column headerText="Producto">
+					    						<h:outputText value="#{p.codigo}-#{p.descripcion}" />
+					    					</p:column>
+					    					<p:column style="width:30px">
+					    						<div align="center">
+					    							<p:commandButton 
+					    								process="@this"
+					    								update=":frm:dttProductos,:frm:dttProductosSel"
+					    								action="#{adminSolicitudRepuestoMB.agregarProductos(p)}"
+					    								title="Agregar" alt="Agregar"
+					    								icon="ui-icon-plus"/>
+					    						</div>
+					    					</p:column>
+					    				</p:dataTable>
+			    					</h:panelGrid>
+			    				</p:panel>
+			    			</td>
+			    			<td width="50%" valign="top">
+			    				<p:panel header="Productos Seleccionados">
+				    				<p:dataTable
+				    					rows="8"
+				                        paginator="true"
+				                        paginatorTemplate="{FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
+				    					id="dttProductosSel" 
+				    					paginatorPosition="bottom"
+				    					value="#{adminSolicitudRepuestoMB.productosSeleccionados}" 
+				    					var="p" 
+				    					emptyMessage="Sin Productos Seleccionados">
+				    					<p:column headerText="Producto">
+				    						<h:outputText value="#{p.codigo}-#{p.descripcion}" />
+				    					</p:column>
+				    					<p:column style="width:50px" headerText="Cantidad">
+				    						<div align="center">
+					    						<p:inputText style="width:40px" value="#{p.cantidad}" onkeypress="return validarDecimal(event, this)" />
+				    						</div>
+				    					</p:column>
+				    					<p:column style="width:30px">
+				    						<div align="center">
+				    							<p:commandButton 
+				    								process="@this"
+				    								update=":frm:dttProductos,:frm:dttProductosSel"
+				    								action="#{adminSolicitudRepuestoMB.quitarProductos(p)}"
+				    								title="Quitar" alt="Quitar"
+				    								icon="ui-icon-minus"/>
+				    						</div>
+				    					</p:column>
+				    				</p:dataTable>
+			    				</p:panel>
+			    			</td>
+			    		</tr>
+			    	</table>
+		    	</h:panelGroup>
 		    	<f:facet name="footer">
 			    	<div align="center">
 		    			<p:commandButton 
 			    			icon="ui-icon-check"
-			    			process="@this"
-			    			update="pgiStockInfo"
-			    			action="#{adminSolicitudRepuestoMB.agregarStock}"
-			    			oncomplete="PF('diaAgregarStock').hide(); PF('diaStock').show();"
-			    			value="Aceptar" />
+			    			id="btnGuardar"
+			    			update=":frm:pniRepuestosSolicitados,:frm:dttSolicitudes"
+			    			process="@this,dttProductosSel"
+			    			action="#{adminSolicitudRepuestoMB.guardarProductosSolicitud()}"
+			    			oncomplete="PF('cantidadAgregar').hide(); PF('repuestosSolicitados').hide();"
+			    			value="Agregar">
+			    			<p:confirm message="¿Est&aacute; seguro de agregar los productos seleccionados a la OT #{adminSolicitudRepuestoMB.ordenTrabajoSolicitudProductoGrupo.solicitud.ordenTrabajo.orden.idOrden}?" header="Confirmaci&oacute;n" />
+			    		</p:commandButton>
 		    			<p:commandButton 
 			    			icon="ui-icon-close"
 			    			process="@this"
-			    			oncomplete="PF('diaAgregarStock').hide();"
-			    			value="Cancelar" />
+			    			oncomplete="PF('cantidadAgregar').hide();"
+			    			value="Cerrar" />
 		    		</div>
 			    </f:facet>
 		    </p:dialog>
-		    
-		    <p:dialog header="Stock Producto" widgetVar="diaStock" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
-			    <h:panelGrid columns="3" cellpadding="4" id="pgiStockInfo">
-		            <h:outputLabel value="Producto" />
-		            <h:outputLabel value=":" />  
-		            <h:inputText value="#{adminSolicitudRepuestoMB.stock.producto.codigo} - #{adminSolicitudRepuestoMB.stock.producto.descripcion}" alt="#{adminSolicitudRepuestoMB.stock.producto.codigo} - #{adminSolicitudRepuestoMB.stock.producto.descripcion}" title="#{adminSolicitudRepuestoMB.stock.producto.codigo} - #{adminSolicitudRepuestoMB.stock.producto.descripcion}" disabled="true" />
-		            
-			    	<h:outputText value="Cantidad" />
-			    	<h:outputText value=":" />
-			    	<p:inputText value="#{adminSolicitudRepuestoMB.movimiento.cantidad}" />
-			    	
-			    	<h:outputLabel value="Proveedor" />
-		            <h:outputLabel value=":" />  
-		            <p:selectOneMenu value="#{adminSolicitudRepuestoMB.movimiento.proveedor.idProveedor}">
-		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
-		            	<f:selectItems value="#{adminSolicitudRepuestoMB.proveedores}" var="prov" itemLabel="#{prov.descripcion}" itemValue="#{prov.idProveedor}" />
-		            </p:selectOneMenu>
-		            
-		            <h:outputLabel value="Bodega" />
-		            <h:outputLabel value=":" />  
-		            <p:selectOneMenu value="#{adminSolicitudRepuestoMB.stock.bodega.idBodega}">
-		            	<f:selectItem itemValue="-1" itemLabel="Seleccione" />
-		            	<f:selectItems value="#{adminSolicitudRepuestoMB.bodegas}" var="bod" itemLabel="#{bod.descripcion}" itemValue="#{bod.idBodega}" />
-		            </p:selectOneMenu>
-			    	
-			    	<h:outputText value="Valor Compra (Unidad)" />
-			    	<h:outputText value=":" />
-			    	<p:inputText value="#{adminSolicitudRepuestoMB.movimiento.valorUnidad}" />
-			    </h:panelGrid>
-			    <f:facet name="footer">
-			    	<div align="center">
-				    	<p:commandButton 
-			    			icon="ui-icon-disk"
-			    			action="#{adminSolicitudRepuestoMB.guardarStock}"
-			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaStock').hide(); }"
-			    			process="@this,pgiStockInfo"
-			    			value="Guardar" />
-		    			<p:commandButton 
-			    			icon="ui-icon-close"
-			    			process="@this"
-			    			oncomplete="PF('diaStock').hide();"
-			    			value="Cancelar" />
-		    		</div>
-			    </f:facet>
-			</p:dialog>    
 		</h:form>
 	</ui:define>
 </ui:composition>

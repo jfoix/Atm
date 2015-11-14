@@ -58,6 +58,24 @@ public class Orden implements Serializable {
 	
 	@OneToMany(mappedBy="orden", cascade={CascadeType.ALL}, orphanRemoval=true)
 	private List<OrdenObservacion> ordenObservaciones;
+
+	@Column(name="descuentoRepuestos")
+	private Double descuentoRepuestos;
+	
+	@Column(name="descuentoManoObra")
+	private Double descuentoManoObra;
+	
+	@Column(name="descuentoTerceros")
+	private Double descuentoTerceros;
+	
+	@Column(name="tipoDescRepuestos")
+	private String tipoDescRepuestos;
+	
+	@Column(name="tipoDescManoObra")
+	private String tipoDescManoObra;
+	
+	@Column(name="tipoDescTerceros")
+	private String tipoDescTerceros;
 	
 	@Transient
 	private OrdenEstado ultimoOrdenEstado;
@@ -320,5 +338,89 @@ public class Orden implements Serializable {
 	 */
 	public void setOrdenObservaciones(List<OrdenObservacion> ordenObservaciones) {
 		this.ordenObservaciones = ordenObservaciones;
+	}
+
+	/**
+	 * @return the descuentoRepuestos
+	 */
+	public Double getDescuentoRepuestos() {
+		return descuentoRepuestos;
+	}
+
+	/**
+	 * @param descuentoRepuestos the descuentoRepuestos to set
+	 */
+	public void setDescuentoRepuestos(Double descuentoRepuestos) {
+		this.descuentoRepuestos = descuentoRepuestos;
+	}
+
+	/**
+	 * @return the descuentoManoObra
+	 */
+	public Double getDescuentoManoObra() {
+		return descuentoManoObra;
+	}
+
+	/**
+	 * @param descuentoManoObra the descuentoManoObra to set
+	 */
+	public void setDescuentoManoObra(Double descuentoManoObra) {
+		this.descuentoManoObra = descuentoManoObra;
+	}
+
+	/**
+	 * @return the descuentoTerceros
+	 */
+	public Double getDescuentoTerceros() {
+		return descuentoTerceros;
+	}
+
+	/**
+	 * @param descuentoTerceros the descuentoTerceros to set
+	 */
+	public void setDescuentoTerceros(Double descuentoTerceros) {
+		this.descuentoTerceros = descuentoTerceros;
+	}
+
+	/**
+	 * @return the tipoDescRepuestos
+	 */
+	public String getTipoDescRepuestos() {
+		return tipoDescRepuestos;
+	}
+
+	/**
+	 * @param tipoDescRepuestos the tipoDescRepuestos to set
+	 */
+	public void setTipoDescRepuestos(String tipoDescRepuestos) {
+		this.tipoDescRepuestos = tipoDescRepuestos;
+	}
+
+	/**
+	 * @return the tipoDescManoObra
+	 */
+	public String getTipoDescManoObra() {
+		return tipoDescManoObra;
+	}
+
+	/**
+	 * @param tipoDescManoObra the tipoDescManoObra to set
+	 */
+	public void setTipoDescManoObra(String tipoDescManoObra) {
+		this.tipoDescManoObra = tipoDescManoObra;
+	}
+
+	/**
+	 * @return the tipoDescTerceros
+	 */
+	public String getTipoDescTerceros() {
+		return tipoDescTerceros;
+	}
+
+	/**
+	 * @param tipoDescTerceros the tipoDescTerceros to set
+	 */
+	public void setTipoDescTerceros(String tipoDescTerceros) {
+		this.tipoDescTerceros = tipoDescTerceros;
 	}
 }

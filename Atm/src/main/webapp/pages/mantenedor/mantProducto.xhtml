@@ -9,18 +9,26 @@
 	<ui:define name="body">
 		<h:form id="frm">
 			<p:fieldset legend="B&uacute;squeda">
-				<h:panelGrid columns="9" cellpadding="5" id="pniBusqueda">  
+				<h:panelGrid columns="6" cellpadding="5" id="pniBusqueda">  
 		            <h:outputLabel value="C&oacute;digo Producto" />
 		            <h:outputLabel value=":" />  
-		            <p:inputText value="#{productoMB.productoCode}" />
-		            <h:outputLabel value="Nombre Producto" />
+		            <p:inputText value="#{productoMB.productoCode}" maxlength="20" />
+		            
+		            <h:outputLabel value="Descripci&oacute;n Producto" />
 		            <h:outputLabel value=":" />  
-		            <p:inputText value="#{productoMB.productoDesc}" />
+		            <p:inputText value="#{productoMB.productoDesc}" style="width:300px" />
+		            
+		            <h:outputLabel value="Grupo Producto" />
+		            <h:outputLabel value=":" />  
+		            <p:selectOneMenu value="#{productoMB.productoGrupoId}">
+		            	<f:selectItem itemValue="-1" itemLabel="Todos" />
+		            	<f:selectItems value="#{productoMB.gruposProducto}" var="pg" itemLabel="#{pg.descripcion}" itemValue="#{pg.idProductoGrupo}" />
+		            </p:selectOneMenu>
+		            
 		            <h:outputLabel value="Marca Producto" />
 		            <h:outputLabel value=":" />  
 		            <p:selectOneMenu value="#{productoMB.productoIdMarca}">
 		            	<f:selectItem itemValue="-1" itemLabel="Todas" />
-		            	<f:selectItem itemValue="-2" itemLabel="Sin Marca" />
 		            	<f:selectItems value="#{productoMB.marcas}" var="stamp" itemLabel="#{stamp.descripcion}" itemValue="#{stamp.idMarca}" />
 		            </p:selectOneMenu>
 		            <p:commandButton 
@@ -46,13 +54,13 @@
 				<p:columnGroup type="header">  
 		            <p:row>  
 		                <p:column headerText="C&oacute;digo Producto" />
-		                <p:column headerText="Nombre Producto" />
+		                <p:column headerText="Descripci&oacute;n Producto" />
 		                <p:column headerText="Marca Producto" />
 		                <p:column colspan="2" headerText="Acciones" />  
 		            </p:row>  
 		        </p:columnGroup>  
 		        <p:column>  
-		            <h:outputText value="#{product.codigo}" />  
+		            <h:outputText value="#{product.productoGrupo.codigo}#{product.codigo}" />  
 		        </p:column>
 		        <p:column>  
 		            <h:outputText value="#{product.descripcion}" />  
@@ -79,13 +87,24 @@
 		    </p:confirmDialog>
 		    <p:dialog id="diaProduct" header="Datos Producto" widgetVar="diaProduct" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
 			    <h:panelGrid columns="3" cellpadding="4" id="pgiProductInfo">
+			    	<h:outputText value="Grupo Producto" />
+			    	<h:outputText value=":" />
+			    	<p:selectOneMenu value="#{productoMB.producto.productoGrupo.idProductoGrupo}" disabled="#{productoMB.modExistente}">
+			    		<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+			    		<f:selectItems value="#{productoMB.gruposProducto}" var="gp" itemValue="#{gp.idProductoGrupo}" itemLabel="#{gp.descripcion}" />
+			    		<p:ajax event="change" process="@this" update="optGrupoCodigo" listener="#{productoMB.mostarGrupoCodigo}" />
+			    	</p:selectOneMenu>
+			    	
 			    	<h:outputText value="C&oacute;digo Producto" />
 			    	<h:outputText value=":" />
-			    	<p:inputMask mask="aaa9999" value="#{productoMB.producto.codigo}" styleClass="uppercase" />
+			    	<h:panelGrid columns="2" cellpadding="0" cellspacing="0">
+			    		<h:outputText id="optGrupoCodigo" value="#{productoMB.grupoCodigo}" />
+			    		<p:inputText value="#{productoMB.producto.codigo}" styleClass="uppercase" maxlength="10" style="width: 93px" disabled="#{productoMB.modExistente}" />
+			    	</h:panelGrid>
 			    	
-			    	<h:outputText value="Nombre Producto" />
+			    	<h:outputText value="Descripci&oacute;n Producto" />
 			    	<h:outputText value=":" />
-			    	<p:inputText value="#{productoMB.producto.descripcion}" />
+			    	<p:inputText value="#{productoMB.producto.descripcion}" style="width:400px" />
 			    	
 			    	<h:outputText value="Marca Producto" />
 			    	<h:outputText value=":" />
@@ -99,8 +118,8 @@
 				    	<p:commandButton 
 			    			icon="ui-icon-disk"
 			    			action="#{productoMB.guardarProducto}"
-			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaProduct').hide(); }"
-			    			update=":frm:dttProducts"
+			    			oncomplete="if(args.prodExiste){ PF('diaCodigoRepetido').show(); } else if(args.done){ PF('diaProduct').hide(); }"
+			    			update=":frm:dttProducts,:frm:pngProductoExistente"
 			    			process="@this,pgiProductInfo"
 			    			value="Guardar" />
 		    			<p:commandButton 
@@ -108,6 +127,29 @@
 			    			process="@this"
 			    			oncomplete="PF('diaProduct').hide();"
 			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+			<p:dialog id="diaCodigoRepetido" header="Manesaje Producto" widgetVar="diaCodigoRepetido" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid>
+				    <h:panelGroup layout="block" align="center" id="pngProductoExistente">
+				    	<h:outputText value="El c&oacute;digo de Producto #{productoMB.grupoCodigo}#{productoMB.producto.codigo} ya existe, desea obtener esa informaci&oacute;n" />
+				    </h:panelGroup>
+			    </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+		    			<p:commandButton 
+			    			icon="ui-icon-check"
+			    			oncomplete="PF('diaCodigoRepetido').hide();"
+			    			action="#{productoMB.cargarProducto}"
+			    			process="@this"
+			    			update=":frm:pgiProductInfo"
+			    			value="Aceptar" />
+			    		<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			onclick="PF('diaCodigoRepetido').hide()"
+			    			value="Cancelar"/>
 		    		</div>
 			    </f:facet>
 			</p:dialog>    

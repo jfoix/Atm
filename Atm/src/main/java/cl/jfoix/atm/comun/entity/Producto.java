@@ -23,6 +23,10 @@ public class Producto implements Serializable{
 	@Column(name="idProducto")
 	private Integer idProducto;
 	
+	@ManyToOne
+	@JoinColumn(name="idProductoGrupo")
+	private ProductoGrupo productoGrupo;
+	
 	@Column(name="codigo")
 	private String codigo;
 	
@@ -35,9 +39,12 @@ public class Producto implements Serializable{
 	@ManyToOne
 	@JoinColumn(name="idMarca")
 	private Marca marca;
-
+	
 	@Transient
 	private boolean seleccionado;
+	
+	@Transient
+	private Double cantidad;
 
 	/**
 	 * @return the idProducto
@@ -122,5 +129,32 @@ public class Producto implements Serializable{
 	public void setSeleccionado(boolean seleccionado) {
 		this.seleccionado = seleccionado;
 	}
-	
+
+	/**
+	 * @return the productoGrupo
+	 */
+	public ProductoGrupo getProductoGrupo() {
+		return productoGrupo;
+	}
+
+	/**
+	 * @param productoGrupo the productoGrupo to set
+	 */
+	public void setProductoGrupo(ProductoGrupo productoGrupo) {
+		this.productoGrupo = productoGrupo;
+	}
+
+	/**
+	 * @return the cantidad
+	 */
+	public Double getCantidad() {
+		return cantidad;
+	}
+
+	/**
+	 * @param cantidad the cantidad to set
+	 */
+	public void setCantidad(Double cantidad) {
+		this.cantidad = cantidad;
+	}
 }

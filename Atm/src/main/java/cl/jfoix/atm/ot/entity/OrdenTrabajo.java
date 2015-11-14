@@ -19,6 +19,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 
+import cl.jfoix.atm.comun.dto.ProductoDto;
 import cl.jfoix.atm.comun.entity.Trabajo;
 
 @Entity
@@ -60,7 +61,7 @@ public class OrdenTrabajo implements Serializable{
 	@OneToMany(mappedBy="ordenTrabajo", cascade=CascadeType.ALL)
 	private List<OrdenTrabajoEstado> estadosOrden;
 	
-	@OneToMany(mappedBy="ordenTrabajo")
+	@OneToMany(mappedBy="ordenTrabajo", cascade=CascadeType.REMOVE, orphanRemoval=true)
 	private List<OrdenTrabajoUsuario> ordenTrabajoUsuarios;
 	
 	@OneToMany(mappedBy="ordenTrabajo", cascade=CascadeType.ALL, orphanRemoval=true)
@@ -68,6 +69,9 @@ public class OrdenTrabajo implements Serializable{
 
 	@Transient
 	private OrdenTrabajoEstado ultimoEstado;
+	
+	@Transient
+	public List<ProductoDto> productosGrupo;
 	
 //	public OrdenTrabajoEstado getUlitmoEstado(){
 //		return estadosOrden != null && estadosOrden.size() > 0 ? estadosOrden.get(estadosOrden.size() - 1) : null;
@@ -245,5 +249,19 @@ public class OrdenTrabajo implements Serializable{
 	 */
 	public void setUltimoEstado(OrdenTrabajoEstado ultimoEstado) {
 		this.ultimoEstado = ultimoEstado;
+	}
+
+	/**
+	 * @return the productosGrupo
+	 */
+	public List<ProductoDto> getProductosGrupo() {
+		return productosGrupo;
+	}
+
+	/**
+	 * @param productosGrupo the productosGrupo to set
+	 */
+	public void setProductosGrupo(List<ProductoDto> productosGrupo) {
+		this.productosGrupo = productosGrupo;
 	}
 }

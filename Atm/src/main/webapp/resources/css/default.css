@@ -19,6 +19,10 @@ body{
 	background: url('../resources/images/fondo-opa-login.png') repeat;
 }
 
+.ui-selectonemenu.ui-state-disabled .ui-selectonemenu-label{
+	background-color: #f8fb9e !important;
+}
+
 .ui-treetable tbody td{
 	padding: 2px 4px !important;
 }
@@ -27,9 +31,6 @@ body{
 	vertical-align: top;
 }
 
-.ui-widget{
-	font-size: 12px !important;
-}
 
 .subTableBorder{
 	width: auto !important;
@@ -120,4 +121,20 @@ body{
 
 .ui-dialog-buttonpane{
 	text-align: center !important;
+}
+
+.ui-calendar-touch > .ui-datepicker-inline{
+	font-size: 42px !important;
+}
+
+.col-md-4{
+	border: 1px solid #f00;
+}
+
+.row{
+	width:90%;
+}
+
+.dlgTrabajosOT .ui-dialog-content.ui-widget-content{
+	overflow: hidden !important;
 }

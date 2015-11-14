@@ -84,11 +84,11 @@ public class TrabajoProductoDto implements Serializable {
 	}
 	
 	public String getTrabajoDescripcion(){
-		return this.trabajo == null ? "" : this.trabajo.getCodigo() + " - " + this.trabajo.getDescripcion();
+		return this.trabajo == null ? "" : this.trabajo.getDescripcion();
 	}
 	
 	public String getProductoDescripcion(){
-		return this.producto == null ? "-" : this.producto.getCodigo() + " - " + this.producto.getDescripcion();
+		return this.producto == null ? "" : "(" + this.producto.getProductoGrupo().getCodigo() + this.producto.getCodigo() + ")" + this.producto.getDescripcion();
 	}
 
 	/**

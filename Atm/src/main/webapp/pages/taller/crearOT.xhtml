@@ -265,7 +265,7 @@
 					    <h:panelGrid columns="6" cellpadding="3" id="pgiWorkFilter">
 					    	<h:outputText value="C&oacute;digo" />
 					    	<h:outputText value=":" />
-					    	<p:inputText id="iptCodigoTrabajo" value="#{crearOrdenTrabajoMB.trabajoFiltro.codigo}" />
+					    	<p:inputText id="iptCodigoTrabajo" styleClass="iptCodigoTrabajo" value="#{crearOrdenTrabajoMB.trabajoFiltro.codigo}" />
 					    	
 					    	<h:outputText value="Descripci&oacute;n" />
 					    	<h:outputText value=":" />
@@ -291,9 +291,17 @@
 					    	value="Buscar" 
 					    	action="#{crearOrdenTrabajoMB.buscarTrabajo}"
 					    	process="@this,pgiWorkFilter"
-					    	update="dttFindWorks" 
+					    	update="dttFindWorks"
+					    	styleClass="btnBuscarTrabajo" 
 					    	icon="ui-icon-search" />
 					 </p:fieldset>
+				    <p:commandButton 
+				    	value="Crear Nuevo Trabajo" 
+				    	process="@this"
+				    	update="pgiWorkInfo"
+				    	oncomplete="PF('diaWork').show();"
+						action="#{trabajoMB.nuevoTrabajo}" 
+				    	icon="ui-icon-plus" />
 				    <p:dataTable 
 				    	emptyMessage="Sin informaci&oacute;n" 
 				    	id="dttFindWorks" 
@@ -351,13 +359,192 @@
 		    		</div>
 			    </f:facet>
 			</p:dialog>    
+			<p:dialog id="diaWork" header="Datos Trabajo" widgetVar="diaWork" modal="true" resizable="false" showEffect="drop" hideEffect="fade" dynamic="true">  
+			    <h:panelGroup id="pgiWorkInfo">
+				    <h:panelGrid columns="6" cellpadding="3">
+				    	<h:outputText value="C&oacute;digo" />
+				    	<h:outputText value=":" />
+				    	<p:inputMask mask="aaaa9999" value="#{trabajoMB.trabajo.codigo}" styleClass="uppercase" />
+				    	
+				    	<h:outputText value="Descripci&oacute;n Tipo" />
+				    	<h:outputText value=":" />
+				    	<p:inputText value="#{trabajoMB.trabajo.descripcion}" style="width:300px" />
+				    	
+				    	<h:outputText value="HH Estimadas" />
+				    	<h:outputText value=":" />
+				    	<p:inputText value="#{trabajoMB.trabajo.hhEstimada}" onkeypress="return validarDecimal(event, this)">
+				    		<p:ajax event="blur" process="@this" update="iptValorManoObra" listener="#{trabajoMB.calcularValorManoObra}" />
+				    	</p:inputText>
+				    	
+				    	<h:outputText value="Valor Mano Obra" />
+				    	<h:outputText value=":" />
+				    	<p:inputText value="#{trabajoMB.trabajo.precioManoObra}" onkeypress="return validateNumbers(event)" id="iptValorManoObra" />
+				    	
+				    	<h:outputLabel value="Trabajo Tipo" />
+			            <h:outputLabel value=":" />  
+			            <p:selectOneMenu value="#{trabajoMB.idTrabajoTipoTrabajo}">
+			            	<f:selectItem itemValue="-1" itemLabel="Todos"/>
+			            	<f:selectItems value="#{trabajoMB.trabajoTipos}" var="wt" itemLabel="#{wt.descripcion}" itemValue="#{wt.idTrabajoTipo}" />
+			            	<p:ajax listener="#{trabajoMB.buscarTrabajoSubTiposTrabajo}" update="somSubTypesWork" process="@this" event="change" />
+			            </p:selectOneMenu>
+			            
+			            <h:outputLabel value="Trabajo Sub-Tipo" />
+			            <h:outputLabel value=":" />  
+			            <p:selectOneMenu value="#{trabajoMB.idTrabajoSubTipoTrabajo}" id="somSubTypesWork">
+			            	<f:selectItem itemValue="-1" itemLabel="Todos"/>
+			            	<f:selectItems value="#{trabajoMB.subTiposTrabajo}" var="wst" itemLabel="#{wst.descripcion}" itemValue="#{wst.idTrabajoSubTipo}" />
+			            </p:selectOneMenu>
+				    </h:panelGrid>
+                </h:panelGroup>
+                <h:panelGrid width="100%">
+                	<p:commandButton 
+		    			icon="ui-icon-search"
+		    			actionListener="#{trabajoMB.abrirBusquedaProductos}"
+		    			oncomplete="PF('diaProduct').show();"
+		    			update="pgiProductosTrabajo"
+		    			value="Buscar Productos" />
+		    		<p:dataTable var="workProduct" value="#{trabajoMB.trabajoProductos}" id="dttWorkProducts" emptyMessage="Sin informaci&oacute;n">
+						<p:columnGroup type="header">  
+				            <p:row>
+				                <p:column headerText="C&oacute;digo" />
+				                <p:column headerText="Descripci&oacute;n" />
+				                <p:column headerText="Marca" />
+				            	<p:column headerText="Cantidad" />
+				            	<p:column headerText="" />  
+				            </p:row>  
+				        </p:columnGroup>  
+				        <p:column>  
+				            <h:outputText value="#{workProduct.producto.codigo}" />  
+				        </p:column>
+				        <p:column>  
+				            <h:outputText value="#{workProduct.producto.descripcion}" />  
+				        </p:column>
+				        <p:column>  
+				            <h:outputText value="#{workProduct.producto.marca.descripcion}" />  
+				        </p:column>
+				        <p:column>
+				        	<div align="center">  
+				            	<p:inputText style="width:50px; text-align:right" value="#{workProduct.cantidadProducto}" onkeypress="return validarDecimal(event, this)" />
+				            </div>  
+				        </p:column>
+				        <p:column style="width:30px; text-align:center">
+				            <p:commandButton update="dttWorkProducts" action="#{trabajoMB.eliminarTrabajoProducto}"  icon="ui-icon-closethick" title="Eliminar" alt="Eliminar">  
+				                <p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el Producto seleccionado?" icon="ui-icon-alert" />
+				                <f:setPropertyActionListener value="#{workProduct}" target="#{trabajoMB.trabajoProducto}" />    
+				            </p:commandButton>  
+				        </p:column>
+					</p:dataTable>
+                </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			action="#{trabajoMB.guardarTrabajo}"
+			    			oncomplete="if(args &amp;&amp; args.done){ PF('diaWork').hide(); buscarNuevoTrabajoOT(args.codigo); }"
+			    			process="@this,dttWorkProducts,pgiWorkInfo"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaWork').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+			<p:dialog header="B&uacute;squeda de Productos" widgetVar="diaProduct" modal="true" resizable="false" showEffect="drop" hideEffect="fade" dynamic="true">  
+			    <h:panelGrid id="pgiProductosTrabajo">
+				    <p:fieldset legend="B&uacute;squeda">
+					    <h:panelGrid columns="6" cellspacing="3" id="pniBusquedaProductos">
+					    	<h:outputText value="C&oacute;digo Producto" />
+					    	<h:outputText value=":" />
+					    	<p:inputText value="#{trabajoMB.productoCode}" />
+					    	
+					    	<h:outputText value="Descripci&oacute;n Producto" />
+					    	<h:outputText value=":" />
+					    	<p:inputText value="#{trabajoMB.productoDesc}" />
+					    	
+					    	<h:outputText value="Marca" />
+					    	<h:outputText value=":" />
+					    	<p:selectOneMenu value="#{trabajoMB.idMarca}">
+				            	<f:selectItem itemValue="-1" itemLabel="Todas" />
+				            	<f:selectItems value="#{trabajoMB.marcas}" var="stamp" itemLabel="#{stamp.descripcion}" itemValue="#{stamp.idMarca}" />
+				            </p:selectOneMenu>
+				            
+				            <h:outputText value="Grupo" />
+					    	<h:outputText value=":" />
+					    	<p:selectOneMenu value="#{trabajoMB.idProductoGrupo}">
+				            	<f:selectItem itemValue="-1" itemLabel="Todas" />
+				            	<f:selectItems value="#{trabajoMB.gruposProducto}" var="gp" itemLabel="#{gp.descripcion}" itemValue="#{gp.idProductoGrupo}" />
+				            </p:selectOneMenu>
+					    </h:panelGrid>
+			            <p:commandButton 
+			            	value="Buscar" 
+			            	icon="ui-icon-search" 
+			            	update="dttProductosTrabajo"
+			            	process="@this,pniBusquedaProductos" 
+			            	action="#{trabajoMB.searchProducts}" />
+				    </p:fieldset>
+	    			<p:dataTable 
+	    				var="product" 
+	    				value="#{trabajoMB.productos}" 
+	    				id="dttProductosTrabajo" 
+	    				paginator="true" rows="5"
+				    	paginatorPosition="bottom"
+						paginatorTemplate="{CurrentPageReport} {PageLinks}"
+	    				emptyMessage="Sin informaci&oacute;n">
+						<p:columnGroup type="header">  
+				            <p:row>
+				            	<p:column>#</p:column>  
+				                <p:column headerText="C&oacute;digo" />
+				                <p:column headerText="Descripci&oacute;n" />
+				                <p:column headerText="Marca" />
+				            </p:row>  
+				        </p:columnGroup>  
+				        <p:column style="width:10px; text-align:center">  
+				            <p:selectBooleanCheckbox value="#{product.seleccionado}" />  
+				        </p:column>
+				        <p:column>  
+				            <h:outputText value="#{product.codigo}" />  
+				        </p:column>
+				        <p:column style="width:600px;">  
+				            <h:outputText value="#{product.descripcion}" />  
+				        </p:column>
+				        <p:column>  
+				            <h:outputText value="#{product.marca.descripcion}" />  
+				        </p:column>
+					</p:dataTable>
+                </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-plus"
+			    			action="#{trabajoMB.addProduct}"
+			    			process="@this,dttProductosTrabajo"
+			    			update="dttProductosTrabajo, :frm:dttWorkProducts"
+			    			value="Agregar" />
+				    	<p:commandButton 
+			    			icon="ui-icon-circle-plus"
+			    			action="#{trabajoMB.addProduct}"
+			    			oncomplete="PF('diaProduct').hide();"
+			    			process="@this,dttProductosTrabajo"
+			    			update=":frm:dttWorkProducts"
+			    			value="Agregar y Cerrar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaProduct').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+			
 		    <p:dialog id="diaProducts" header="Buscar Productos" widgetVar="diaProducts" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
 			    <h:panelGrid columns="1">
 				    <p:fieldset legend="B&uacute;squeda">
 					    <h:panelGrid columns="6" id="pgiProducts" cellspacing="3">
 					    	<h:outputText value="C&oacute;digo" />
 					    	<h:outputText value=":" />
-					    	<p:inputText id="iptCodigoProducto" value="#{crearOrdenTrabajoMB.productoCodigo}" />
+					    	<p:inputText styleClass="iptCodigoProducto" value="#{crearOrdenTrabajoMB.productoCodigo}" />
 					    	
 					    	<h:outputText value="Descripci&oacute;n" />
 					    	<h:outputText value=":" />
@@ -370,18 +557,28 @@
 					    		<f:selectItems value="#{crearOrdenTrabajoMB.marcas}"  var="stamp" itemValue="#{stamp.idMarca}" itemLabel="#{stamp.descripcion}" />
 					    	</p:selectOneMenu>
 					    	
-					    	<h:outputText value="" />
-					    	<h:outputText value="" />
-					    	<h:outputText value="" />
-					    	<p:watermark for="iptCodigoProducto" value="AAA1111" />  
+					    	<h:outputText value="Grupo" />
+					    	<h:outputText value=":" />
+					    	<p:selectOneMenu value="#{crearOrdenTrabajoMB.idProductoGrupo}">
+					    		<f:selectItem itemValue="-1" itemLabel="Todos" />
+					    		<f:selectItems value="#{crearOrdenTrabajoMB.gruposProducto}" var="gp" itemValue="#{gp.idProductoGrupo}" itemLabel="#{gp.descripcion}" />
+					    	</p:selectOneMenu>
 					    </h:panelGrid>
 				    	<p:commandButton 
 				    		value="Buscar" 
 				    		icon="ui-icon-search" 
 				    		update="dttFindProducts" 
-				    		process="@this,pgiProducts" 
+				    		process="@this,pgiProducts"
+				    		styleClass="btnBuscarProducto" 
 				    		action="#{crearOrdenTrabajoMB.buscarProductos}" />
 			    	</p:fieldset>
+			    	<p:commandButton 
+						update=":frm:pgiProductInfo"
+						oncomplete="PF('diaNuevoProducto').show();"
+						action="#{productoMB.nuevoProducto}"
+						icon="ui-icon-plus"
+						process="@this"
+						value="Agregar Nuevo Producto"/>
 				    <h:panelGroup id="pngFindProducts">
 					    <p:dataTable 
 					    	id="dttFindProducts" 
@@ -395,7 +592,7 @@
 								<p:selectBooleanCheckbox value="#{product.seleccionado}"/>
 							</p:column> 
 					        <p:column headerText="C&oacute;digo">  
-				                <h:outputText value="#{product.codigo}" />
+				                <h:outputText value="#{product.productoGrupo.codigo}#{product.codigo}" />
 							</p:column>
 							<p:column headerText="Descripci&oacute;n">  
 				                <h:outputText value="#{product.descripcion}" />
@@ -428,7 +625,77 @@
 			    			value="Cerrar" />
 		    		</div>
 			    </f:facet>
-			</p:dialog>    
+			</p:dialog>
+			<p:dialog id="diaNuevoProducto" header="Datos Producto" widgetVar="diaNuevoProducto" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid columns="3" cellpadding="4" id="pgiProductInfo">
+			    	<h:outputText value="Grupo Producto" />
+			    	<h:outputText value=":" />
+			    	<p:selectOneMenu value="#{productoMB.producto.productoGrupo.idProductoGrupo}" disabled="#{productoMB.modExistente}">
+			    		<f:selectItem itemValue="-1" itemLabel="Seleccione" />
+			    		<f:selectItems value="#{productoMB.gruposProducto}" var="gp" itemValue="#{gp.idProductoGrupo}" itemLabel="#{gp.descripcion}" />
+			    		<p:ajax event="change" process="@this" update="optGrupoCodigo" listener="#{productoMB.mostarGrupoCodigo}" />
+			    	</p:selectOneMenu>
+			    	
+			    	<h:outputText value="C&oacute;digo Producto" />
+			    	<h:outputText value=":" />
+			    	<h:panelGrid columns="2" cellpadding="0" cellspacing="0">
+			    		<h:outputText id="optGrupoCodigo" value="#{productoMB.grupoCodigo}" />
+			    		<p:inputText value="#{productoMB.producto.codigo}" styleClass="uppercase iptCodigoProducto" maxlength="10" style="width: 93px" disabled="#{productoMB.modExistente}" />
+			    	</h:panelGrid>
+			    	
+			    	<h:outputText value="Descripci&oacute;n Producto" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{productoMB.producto.descripcion}" style="width:400px" />
+			    	
+			    	<h:outputText value="Marca Producto" />
+			    	<h:outputText value=":" />
+			    	<p:selectOneMenu value="#{productoMB.producto.marca.idMarca}">
+			    		<f:selectItem itemLabel="Seleccione" />
+			    		<f:selectItems value="#{productoMB.marcas}" var="stamp" itemLabel="#{stamp.descripcion}" itemValue="#{stamp.idMarca}" />
+			    	</p:selectOneMenu>
+			    </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+				    	<p:commandButton 
+			    			icon="ui-icon-disk"
+			    			action="#{productoMB.guardarProducto}"
+			    			oncomplete="if(args.prodExiste){ PF('diaCodigoRepetido').show(); } else if(args.done){ PF('diaNuevoProducto').hide(); buscarNuevoProductoOT(args.codigo); }"
+			    			update=":frm:pngProductoExistente"
+			    			process="@this,pgiProductInfo"
+			    			value="Guardar" />
+		    			<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			oncomplete="PF('diaNuevoProducto').hide();"
+			    			value="Cancelar" />
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+			<p:dialog id="diaCodigoRepetido" header="Manesaje Producto" widgetVar="diaCodigoRepetido" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
+			    <h:panelGrid>
+				    <h:panelGroup layout="block" align="center" id="pngProductoExistente">
+				    	<h:outputText value="El c&oacute;digo de Producto #{productoMB.grupoCodigo}#{productoMB.producto.codigo} ya existe, desea obtener esa informaci&oacute;n" />
+				    </h:panelGroup>
+			    </h:panelGrid>
+			    <f:facet name="footer">
+			    	<div align="center">
+		    			<p:commandButton 
+			    			icon="ui-icon-check"
+			    			oncomplete="PF('diaCodigoRepetido').hide();"
+			    			action="#{productoMB.cargarProducto}"
+			    			process="@this"
+			    			update=":frm:pgiProductInfo"
+			    			value="Aceptar" />
+			    		<p:commandButton 
+			    			icon="ui-icon-close"
+			    			process="@this"
+			    			onclick="PF('diaCodigoRepetido').hide()"
+			    			value="Cancelar"/>
+		    		</div>
+			    </f:facet>
+			</p:dialog>
+			
+			
 		    <p:dialog id="diaMecanics" header="Asociar Mec&aacute;nicos" widgetVar="diaMecanics" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
 			    <p:pickList 
 			    	id="pklMecanicos" 
@@ -469,9 +736,9 @@
 			    </f:facet>
 			</p:dialog>
 			<h:panelGroup id="pngCreateNewVehicle">    
-				<p:dialog id="diaCreateNewVehicle" header="Crear Nuevo Vehiculo" visible="true" rendered="#{crearOrdenTrabajoMB.crearNuevoVehiculo}" widgetVar="diaCreateNewVehicle" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+				<p:dialog id="diaCreateNewVehicle" header="Crear Nuevo Veh&iacute;culo" visible="true" rendered="#{crearOrdenTrabajoMB.crearNuevoVehiculo}" widgetVar="diaCreateNewVehicle" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
 					<h:panelGroup layout="block" align="left">
-				    	<h:outputText value="El vehiculo patente #{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.patente} no existe, ¿Desea crearlo?" />
+				    	<h:outputText value="El veh&iacute;culo patente #{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.patente} no existe, ¿Desea crearlo?" />
 				    </h:panelGroup>
 				    <f:facet name="footer">
 				    	<div align="center">
@@ -491,19 +758,19 @@
 				    </f:facet>
 				</p:dialog>
 			</h:panelGroup>
-			<p:dialog id="diaCreateVehicle" header="Crear Nuevo Vehiculo" widgetVar="diaCreateVehicle" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+			<p:dialog id="diaCreateVehicle" header="Crear Nuevo Veh&iacute;culo" widgetVar="diaCreateVehicle" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
 				<h:panelGrid columns="3" id="pagNewVehicle">
 					<h:outputText value="Patente" />
     				<h:outputText value=":" />
-    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.patente}" readonly="true" disabled="true" />  
+    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.patente}" readonly="true" disabled="true" styleClass="uppercase" />  
     				
     				<h:outputText value="Chasis" />
     				<h:outputText value=":" />
-    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.chasis}" />
+    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.chasis}" styleClass="uppercase" />
     				
     				<h:outputText value="Color" />
     				<h:outputText value=":" />
-    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.color}" />
+    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.color}" styleClass="uppercase" />
     				
     				<h:outputText value="Marca" />
     				<h:outputText value=":" />
@@ -514,11 +781,11 @@
     				
     				<h:outputText value="Modelo" />
     				<h:outputText value=":" />
-    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.modelo}" />
+    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.modelo}" styleClass="uppercase" />
     				
     				<h:outputText value="Nro. Motor" />
     				<h:outputText value=":" />
-    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.nroMotor}" />
+    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.vehiculo.nroMotor}" styleClass="uppercase" />
     				
     				<h:outputText value="A&ntilde;o" />
     				<h:outputText value=":" />
@@ -571,17 +838,17 @@
 	    				
 						<h:outputText value="Cliente" />
 	    				<h:outputText value=":" />
-	    				<p:inputText id="customerName" value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.nombreCliente}" />
+	    				<p:inputText id="customerName" value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.nombreCliente}" styleClass="uppercase" />
 	    				<h:outputText value="E-Mail" />
 	    				<h:outputText value=":" />
-	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.email}" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.email}" styleClass="uppercase" />
 	    				
 	    				<h:outputText value="Tel&eacute;fono" />
 	    				<h:outputText value=":" />
-	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.telefono}" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.telefono}" styleClass="uppercase" />
 	    				<h:outputText value="Celular" />
 	    				<h:outputText value=":" />
-	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.celular}" />
+	    				<p:inputText value="#{crearOrdenTrabajoMB.orden.vehiculoOrden.cliente.celular}" styleClass="uppercase" />
 					</h:panelGrid>
 					<f:facet name="footer">
 				    	<div align="center">
@@ -637,7 +904,7 @@
 				    	<h:outputText value="Orden de Trabajo generada con &eacute;xito : #{crearOrdenTrabajoMB.ordenTrabajoCodigo}" />
 				    </h:panelGroup>
 				    <h:panelGroup layout="block" rendered="#{fn:length(crearOrdenTrabajoMB.mensajesStock) > 0}" style="margin-bottom:40px; margin-top:10px" styleClass="listaProd">
-					    <h:outputText value="Mensajes de Stock" />
+					    <h:outputText value="Advertencia de Stock" />
 					    <p:dataList value="#{crearOrdenTrabajoMB.mensajesStock}" var="mensaje" style="margin-top:20px">
 					    	<h:outputText value="#{mensaje}" />
 					    </p:dataList>
@@ -651,11 +918,6 @@
 			    			action="#{crearOrdenTrabajoMB.saltarAAdmOT}"
 			    			ajax="false"
 			    			value="Aceptar" />
-			    		<p:commandButton 
-			    			icon="ui-icon-gear"
-			    			rendered="#{fn:length(crearOrdenTrabajoMB.mensajesStock) > 0}"
-			    			onclick="PF('diaSolicitud').show()"
-			    			value="Solicitar Productos"/>
 		    		</div>
 			    </f:facet>
 			</p:dialog>
@@ -734,7 +996,7 @@
 						        		<p:selectBooleanCheckbox value="#{producto.seleccionado}" />
 						        	</p:column>
 						        	<p:column headerText="C&oacute;digo" style="width:70px; text-align:center">
-						        		<h:outputText value="#{producto.codigo}" />
+						        		<h:outputText value="#{producto.productoGrupo.codigo}#{producto.codigo}" />
 						        	</p:column>
 						        	<p:column headerText="Descripci&oacute;n">
 						        		<h:outputText value="#{producto.descripcion}" />
@@ -753,7 +1015,7 @@
 							        	id="dttProductosSolicitud" 
 							        	value="#{crearOrdenTrabajoMB.productosSolicitud}" var="producto" emptyMessage="Sin productos">
 							        	<p:column headerText="C&oacute;digo" style="width:70px; text-align:center">
-							        		<h:outputText value="#{producto.producto.codigo}" />
+							        		<h:outputText value="#{producto.producto.productoGrupo.codigo}#{producto.producto.codigo}" />
 							        	</p:column>
 							        	<p:column headerText="Descripci&oacute;n">
 							        		<h:outputText value="#{producto.producto.descripcion}" />

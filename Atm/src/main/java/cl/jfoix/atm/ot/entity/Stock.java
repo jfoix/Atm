@@ -12,6 +12,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import cl.jfoix.atm.comun.entity.Producto;
 
@@ -39,6 +40,18 @@ public class Stock implements Serializable {
 
 	@OneToMany(mappedBy="stock")
 	private List<Movimiento> movimientos;
+
+	@Column(name="coordBodega")
+	private String coordBodega;
+	
+	@Transient
+	private Integer mayorPrecioCompra;
+	
+	@Transient
+	private Integer precioVenta;
+	
+	@Transient
+	private Integer ultimoPrecioVenta;
 	
 	/**
 	 * @return the idStock
@@ -108,5 +121,61 @@ public class Stock implements Serializable {
 	 */
 	public void setMovimientos(List<Movimiento> movimientos) {
 		this.movimientos = movimientos;
+	}
+
+	/**
+	 * @return the ultimoPrecioVenta
+	 */
+	public Integer getUltimoPrecioVenta() {
+		return ultimoPrecioVenta;
+	}
+
+	/**
+	 * @param ultimoPrecioVenta the ultimoPrecioVenta to set
+	 */
+	public void setUltimoPrecioVenta(Integer ultimoPrecioVenta) {
+		this.ultimoPrecioVenta = ultimoPrecioVenta;
+	}
+
+	/**
+	 * @return the mayorPrecioCompra
+	 */
+	public Integer getMayorPrecioCompra() {
+		return mayorPrecioCompra;
+	}
+
+	/**
+	 * @param mayorPrecioCompra the mayorPrecioCompra to set
+	 */
+	public void setMayorPrecioCompra(Integer mayorPrecioCompra) {
+		this.mayorPrecioCompra = mayorPrecioCompra;
+	}
+
+	/**
+	 * @return the coordBodega
+	 */
+	public String getCoordBodega() {
+		return coordBodega;
+	}
+
+	/**
+	 * @param coordBodega the coordBodega to set
+	 */
+	public void setCoordBodega(String coordBodega) {
+		this.coordBodega = coordBodega;
+	}
+
+	/**
+	 * @return the precioVenta
+	 */
+	public Integer getPrecioVenta() {
+		return precioVenta;
+	}
+
+	/**
+	 * @param precioVenta the precioVenta to set
+	 */
+	public void setPrecioVenta(Integer precioVenta) {
+		this.precioVenta = precioVenta;
 	}
 }

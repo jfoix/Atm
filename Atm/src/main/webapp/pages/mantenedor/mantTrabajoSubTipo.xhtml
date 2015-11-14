@@ -12,7 +12,7 @@
 				<h:panelGrid columns="7" cellpadding="5" id="pniBusqueda">  
 		            <h:outputLabel value="Descripci&oacute;n Sub-Tipo" />
 		            <h:outputLabel value=":" />  
-		            <p:inputText value="#{trabajoSubTipoMB.subTipoDesc}" />
+		            <p:inputText value="#{trabajoSubTipoMB.subTipoDesc}" style="width:300px" />
 		            
 		            <h:outputText value="Trabajo Tipo" />
 			    	<h:outputText value=":" />
@@ -76,20 +76,20 @@
 		    </p:confirmDialog>
 		    <p:dialog id="diaSubType" header="Datos Sub-Tipo" widgetVar="diaSubType" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
 			    <h:panelGrid columns="3" cellpadding="4" id="pgiSubTypeInfo">
-			    	<h:outputText value="Descripci&oacute;n Sub-Tipo" />
-			    	<h:outputText value=":" />
-			    	<p:inputText value="#{trabajoSubTipoMB.trabajoSubTipo.descripcion}" />
-			    	
-			    	<h:outputText value="Externo" />
-			    	<h:outputText value=":" />
-			    	<p:selectBooleanCheckbox value="#{trabajoSubTipoMB.trabajoSubTipo.externo}" />
-			    	
 			    	<h:outputText value="Trabajo Tipo" />
 			    	<h:outputText value=":" />
 			    	<p:selectOneMenu value="#{trabajoSubTipoMB.trabajoSubTipo.trabajoTipo.idTrabajoTipo}">
 			    		<f:selectItem itemValue="-1" itemLabel="Seleccione"/>
 			    		<f:selectItems value="#{trabajoSubTipoMB.trabajoTipos}" var="wt" itemLabel="#{wt.descripcion}" itemValue="#{wt.idTrabajoTipo}" />
 			    	</p:selectOneMenu>
+			    	
+			    	<h:outputText value="Descripci&oacute;n Sub-Tipo" />
+			    	<h:outputText value=":" />
+			    	<p:inputText value="#{trabajoSubTipoMB.trabajoSubTipo.descripcion}" style="width:300px" />
+			    	
+			    	<h:outputText value="Externo" />
+			    	<h:outputText value=":" />
+			    	<p:selectBooleanCheckbox value="#{trabajoSubTipoMB.trabajoSubTipo.externo}" />
 			    </h:panelGrid>
 			    <f:facet name="footer">
 			    	<div align="center">

@@ -28,6 +28,7 @@ import cl.jfoix.atm.comun.seguridad.proveedor.UsuarioAtenticacion;
 @Component
 @Scope("session")
 public class AuthenticationBean implements Serializable {
+	
 	private static final long serialVersionUID = -2757923903320691489L;
 
 	private Authentication auth;
@@ -66,7 +67,8 @@ public class AuthenticationBean implements Serializable {
 	public String getPassword() {
 		return password;
 	}
-
+	
+	
 	/**
 	 * @return
 	 * @throws IOException
@@ -84,9 +86,18 @@ public class AuthenticationBean implements Serializable {
 			
 			ExternalContext context = FacesContext.getCurrentInstance().getExternalContext();
 			
-			String loginUrl = context.encodeActionURL(FacesContext.getCurrentInstance().getApplication().getViewHandler().getActionURL(FacesContext.getCurrentInstance(), "/index.xhtml"));
+			String viewId = FacesContext.getCurrentInstance().getViewRoot().getViewId();
+			
+			String indexUrl = "";
+			
+			if(viewId.equals("/login_lm.xhtml")){
+				indexUrl = context.encodeActionURL(FacesContext.getCurrentInstance().getApplication().getViewHandler().getActionURL(FacesContext.getCurrentInstance(), "/pages/lm_mecanico/lmMecanico.xhtml"));
+			} else {
+				indexUrl = context.encodeActionURL(FacesContext.getCurrentInstance().getApplication().getViewHandler().getActionURL(FacesContext.getCurrentInstance(), "/index.xhtml"));
+			}
+			
 			try {
-				context.redirect(loginUrl);
+				context.redirect(indexUrl);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}		

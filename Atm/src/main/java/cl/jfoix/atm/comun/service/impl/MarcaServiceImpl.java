@@ -47,7 +47,7 @@ public class MarcaServiceImpl implements IMarcaService {
 			List<Filtro> filtros = new ArrayList<Filtro>();
 			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
 
-			return marcaDao.buscarPorFiltros(filtros, null);
+			return marcaDao.buscarPorFiltros(filtros, "descripcion asc");
 		} catch (DaoException e) {
 			e.printStackTrace();
 		}
@@ -68,7 +68,7 @@ public class MarcaServiceImpl implements IMarcaService {
 			
 			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
 
-			return marcaDao.buscarPorFiltros(filtros, null);
+			return marcaDao.buscarPorFiltros(filtros, "descripcion asc");
 		} catch (DaoException e) {
 			e.printStackTrace();
 		}

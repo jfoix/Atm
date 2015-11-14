@@ -1,6 +1,7 @@
 package cl.jfoix.atm.ot.bean;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -14,13 +15,18 @@ import javax.faces.context.FacesContext;
 import org.primefaces.context.RequestContext;
 
 import cl.jfoix.atm.comun.entity.Producto;
+import cl.jfoix.atm.comun.entity.ProductoGrupo;
 import cl.jfoix.atm.comun.excepcion.view.ViewException;
+import cl.jfoix.atm.comun.service.IOrdenService;
 import cl.jfoix.atm.ot.entity.Bodega;
 import cl.jfoix.atm.ot.entity.Movimiento;
+import cl.jfoix.atm.ot.entity.OrdenTrabajoProducto;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoSolicitud;
 import cl.jfoix.atm.ot.entity.OrdenTrabajoSolicitudProducto;
+import cl.jfoix.atm.ot.entity.OrdenTrabajoSolicitudProductoGrupo;
 import cl.jfoix.atm.ot.entity.Proveedor;
 import cl.jfoix.atm.ot.entity.Stock;
+import cl.jfoix.atm.ot.service.IOrdenTrabajoService;
 import cl.jfoix.atm.ot.service.ISolicitudRepuestosService;
 import cl.jfoix.atm.ot.stock.service.IAdminStockService;
 import cl.jfoix.atm.ot.stock.util.TipoMovimientoEnum;
@@ -36,25 +42,42 @@ public class AdminSolicitudRepuestoMB implements Serializable {
 	
 	@ManagedProperty(value="#{solicitudRepuestosService}")
 	private ISolicitudRepuestosService solicitudRepuestosService;
-	
+
+	@ManagedProperty(value="#{ordenTrabajoService}")
+	private IOrdenTrabajoService ordenTrabajoService;
+
+	@ManagedProperty(value="#{ordenService}")
+	private IOrdenService ordenService;
+
 	//Filtro
-	private Integer idProducto;
-	private Date fechaSolicitud;
+	private Integer idProductoGrupo;
 	private Integer estadoSolicitud;
+	private Date fechaSolicitud;
+	
+	private List<ProductoGrupo> productoGrupos;
+	
+	private Integer idProducto;
 	
 	private List<Proveedor> proveedores;
 	private List<Bodega> bodegas;
 	private List<Producto> productos;
+	private List<Producto> productosSeleccionados;
 	private List<OrdenTrabajoSolicitud> solicitudes;
 	private List<OrdenTrabajoSolicitudProducto> productosSolicitud;
 	
 	private OrdenTrabajoSolicitud ordenTrabajoSolicitud;
 	private OrdenTrabajoSolicitudProducto ordenTrabajoSolicitudProducto;
+	private OrdenTrabajoSolicitudProductoGrupo ordenTrabajoSolicitudProductoGrupo;
 	private Stock stock;
 	private Movimiento movimiento;
 	
+	private String filtroNomProd;
+	private String filtroCodigo;
+	
 	@PostConstruct
 	public void init(){
+		
+		productoGrupos = adminStockService.buscarProductoGrupo();
 		
 		bodegas = adminStockService.buscarBodegas();
 		proveedores = adminStockService.buscarProveedores();
@@ -68,7 +91,7 @@ public class AdminSolicitudRepuestoMB implements Serializable {
 	}
 	
 	public void buscarSolicitudes(){
-		solicitudes = solicitudRepuestosService.buscarSolicitudesRepuestos(fechaSolicitud, idProducto.equals(-1) ? null : idProducto, estadoSolicitud.equals(-1) ? null : estadoSolicitud.equals(0) ? false : true, null);
+		solicitudes = solicitudRepuestosService.buscarSolicitudesRepuestos(fechaSolicitud, idProductoGrupo.equals(-1) ? null : idProductoGrupo, estadoSolicitud.equals(-1) ? null : estadoSolicitud.equals(0) ? false : true, null);
 	}
 	
 	public void cambiarEstadoSolicitud(){
@@ -76,9 +99,91 @@ public class AdminSolicitudRepuestoMB implements Serializable {
 		ordenTrabajoSolicitud.setEstado(false);
 	}
 	
-	public void cambiarEstadoSolProducto(){
-		solicitudRepuestosService.cambiarEstadoSolicitudRepuestoProducto(ordenTrabajoSolicitudProducto);
-		ordenTrabajoSolicitudProducto.setEstado(false);
+	public void buscarProductosPorGrupo(OrdenTrabajoSolicitudProductoGrupo otspg){
+		
+		ordenTrabajoSolicitudProductoGrupo = otspg;
+		filtroNomProd = "";
+		filtroCodigo = "";
+		
+		productos = adminStockService.buscarProductosPorGrupo(ordenTrabajoSolicitudProductoGrupo.getProductoGrupo().getIdProductoGrupo(), filtroNomProd, filtroCodigo);
+		productosSeleccionados = null;
+	}
+	
+	public void agregarProductos(Producto producto){
+		if(productosSeleccionados == null){
+			productosSeleccionados = new ArrayList<Producto>();
+		}
+		
+		productos.remove(producto);
+		productosSeleccionados.add(producto);
+	}
+
+	public void quitarProductos(Producto producto){
+		productos.add(producto);
+		productosSeleccionados.remove(producto);
+	}
+	
+	private void validarProductosSolicitud() throws ViewException{
+		if(productosSeleccionados == null || productosSeleccionados.size() == 0){
+			throw new ViewException("Debe seleccionar al menos un producto a agregar");
+		}
+		
+		ViewException vEx = new ViewException();
+		
+		for(Producto producto : productosSeleccionados){
+			if(producto.getCantidad() == null || producto.getCantidad().equals(0d)){
+				vEx.agregarMensaje("Debe ingresar una cantidad al producto " + producto.getCodigo() + "-" + producto.getDescripcion());
+				producto.setCantidad(null);
+			} else {
+				Stock stock = ordenService.buscarStockPorProducto(producto.getIdProducto(), producto.getCantidad(), ordenTrabajoSolicitudProductoGrupo.getSolicitud().getOrdenTrabajo().getOrden().getIdOrden());
+				
+				if(stock == null){
+					vEx.agregarMensaje("El producto " + producto.getCodigo() + "-" + producto.getDescripcion() + " no tiene stock disponible");
+				}
+			}
+		}
+		
+		if(vEx.tieneMensajes()){
+			throw vEx;
+		}
+	}
+	
+	public void guardarProductosSolicitud() throws ViewException{
+		validarProductosSolicitud();
+		
+		solicitudRepuestosService.guardarProductosSolicitud(ordenTrabajoSolicitudProductoGrupo, productosSeleccionados);
+		
+		productos = null;
+		productosSeleccionados = null;
+		
+		RequestContext.getCurrentInstance().addCallbackParam("done", true);
+		FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Mensaje", "Productos Agregados Correctamente"));
+	}
+
+	public void cambiarEstadoSolProducto() throws ViewException{
+			
+		OrdenTrabajoProducto otp = new OrdenTrabajoProducto();
+		otp.setCantidad(ordenTrabajoSolicitudProducto.getCantidadAgregada());
+		otp.setOrdenTrabajo(ordenTrabajoSolicitud.getOrdenTrabajo());
+		otp.setProducto(ordenTrabajoSolicitudProducto.getProducto());
+		otp.setTraidoCliente(false);
+		otp.setValor(0);
+		
+		Stock stock = ordenService.buscarStockPorProducto(ordenTrabajoSolicitudProducto.getProducto().getIdProducto(), ordenTrabajoSolicitudProducto.getCantidad(), ordenTrabajoSolicitud.getOrdenTrabajo().getOrden().getIdOrden());
+		
+		if(stock == null){
+			throw new ViewException("El producto a agregar no posee stock suficiente");
+		}
+			
+		try {
+			ordenTrabajoService.guardarOrdenTrabajoProducto(otp);
+			
+			solicitudRepuestosService.cambiarEstadoSolicitudRepuestoProducto(ordenTrabajoSolicitudProducto);
+			ordenTrabajoSolicitudProducto.setEstado(false);
+		} catch (ViewException e) {
+			throw new ViewException("Ocurrió un problema al guardar la información, intentelo más tarde");
+		}
+		
 	}
 	
 	public void agregarStock(){
@@ -146,6 +251,10 @@ public class AdminSolicitudRepuestoMB implements Serializable {
 		movimiento = new Movimiento();
 		movimiento.setProveedor(new Proveedor());
 		movimiento.setTipo(TipoMovimientoEnum.INGRESO);
+	}
+	
+	public void filtroProductoAgregar(){
+		productos = adminStockService.buscarProductosPorGrupo(ordenTrabajoSolicitudProductoGrupo.getProductoGrupo().getIdProductoGrupo(), filtroNomProd, filtroCodigo);
 	}
 
 	/**
@@ -345,5 +454,118 @@ public class AdminSolicitudRepuestoMB implements Serializable {
 	 */
 	public void setProductos(List<Producto> productos) {
 		this.productos = productos;
+	}
+
+	/**
+	 * @return the ordenTrabajoService
+	 */
+	public IOrdenTrabajoService getOrdenTrabajoService() {
+		return ordenTrabajoService;
+	}
+
+	/**
+	 * @param ordenTrabajoService the ordenTrabajoService to set
+	 */
+	public void setOrdenTrabajoService(IOrdenTrabajoService ordenTrabajoService) {
+		this.ordenTrabajoService = ordenTrabajoService;
+	}
+
+	/**
+	 * @return the ordenService
+	 */
+	public IOrdenService getOrdenService() {
+		return ordenService;
+	}
+
+	/**
+	 * @param ordenService the ordenService to set
+	 */
+	public void setOrdenService(IOrdenService ordenService) {
+		this.ordenService = ordenService;
+	}
+
+	/**
+	 * @return the idProductoGrupo
+	 */
+	public Integer getIdProductoGrupo() {
+		return idProductoGrupo;
+	}
+
+	/**
+	 * @param idProductoGrupo the idProductoGrupo to set
+	 */
+	public void setIdProductoGrupo(Integer idProductoGrupo) {
+		this.idProductoGrupo = idProductoGrupo;
+	}
+
+	/**
+	 * @return the productoGrupos
+	 */
+	public List<ProductoGrupo> getProductoGrupos() {
+		return productoGrupos;
+	}
+
+	/**
+	 * @param productoGrupos the productoGrupos to set
+	 */
+	public void setProductoGrupos(List<ProductoGrupo> productoGrupos) {
+		this.productoGrupos = productoGrupos;
+	}
+
+	/**
+	 * @return the productosSeleccionados
+	 */
+	public List<Producto> getProductosSeleccionados() {
+		return productosSeleccionados;
+	}
+
+	/**
+	 * @param productosSeleccionados the productosSeleccionados to set
+	 */
+	public void setProductosSeleccionados(List<Producto> productosSeleccionados) {
+		this.productosSeleccionados = productosSeleccionados;
+	}
+
+	/**
+	 * @return the ordenTrabajoSolicitudProductoGrupo
+	 */
+	public OrdenTrabajoSolicitudProductoGrupo getOrdenTrabajoSolicitudProductoGrupo() {
+		return ordenTrabajoSolicitudProductoGrupo;
+	}
+
+	/**
+	 * @param ordenTrabajoSolicitudProductoGrupo the ordenTrabajoSolicitudProductoGrupo to set
+	 */
+	public void setOrdenTrabajoSolicitudProductoGrupo(
+			OrdenTrabajoSolicitudProductoGrupo ordenTrabajoSolicitudProductoGrupo) {
+		this.ordenTrabajoSolicitudProductoGrupo = ordenTrabajoSolicitudProductoGrupo;
+	}
+
+	/**
+	 * @return the filtroNomProd
+	 */
+	public String getFiltroNomProd() {
+		return filtroNomProd;
+	}
+
+	/**
+	 * @param filtroNomProd the filtroNomProd to set
+	 */
+	public void setFiltroNomProd(String filtroNomProd) {
+		this.filtroNomProd = filtroNomProd;
+	}
+
+	/**
+	 * @return the filtroCodigo
+	 */
+	public String getFiltroCodigo() {
+		return filtroCodigo;
+	}
+
+	/**
+	 * @param filtroCodigo the filtroCodigo to set
+	 */
+	public void setFiltroCodigo(String filtroCodigo) {
+		this.filtroCodigo = filtroCodigo;
 	}
 }

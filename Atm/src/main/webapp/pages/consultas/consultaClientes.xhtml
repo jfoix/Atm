@@ -15,7 +15,7 @@
 			            <h:outputLabel value="Rut Cliente" />
 			            <h:outputLabel value=":" />  
 			            <p:inputText value="#{consultaClientesMB.rutClienteBusq}" />
-			            <h:outputLabel value="Patente Vehiculo" />
+			            <h:outputLabel value="Patente Veh&iacute;culo" />
 			            <h:outputLabel value=":" />  
 			            <p:inputMask value="#{consultaClientesMB.patenteBusq}" mask="aa-**-99" styleClass="uppercase" />
 			            <p:commandButton 
@@ -83,7 +83,7 @@
 			        </p:column>
 			        <p:column>  
 			            <f:facet name="header">
-			        		Vehiculo
+			        		<h:outputText value="Veh&iacute;culo" /> 
 			        	</f:facet>
 			        	<h:outputText value="#{cliente.vehiculo.marcaVehiculo.descripcion} #{cliente.vehiculo.modelo}" />
 			        </p:column>

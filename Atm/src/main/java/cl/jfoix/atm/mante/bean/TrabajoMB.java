@@ -17,6 +17,7 @@ import org.primefaces.context.RequestContext;
 
 import cl.jfoix.atm.comun.entity.Marca;
 import cl.jfoix.atm.comun.entity.Producto;
+import cl.jfoix.atm.comun.entity.ProductoGrupo;
 import cl.jfoix.atm.comun.entity.Trabajo;
 import cl.jfoix.atm.comun.entity.TrabajoProducto;
 import cl.jfoix.atm.comun.entity.TrabajoSubTipo;
@@ -24,6 +25,7 @@ import cl.jfoix.atm.comun.entity.TrabajoTipo;
 import cl.jfoix.atm.comun.excepcion.view.ViewException;
 import cl.jfoix.atm.comun.service.IMarcaService;
 import cl.jfoix.atm.comun.service.IParametroGeneralService;
+import cl.jfoix.atm.comun.service.IProductoGrupoService;
 import cl.jfoix.atm.comun.service.IProductoService;
 import cl.jfoix.atm.comun.service.ITrabajoService;
 import cl.jfoix.atm.comun.service.ITrabajoSubTipoService;
@@ -38,6 +40,9 @@ public class TrabajoMB implements Serializable {
 	@ManagedProperty(value="#{trabajoService}")
 	private ITrabajoService trabajoService;
 	
+	@ManagedProperty(value="#{productoGrupoService}")
+	private IProductoGrupoService productoGrupoService;
+
 	@ManagedProperty(value="#{trabajoSubTipoService}")
 	private ITrabajoSubTipoService trabajoSubTipoService;
 	
@@ -64,6 +69,7 @@ public class TrabajoMB implements Serializable {
 	private String productoCode;
 	private String productoDesc;
 	private Integer idMarca;
+	private Integer idProductoGrupo;
 	
 	private Trabajo trabajo;
 	private TrabajoProducto trabajoProducto;
@@ -74,12 +80,14 @@ public class TrabajoMB implements Serializable {
 	private List<TrabajoTipo> trabajoTipos;
 	private List<TrabajoProducto> trabajoProductos;
 	private List<Producto> productos;
+	private List<ProductoGrupo> gruposProducto;
 	private List<Marca> marcas;
 	
 	@PostConstruct
 	public void init(){
 		this.trabajoTipos = trabajoTipoService.buscarTodosTrabajosTipo();
 		this.marcas = marcaService.buscarTodasMarcas();
+		gruposProducto = productoGrupoService.buscarProductosGrupo();
 		
 		this.trabajo = new Trabajo();
 		this.trabajo.setTrabajoSubTipo(new TrabajoSubTipo());
@@ -206,6 +214,7 @@ public class TrabajoMB implements Serializable {
 			buscarTrabajo();
 			
 			RequestContext.getCurrentInstance().addCallbackParam("done", true);
+			RequestContext.getCurrentInstance().addCallbackParam("codigo", trabajo.getCodigo());
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Mensaje", msg));
 		} catch (Exception e) {
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error", "Ocurrió un problema al guardar la información, intentelo más tarde"));
@@ -232,7 +241,7 @@ public class TrabajoMB implements Serializable {
 	
 	public void searchProducts(){
 		try{
-			productos =  productoService.buscarProductosPorCodigoDescripcionMarca(productoDesc, productoDesc, idMarca);
+			productos =  productoService.buscarProductosPorCodigoDescripcionMarca(productoCode, productoDesc, idMarca, idProductoGrupo);
 		} catch (Exception e) {
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error", "Ocurrió un problema al buscar la información, intentelo más tarde"));
 		}
@@ -615,5 +624,47 @@ public class TrabajoMB implements Serializable {
 	public void setParametroGeneralService(
 			IParametroGeneralService parametroGeneralService) {
 		this.parametroGeneralService = parametroGeneralService;
+	}
+
+	/**
+	 * @return the productoGrupoService
+	 */
+	public IProductoGrupoService getProductoGrupoService() {
+		return productoGrupoService;
+	}
+
+	/**
+	 * @param productoGrupoService the productoGrupoService to set
+	 */
+	public void setProductoGrupoService(IProductoGrupoService productoGrupoService) {
+		this.productoGrupoService = productoGrupoService;
+	}
+
+	/**
+	 * @return the idProductoGrupo
+	 */
+	public Integer getIdProductoGrupo() {
+		return idProductoGrupo;
+	}
+
+	/**
+	 * @param idProductoGrupo the idProductoGrupo to set
+	 */
+	public void setIdProductoGrupo(Integer idProductoGrupo) {
+		this.idProductoGrupo = idProductoGrupo;
+	}
+
+	/**
+	 * @return the gruposProducto
+	 */
+	public List<ProductoGrupo> getGruposProducto() {
+		return gruposProducto;
+	}
+
+	/**
+	 * @param gruposProducto the gruposProducto to set
+	 */
+	public void setGruposProducto(List<ProductoGrupo> gruposProducto) {
+		this.gruposProducto = gruposProducto;
 	}
 }

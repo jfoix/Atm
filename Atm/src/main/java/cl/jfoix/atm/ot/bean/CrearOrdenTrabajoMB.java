@@ -30,6 +30,7 @@ import cl.jfoix.atm.comun.entity.MantencionProgramada;
 import cl.jfoix.atm.comun.entity.MantencionProgramadaTrabajo;
 import cl.jfoix.atm.comun.entity.Marca;
 import cl.jfoix.atm.comun.entity.Producto;
+import cl.jfoix.atm.comun.entity.ProductoGrupo;
 import cl.jfoix.atm.comun.entity.Trabajo;
 import cl.jfoix.atm.comun.entity.TrabajoProducto;
 import cl.jfoix.atm.comun.entity.TrabajoSubTipo;
@@ -39,6 +40,7 @@ import cl.jfoix.atm.comun.seguridad.proveedor.UsuarioAtenticacion;
 import cl.jfoix.atm.comun.service.IMantencionProgramadaService;
 import cl.jfoix.atm.comun.service.IMarcaService;
 import cl.jfoix.atm.comun.service.IOrdenService;
+import cl.jfoix.atm.comun.service.IProductoGrupoService;
 import cl.jfoix.atm.comun.service.IProductoService;
 import cl.jfoix.atm.comun.service.ITrabajoService;
 import cl.jfoix.atm.comun.service.ITrabajoSubTipoService;
@@ -76,6 +78,9 @@ public class CrearOrdenTrabajoMB implements Serializable {
 	@ManagedProperty(value="#{ordenTrabajoService}")
 	private IOrdenTrabajoService ordenTrabajoService;
 	
+	@ManagedProperty(value="#{productoGrupoService}")
+	private IProductoGrupoService productoGrupoService;
+
 	@ManagedProperty(value="#{ordenService}")
 	private IOrdenService ordenService;
 
@@ -119,6 +124,7 @@ public class CrearOrdenTrabajoMB implements Serializable {
 	private String productoCodigo;
 	private String productoDesc;
 	private Integer idMarca;
+	private Integer idProductoGrupo;
 
 	private String mpCodigo;
 	private String mpDescripcion;
@@ -131,6 +137,7 @@ public class CrearOrdenTrabajoMB implements Serializable {
 	private List<TrabajoSubTipo> trabajoSubTipos;
 	private List<MantencionProgramada> mantencionesProgramadas;
 	private List<Producto> productos;
+	private List<ProductoGrupo> gruposProducto;
 	private List<Producto> productosSol;
 	private List<Marca> marcas;
 	private List<OrdenDocumento> documentos;
@@ -174,6 +181,7 @@ public class CrearOrdenTrabajoMB implements Serializable {
 		tnTrabajos = new DefaultTreeNode("root", null);
 		
 		marcas = marcaService.buscarTodasMarcas();
+		gruposProducto = productoGrupoService.buscarProductosGrupo();
 		
 		List<Usuario> source = new ArrayList<Usuario>();
 		List<Usuario> target = new ArrayList<Usuario>();
@@ -192,11 +200,49 @@ public class CrearOrdenTrabajoMB implements Serializable {
 		orden.getVehiculoOrden().setVehiculo(vehiculo);
 	}
 	
-	public void guardarVehiculo(){
+	private void validarVehiculo() throws ViewException{
+		
+		Vehiculo vehiculo = orden.getVehiculoOrden().getVehiculo();
+		
+		ViewException vEx = new ViewException();
+		
+		if(vehiculo.getChasis() == null || vehiculo.getChasis().equals("")){
+			vEx.agregarMensaje("Debe ingresar el chasis del vehículo");
+		}
+		
+		if(vehiculo.getColor() == null || vehiculo.getColor().equals("")){
+			vEx.agregarMensaje("Debe ingresar el chasis del vehículo");
+		}
+		
+		if(vehiculo.getMarcaVehiculo().getIdMarcaVehiculo() == null || vehiculo.getMarcaVehiculo().getIdMarcaVehiculo().equals(0)){
+			vEx.agregarMensaje("Debe seleccionar la marca del vehículo");
+		}
+
+		if(vehiculo.getModelo() == null || vehiculo.getModelo().equals("")){
+			vEx.agregarMensaje("Debe ingresar el modelo del vehículo");
+		}
+		
+		if(vehiculo.getNroMotor() == null || vehiculo.getNroMotor().equals("")){
+			vEx.agregarMensaje("Debe ingresar el nro. motor del vehículo");
+		}
+		
+		if(vehiculo.getAcno() == null || vehiculo.getAcno().equals(0) || vehiculo.getAcno().intValue() < 1900){
+			vEx.agregarMensaje("Debe ingresar un año válido para el vehículo");
+		}
+		
+		if(vEx.tieneMensajes()){
+			throw vEx;
+		}
+	}
+	
+	public void guardarVehiculo() throws ViewException{
+		
+		validarVehiculo();
+		
 		try {
 			vehiculoService.guardarVehiculo(orden.getVehiculoOrden().getVehiculo());
 			
-			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Mensaje", "Vehiculo almacenado correctamente"));
+			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO,"Mensaje", "Vehículo almacenado correctamente"));
 		} catch (Exception e) {
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error", "Ocurrió un problema al almacenar la información, intentelo más tarde"));
 		}
@@ -471,7 +517,7 @@ public class CrearOrdenTrabajoMB implements Serializable {
 						
 						if(stock != null){
 							Integer valorVenta = ordenService.buscarValorVentaProductoStock(stock.getIdStock());
-							producto.setValor(valorVenta);
+							producto.setValor((int)Math.round(valorVenta * producto.getCantidad()));
 						} else {
 							mensajesStock.add("No hay Stock para el producto " + producto.getProducto().getDescripcion());
 						}
@@ -617,7 +663,7 @@ public class CrearOrdenTrabajoMB implements Serializable {
 	
 	public void buscarProductos(){
 		try{
-			productos =  productoService.buscarProductosPorCodigoDescripcionMarca(productoCodigo, productoDesc, idMarca);
+			productos =  productoService.buscarProductosPorCodigoDescripcionMarca(productoCodigo, productoDesc, idMarca, idProductoGrupo);
 		} catch (Exception e) {
 			FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR,"Error", "Ocurrió un problema al buscar la información, intentelo más tarde"));
 		}
@@ -1409,5 +1455,47 @@ public class CrearOrdenTrabajoMB implements Serializable {
 	 */
 	public void setSolicitud(OrdenTrabajoSolicitud solicitud) {
 		this.solicitud = solicitud;
+	}
+
+	/**
+	 * @return the productoGrupoService
+	 */
+	public IProductoGrupoService getProductoGrupoService() {
+		return productoGrupoService;
+	}
+
+	/**
+	 * @param productoGrupoService the productoGrupoService to set
+	 */
+	public void setProductoGrupoService(IProductoGrupoService productoGrupoService) {
+		this.productoGrupoService = productoGrupoService;
+	}
+
+	/**
+	 * @return the idProductoGrupo
+	 */
+	public Integer getIdProductoGrupo() {
+		return idProductoGrupo;
+	}
+
+	/**
+	 * @param idProductoGrupo the idProductoGrupo to set
+	 */
+	public void setIdProductoGrupo(Integer idProductoGrupo) {
+		this.idProductoGrupo = idProductoGrupo;
+	}
+
+	/**
+	 * @return the gruposproducto
+	 */
+	public List<ProductoGrupo> getGruposProducto() {
+		return gruposProducto;
+	}
+
+	/**
+	 * @param gruposproducto the gruposproducto to set
+	 */
+	public void setGruposProducto(List<ProductoGrupo> gruposProducto) {
+		this.gruposProducto = gruposProducto;
 	}
 }

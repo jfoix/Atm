@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:ui="http://java.sun.com/jsf/facelets">
 <ui:composition template="/templates/template.xhtml">
@@ -130,7 +131,14 @@
 			        </p:column>
 			        <p:column>
 			            <div align="center">
-			            	<p:commandLink value="Resumen" icon="ui-icon-document" ajax="false" process="@this" action="#{admOTMB.generarReporteResumentOT}" title="Reporte Resumen" alt="Reporte Resumen">
+			            	<p:commandLink value="Resumen" 
+			            		icon="ui-icon-document" 
+			            		process="@this" 
+			            		title="Reporte Resumen"
+			            		action="#{admOTMB.limpiarVarsConIva()}"
+			            		update=":frm:pnlCbxIvas"
+			            		oncomplete="PF('dlgSeleccionarIVA').show()" 
+			            		alt="Reporte Resumen">
 		                		<f:setPropertyActionListener value="#{order}" target="#{admOTMB.orden}" />
 		                	</p:commandLink>
 			            </div>  
@@ -167,6 +175,39 @@
 			        <p:commandButton value="Cancelar" type="button" styleClass="ui-confirmdialog-no" icon="ui-icon-close"/>       
 			    </p:confirmDialog>
     		</h:panelGrid>
+    		
+    		<p:dialog header="Seleccionar IVA" widgetVar="dlgSeleccionarIVA" modal="true" resizable="false" showEffect="drop" hideEffect="fade" width="800">
+    			<h:panelGrid id="pnlCbxIvas" columns="3">
+    				<h:outputText value="¿Calcular IVA en Repuestos?" />
+    				<h:outputText value=":" />
+    				<p:selectBooleanCheckbox value="#{admOTMB.ivaRepuesto}" />
+    				
+    				<h:outputText value="¿Calcular IVA en Mano de Obra?" />
+    				<h:outputText value=":" />
+    				<p:selectBooleanCheckbox value="#{admOTMB.ivaManoObra}" />
+    				
+    				<h:outputText value="¿Calcular IVA en Servicio Terceros?" />
+    				<h:outputText value=":" />
+    				<p:selectBooleanCheckbox value="#{admOTMB.ivaSTercero}" />
+    			</h:panelGrid>
+    			<f:facet name="footer">
+    				<div align="center">
+    					<p:commandButton 
+			    			action="#{admOTMB.generarReporteResumentOT}"
+    						oncomplete="PF('dlgSeleccionarIVA').hide()"
+    						process="@this,pnlCbxIvas"
+    						ajax="false"
+    						icon="ui-icon-gear"
+    						value="Generar Reporte"/>
+   						<p:commandButton 
+			    			oncomplete="PF('dlgSeleccionarIVA').hide()"
+    						process="@this"
+    						icon="ui-icon-close"
+    						value="Cancelar"/>
+    				</div>
+    			</f:facet>
+    		</p:dialog>
+    		
     		<h:panelGroup id="pngAdicionales">
 	    		<p:dialog header="Adicionales OT #{admOTMB.orden.idOrden}" widgetVar="diaAdicionales" modal="true" resizable="false" showEffect="drop" hideEffect="fade" width="800">
 	    			<p:tabView id="tabView">  
@@ -294,6 +335,36 @@
 								<p:selectOneMenu value="#{admOTMB.idFormaPago}" rendered="#{admOTMB.idNuevoEstadoOrden eq 6}">
 									<f:selectItems value="#{admOTMB.formasPago}" var="fp" itemLabel="#{fp.descripcion}" itemValue="#{fp.idFormaPago}" />
 								</p:selectOneMenu>
+								
+								<h:outputText value="Descuento Repuesto" rendered="#{admOTMB.idNuevoEstadoOrden eq 6}" />
+								<h:outputText value=":" rendered="#{admOTMB.idNuevoEstadoOrden eq 6}" />
+								<h:panelGrid columns="2" rendered="#{admOTMB.idNuevoEstadoOrden eq 6}">
+									<p:inputText value="#{admOTMB.desRepuesto}" />
+									<p:selectOneMenu value="#{admOTMB.tipoDesRepuesto}">
+										<f:selectItem itemLabel="%" itemValue="%" />
+										<f:selectItem itemLabel="Pesos" itemValue="$" />
+									</p:selectOneMenu>
+								</h:panelGrid>
+								
+								<h:outputText value="Descuento Mano de Obra" rendered="#{admOTMB.idNuevoEstadoOrden eq 6}" />
+								<h:outputText value=":" rendered="#{admOTMB.idNuevoEstadoOrden eq 6}" />
+								<h:panelGrid columns="2" rendered="#{admOTMB.idNuevoEstadoOrden eq 6}">
+									<p:inputText value="#{admOTMB.desManoObra}" />
+									<p:selectOneMenu value="#{admOTMB.tipoDesManoObra}">
+										<f:selectItem itemLabel="%" itemValue="%" />
+										<f:selectItem itemLabel="Pesos" itemValue="$" />
+									</p:selectOneMenu>
+								</h:panelGrid>
+								
+								<h:outputText value="Descuento Servicio Tercero" rendered="#{admOTMB.idNuevoEstadoOrden eq 6}" />
+								<h:outputText value=":" rendered="#{admOTMB.idNuevoEstadoOrden eq 6}" />
+								<h:panelGrid columns="2" rendered="#{admOTMB.idNuevoEstadoOrden eq 6}">
+									<p:inputText value="#{admOTMB.desSTercero}" />
+									<p:selectOneMenu value="#{admOTMB.tipoDesSTercero}">
+										<f:selectItem itemLabel="%" itemValue="%" />
+										<f:selectItem itemLabel="Pesos" itemValue="$" />
+									</p:selectOneMenu>
+								</h:panelGrid>
 							</h:panelGrid>
 							<h:panelGroup style="text-align:left" layout="block">
 								<br /><h:outputText value="Observaci&oacute;n :" /><br />
@@ -320,7 +391,7 @@
 		    	</p:dialog>
 			</h:panelGroup>
 			<h:panelGroup id="pngWorks">
-				<p:dialog id="diaTrabajosOT" header="Trabajos OT #{admOTMB.orden.idOrden}" widgetVar="diaTrabajosOT" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+				<p:dialog id="diaTrabajosOT" header="Trabajos OT #{admOTMB.orden.idOrden}" widgetVar="diaTrabajosOT" modal="true" resizable="false" showEffect="drop" hideEffect="fade" styleClass="dlgTrabajosOT">
 					<h:panelGrid>
 						<h:panelGrid columns="2">
 			    			<p:commandButton 
@@ -338,141 +409,147 @@
 			    				update="tetWorks"
 			    				value="Buscar Stock Productos" />
 			    		</h:panelGrid>
-						<p:treeTable 
-							id="tetWorks" 
-							value="#{admOTMB.tnTrabajos}" 
-							var="works"
-							emptyMessage="Sin informaci&oacute;n"
-							styleClass="tetClass">  
-					        <p:column style="width:230px">   
-					            <f:facet name="header">  
-					                <h:outputText value="Trabajo" />
-					            </f:facet>  
-					            <h:outputText value="#{works.trabajoDescripcion}" />  
-					        </p:column>
-					        <p:column style="width:130px">   
-					            <f:facet name="header">  
-					                <h:outputText value="Estado Trabajo" />
-					            </f:facet>  
-					            <h:outputText value="#{works.ot ne null ? works.ot.ultimoEstado.estadoTrabajo.descripcion : ''}" />  
-					        </p:column>
-					        <p:column style="width:60px">   
-					            <f:facet name="header">  
-					                <h:outputText value="Garant&iacute;a" />
-					            </f:facet>  
-					            <div align="center">
-					            	<p:selectBooleanCheckbox value="#{works.garantia}" rendered="#{works.tipo eq 1}">
-					            		<p:ajax event="change" />
-					            	</p:selectBooleanCheckbox>
-					            </div>  
-					        </p:column>
-					        <p:column style="width:180px">  
-					            <f:facet name="header">  
-					                Producto
-					            </f:facet>  
-					            <h:outputText value="#{works.productoDescripcion} #{works.productoCliente or works.tieneStock ? '' : '(SIN STOCK)'}" styleClass="#{works.productoCliente or works.tieneStock ? '' : 'sinStockMec'}" />  
-					        </p:column>
-					        <p:column style="width:60px">   
-					            <f:facet name="header">  
-					                <h:outputText value="Traido Cliente" />
-					            </f:facet>  
-					            <div align="center">
-					            	<p:selectBooleanCheckbox value="#{works.productoCliente}" rendered="#{works.tipo eq 2}">
-					            		<p:ajax event="change" process="@this" oncomplete="clickBtnTraidoCliente(this)" />
-					            	</p:selectBooleanCheckbox>
-					            	<div style="display:none">
-						            	<p:commandButton action="#{admOTMB.verificarProductoCliente}" process="@this" widgetVar="btnCliente" update=":frm:tetWorks:iptPrecio" styleClass="btnProdCliente" value="c">
-						            		<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
-						            	</p:commandButton>
-					            	</div>
-					            </div>  
-					        </p:column>
-					        <p:column>  
-					            <f:facet name="header">  
-					                Cantidad
-					            </f:facet>  
-					            <div align="right">
-						            <p:inputText value="#{works.cantidad}" onkeypress="return validarDecimal(event, this)" rendered="#{works.tipo eq 2}" style="width:30px; text-align:right">
-						            	<p:ajax event="change" />
-						            </p:inputText> 
-					            </div> 
-					        </p:column>
-					        <p:column>  
-					            <f:facet name="header">  
-					                Precio
-					            </f:facet>  
-					            <div align="right">
-						            <p:inputText value="#{works.precio}" id="iptPrecio" onkeypress="return validateNumbers(event)" style="width:40px; text-align:right">
-						            	<p:ajax event="change" />
-						            </p:inputText> 
-					            </div> 
-					        </p:column>
-					        <p:column>  
-					            <f:facet name="header">  
-					                HH Estimadas
-					            </f:facet>  
-					            <div align="right">
-					            	<p:inputText value="#{works.hhEstimadas}" onkeypress="return validarDecimal(event, this)" rendered="#{works.tipo eq 1}" style="width:30px; text-align:right">
-					            		<p:ajax event="change" />
-					            	</p:inputText>
-					            </div>  
-					        </p:column>
-					        <p:column style="width:120px">
-					        	<f:facet name="header">
-					        		Acciones
-					        	</f:facet>
-					        	<div align="center">
-						        	<h:panelGrid columns="3" rendered="#{works.tipo eq 1}" styleClass="tetSubTable">
-						                <p:commandButton 
-						                	icon="ui-icon-close" 
-						                	title="Eliminar Trabajo"
-						                	action="#{admOTMB.quitarTrabajo}"
-						                	process="@this"
-						                	update=":frm:tetWorks" 
-						                	alt="Eliminar Trabajo">
-						                	<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
-						                	<p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el trabajo seleccionado?" icon="ui-icon-alert" />
-						                </p:commandButton>
-						                <p:commandButton 
-						                	icon="ui-icon-plus" 
-						                	title="Agregar Producto"
-						                	update=":frm:pgiProducts :frm:dttFindProducts"
-				                			action="#{admOTMB.abrirBusquedaProducto}"
-						                	oncomplete="PF('diaProducts').show();" 
-						                	alt="Agregar Producto">
-						                	<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
-						                </p:commandButton>
-						                <p:commandButton 
-						                	icon="ui-icon-person" 
-					                		title="Asociar Mec&aacute;nico"
-					                		action="#{admOTMB.abrirBusquedaMecanicos}"
-			                				update=":frm:pklMecanicos"
-					                		oncomplete="PF('diaMecanics').show();" 
-			                				alt="Asociar Mec&aacute;nico">
-			                				<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
-			                			</p:commandButton>  
-						        	</h:panelGrid>
-						        	<h:panelGrid columns="3" rendered="#{works.tipo eq 2}" styleClass="tetSubTable">
-						                <p:commandButton 
-						                	icon="ui-icon-circle-close" 
-						                	title="Eliminar Producto"
-						                	action="#{admOTMB.quitarTrabajo}"
-						                	process="@this" 
-						                	update=":frm:tetWorks" 
-						                	alt="Eliminar Producto">
-						                	<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
-						                	<p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el producto seleccionado?" icon="ui-icon-alert" />
-						               	</p:commandButton>
-						        	</h:panelGrid>
-					        	</div>
-					        </p:column>
-						</p:treeTable>
+			    		<h:panelGroup layout="block" style="overflow:auto; max-height:500px">
+							<p:treeTable 
+								id="tetWorks" 
+								value="#{admOTMB.tnTrabajos}" 
+								var="works"
+								emptyMessage="Sin informaci&oacute;n"
+								styleClass="tetClass">  
+						        <p:column>   
+						            <f:facet name="header">  
+						                <h:outputText value="Trabajo" />
+						            </f:facet>  
+						            <h:outputText value="#{fn:substring(works.trabajoDescripcion, 0, 30)}" rendered="#{works.tipo eq 1}"  />
+						            <p:commandLink global="false" value="..." rendered="#{works.tipo eq 1 and fn:length(works.trabajoDescripcion) gt 30}" alt="#{works.trabajoDescripcion}" title="#{works.trabajoDescripcion}" />
+						        </p:column>
+						        <p:column style="width:130px">   
+						            <f:facet name="header">  
+						                <h:outputText value="Estado Trabajo" />
+						            </f:facet>  
+						            <h:outputText value="#{works.ot ne null ? works.ot.ultimoEstado.estadoTrabajo.descripcion : ''}" />  
+						        </p:column>
+						        <p:column style="width:60px">   
+						            <f:facet name="header">  
+						                <h:outputText value="Garant&iacute;a" />
+						            </f:facet>  
+						            <div align="center">
+						            	<p:selectBooleanCheckbox value="#{works.garantia}" rendered="#{works.tipo eq 1}" disabled="#{works.ot ne null and (works.ot.ultimoEstado.estadoTrabajo.idEstadoTrabajo eq 3 or works.ot.ultimoEstado.estadoTrabajo.idEstadoTrabajo eq 4)}">
+						            		<p:ajax event="change" />
+						            	</p:selectBooleanCheckbox>
+						            </div>  
+						        </p:column>
+						        <p:column style="width:180px">  
+						            <f:facet name="header">  
+						                Producto
+						            </f:facet>
+						            <h:outputText id="optProductoDesc" value="#{fn:substring(works.productoDescripcion, 0, 30)}  #{works.productoCliente or works.tieneStock ? '' : '(SIN STOCK)'}" styleClass="#{works.productoCliente or works.tieneStock ? '' : 'sinStockMec'}" />
+						            <p:commandLink global="false" value="..." rendered="#{fn:length(works.productoDescripcion) gt 30}" alt="#{works.productoDescripcion}" title="#{works.productoDescripcion}" />  
+						        </p:column>
+						        <p:column style="width:60px">   
+						            <f:facet name="header">  
+						                <h:outputText value="Traido Cliente" />
+						            </f:facet>  
+						            <div align="center">
+						            	<p:selectBooleanCheckbox value="#{works.productoCliente}" rendered="#{works.tipo eq 2}" disabled="#{works.ot ne null and (works.ot.ultimoEstado.estadoTrabajo.idEstadoTrabajo eq 3 or works.ot.ultimoEstado.estadoTrabajo.idEstadoTrabajo eq 4)}" >
+						            		<p:ajax event="change" process="@this" oncomplete="clickBtnTraidoCliente(this)" />
+						            	</p:selectBooleanCheckbox>
+						            	<div style="display:none">
+							            	<p:commandButton action="#{admOTMB.verificarProductoCliente}" process="@this" widgetVar="btnCliente" update=":frm:tetWorks:iptPrecio" styleClass="btnProdCliente" value="c">
+							            		<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
+							            	</p:commandButton>
+						            	</div>
+						            </div>  
+						        </p:column>
+						        <p:column>  
+						            <f:facet name="header">  
+						                Cantidad
+						            </f:facet>  
+						            <div align="right">
+							            <p:inputText value="#{works.cantidad}" onkeypress="return validarDecimal(event, this)" rendered="#{works.tipo eq 2}" style="width:30px; text-align:right"  disabled="#{works.ot ne null and (works.ot.ultimoEstado.estadoTrabajo.idEstadoTrabajo eq 3 or works.ot.ultimoEstado.estadoTrabajo.idEstadoTrabajo eq 4)}">
+							            	<p:ajax event="change" update="iptPrecio optProductoDesc" listener="#{admOTMB.buscarPrecioPorCantidad(works)}" />
+							            </p:inputText> 
+						            </div> 
+						        </p:column>
+						        <p:column>  
+						            <f:facet name="header">  
+						                Precio
+						            </f:facet>  
+						            <div align="right">
+							            <p:inputText value="#{works.precio}" id="iptPrecio" onkeypress="return validateNumbers(event)" style="width:40px; text-align:right"  disabled="#{works.ot ne null and (works.ot.ultimoEstado.estadoTrabajo.idEstadoTrabajo eq 3 or works.ot.ultimoEstado.estadoTrabajo.idEstadoTrabajo eq 4)}">
+							            	<p:ajax event="change" />
+							            </p:inputText> 
+						            </div> 
+						        </p:column>
+						        <p:column>  
+						            <f:facet name="header">  
+						                HH Estimadas
+						            </f:facet>  
+						            <div align="right">
+						            	<p:inputText value="#{works.hhEstimadas}" onkeypress="return validarDecimal(event, this)" rendered="#{works.tipo eq 1}" style="width:30px; text-align:right"  disabled="#{works.ot ne null and (works.ot.ultimoEstado.estadoTrabajo.idEstadoTrabajo eq 3 or works.ot.ultimoEstado.estadoTrabajo.idEstadoTrabajo eq 4)}">
+						            		<p:ajax event="change" update="iptPrecio" process="@this" listener="#{admOTMB.buscarValorHHPorCantidad(works)}" />
+						            	</p:inputText>
+						            </div>  
+						        </p:column>
+						        <p:column style="width:120px">
+						        	<f:facet name="header">
+						        		Acciones
+						        	</f:facet>
+						        	<div align="center">
+						        		<h:panelGroup rendered="#{works.ot ne null and (works.ot.ultimoEstado.estadoTrabajo.idEstadoTrabajo ne 3 or works.ot.ultimoEstado.estadoTrabajo.idEstadoTrabajo eq 4)}">
+							        		<h:panelGrid columns="3" rendered="#{works.tipo eq 1}" styleClass="tetSubTable" >
+								                <p:commandButton 
+								                	icon="ui-icon-close" 
+								                	title="Eliminar Trabajo"
+								                	action="#{admOTMB.quitarTrabajo}"
+								                	process="@this"
+								                	update=":frm:tetWorks" 
+								                	alt="Eliminar Trabajo">
+								                	<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
+								                	<p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el trabajo seleccionado?" icon="ui-icon-alert" />
+								                </p:commandButton>
+								                <p:commandButton 
+								                	icon="ui-icon-plus" 
+								                	title="Agregar Producto"
+								                	update=":frm:pgiProducts :frm:dttFindProducts"
+						                			action="#{admOTMB.abrirBusquedaProducto}"
+								                	oncomplete="PF('diaProducts').show();" 
+								                	alt="Agregar Producto">
+								                	<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
+								                </p:commandButton>
+								                <p:commandButton 
+								                	icon="ui-icon-person" 
+							                		title="Asociar Mec&aacute;nico"
+							                		action="#{admOTMB.abrirBusquedaMecanicos}"
+					                				update=":frm:pklMecanicos"
+							                		oncomplete="PF('diaMecanics').show();" 
+					                				alt="Asociar Mec&aacute;nico">
+					                				<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
+					                			</p:commandButton>  
+								        	</h:panelGrid>
+								        	<h:panelGrid columns="3" rendered="#{works.tipo eq 2}" styleClass="tetSubTable">
+								                <p:commandButton 
+								                	icon="ui-icon-circle-close" 
+								                	title="Eliminar Producto"
+								                	action="#{admOTMB.quitarTrabajo}"
+								                	process="@this" 
+								                	update=":frm:tetWorks" 
+								                	alt="Eliminar Producto">
+								                	<f:setPropertyActionListener target="#{admOTMB.trabajoProductoDto}" value="#{works}" />
+								                	<p:confirm header="Confirmaci&oacute;n" message="¿Est&aacute; seguro de eliminar el producto seleccionado?" icon="ui-icon-alert" />
+								               	</p:commandButton>
+								        	</h:panelGrid>
+								        </h:panelGroup>
+						        	</div>
+						        </p:column>
+							</p:treeTable>
+			    		</h:panelGroup>
 					</h:panelGrid>
 					<f:facet name="footer">
 				    	<div align="center">
 					    	<p:commandButton 
 				    			icon="ui-icon-disk"
-				    			update="@this"
+				    			update="@this, dttWorks"
 				    			process="@this"
 				    			action="#{admOTMB.guardarOT}"
 				    			oncomplete="PF('diaTrabajosOT').hide();"
@@ -608,49 +685,58 @@
 			    </f:facet>
 			</p:dialog>    
 		    <p:dialog id="diaProducts" header="Buscar Productos" widgetVar="diaProducts" modal="true" resizable="false" showEffect="drop" hideEffect="fade">  
-			    <h:panelGrid columns="6" id="pgiProducts">
-			    	<h:outputText value="C&oacute;digo" />
-			    	<h:outputText value=":" />
-			    	<p:inputText id="iptCodigoProducto" value="#{admOTMB.productoCodigo}" />
-			    	
-			    	<h:outputText value="Descripci&oacute;n" />
-			    	<h:outputText value=":" />
-			    	<p:inputText value="#{admOTMB.productoDesc}" />
-			    	
-			    	<h:outputText value="Marca" />
-			    	<h:outputText value=":" />
-			    	<p:selectOneMenu value="#{admOTMB.idMarca}">
-			    		<f:selectItem itemValue="-1" itemLabel="Todos" />
-			    		<f:selectItems value="#{admOTMB.marcas}"  var="stamp" itemValue="#{stamp.idMarca}" itemLabel="#{stamp.descripcion}" />
-			    	</p:selectOneMenu>
-			    	
-			    	<h:outputText value="" />
-			    	<h:outputText value="" />
-			    	<h:outputText value="" />
-			    	<p:watermark for="iptCodigoProducto" value="AAA1111" />
-			    </h:panelGrid>
-		    	<p:commandButton 
-		    		value="Buscar" 
-		    		icon="ui-icon-search" 
-		    		update="dttFindProducts" 
-		    		process="@this,pgiProducts" 
-		    		action="#{admOTMB.buscarProductos}" />
-			    <h:panelGroup id="pngFindProducts">
-				    <p:dataTable id="dttFindProducts" emptyMessage="Sin productos" value="#{admOTMB.productos}" var="product">
-						<p:column style="width:10px; text-align:center">
-							<p:selectBooleanCheckbox value="#{product.seleccionado}"/>
-						</p:column> 
-				        <p:column headerText="C&oacute;digo">  
-			                <h:outputText value="#{product.codigo}" />
-						</p:column>
-						<p:column headerText="Descripci&oacute;n">  
-			                <h:outputText value="#{product.descripcion}" />
-						</p:column>
-						<p:column headerText="Marca">  
-			                <h:outputText value="#{product.marca.descripcion}" />
-						</p:column>
-					</p:dataTable>
-				</h:panelGroup>
+			    <h:panelGrid>
+				    <h:panelGrid columns="6" id="pgiProducts">
+				    	<h:outputText value="C&oacute;digo" />
+				    	<h:outputText value=":" />
+				    	<p:inputText id="iptCodigoProducto" value="#{admOTMB.productoCodigo}" />
+				    	
+				    	<h:outputText value="Descripci&oacute;n" />
+				    	<h:outputText value=":" />
+				    	<p:inputText value="#{admOTMB.productoDesc}" />
+				    	
+				    	<h:outputText value="Marca" />
+				    	<h:outputText value=":" />
+				    	<p:selectOneMenu value="#{admOTMB.idMarca}">
+				    		<f:selectItem itemValue="-1" itemLabel="Todos" />
+				    		<f:selectItems value="#{admOTMB.marcas}"  var="stamp" itemValue="#{stamp.idMarca}" itemLabel="#{stamp.descripcion}" />
+				    	</p:selectOneMenu>
+				    	
+				    	<h:outputText value="Grupo" />
+				    	<h:outputText value=":" />
+				    	<p:selectOneMenu value="#{admOTMB.idProductoGrupo}">
+				    		<f:selectItem itemValue="-1" itemLabel="Todos" />
+				    		<f:selectItems value="#{admOTMB.gruposProducto}"  var="gp" itemValue="#{gp.idProductoGrupo}" itemLabel="#{gp.descripcion}" />
+				    	</p:selectOneMenu>
+				    </h:panelGrid>
+			    	<p:commandButton 
+			    		value="Buscar" 
+			    		icon="ui-icon-search" 
+			    		update="dttFindProducts" 
+			    		process="@this,pgiProducts" 
+			    		action="#{admOTMB.buscarProductos}" />
+				    <h:panelGroup id="pngFindProducts">
+					    <p:dataTable id="dttFindProducts" 
+					    	emptyMessage="Sin productos" 
+					    	paginator="true" rows="5"
+					    	paginatorPosition="bottom"
+							paginatorTemplate="{CurrentPageReport} {PageLinks}"
+					    	value="#{admOTMB.productos}" var="product">
+							<p:column style="width:10px; text-align:center">
+								<p:selectBooleanCheckbox value="#{product.seleccionado}"/>
+							</p:column> 
+					        <p:column headerText="C&oacute;digo">  
+				                <h:outputText value="#{product.productoGrupo.codigo}#{product.codigo}" />
+							</p:column>
+							<p:column headerText="Descripci&oacute;n">  
+				                <h:outputText value="#{product.descripcion}" />
+							</p:column>
+							<p:column headerText="Marca">  
+				                <h:outputText value="#{product.marca.descripcion}" />
+							</p:column>
+						</p:dataTable>
+					</h:panelGroup>
+				</h:panelGrid>
 			    <f:facet name="footer">
 			    	<div align="center">
 				    	<p:commandButton 
@@ -675,7 +761,7 @@
 			    </f:facet>
 			</p:dialog>			
 			<h:panelGroup id="pngVehiculo">
-				<p:dialog header="Vehiculo del Trabajo #{admOTMB.orden.idOrden}" widgetVar="diaVehiculo" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+				<p:dialog header="Veh&iacute;culo del Trabajo #{admOTMB.orden.idOrden}" widgetVar="diaVehiculo" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
 					<h:panelGrid columns="6" id="pngVehiculoActual">
 	    				<h:outputText value="Patente" />
 	    				<h:outputText value=":" />
@@ -743,9 +829,9 @@
 				    </f:facet>
 				</p:dialog>
 				<h:panelGroup id="pngCrearNuevoVehiculo">
-					<p:dialog id="diaCrearNuevoVehiculo" header="Crear Nuevo Vehiculo" visible="true" rendered="#{admOTMB.crearNuevoVehiculo}" widgetVar="diaCrearNuevoVehiculo" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+					<p:dialog id="diaCrearNuevoVeh&iacute;culo" header="Crear Nuevo Vehiculo" visible="true" rendered="#{admOTMB.crearNuevoVehiculo}" widgetVar="diaCrearNuevoVehiculo" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
 						<h:panelGroup layout="block" align="left">
-					    	<h:outputText value="El vehiculo patente #{admOTMB.orden.vehiculoOrden.vehiculo.patente} no existe, ¿Desea crearlo?" />
+					    	<h:outputText value="El veh&iacute;culo patente #{admOTMB.orden.vehiculoOrden.vehiculo.patente} no existe, ¿Desea crearlo?" />
 					    </h:panelGroup>
 					    <f:facet name="footer">
 					    	<div align="center">
@@ -764,7 +850,7 @@
 				    		</div>
 					    </f:facet>
 					</p:dialog>
-					<p:dialog header="Crear Nuevo Vehiculo" widgetVar="diaCrearVehiculo" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
+					<p:dialog header="Crear Nuevo Veh&iacute;culo" widgetVar="diaCrearVehiculo" modal="true" resizable="false" showEffect="drop" hideEffect="fade">
 						<h:panelGrid columns="3" id="pagNuevoVehiculo">
 							<h:outputText value="Patente" />
 		    				<h:outputText value=":" />

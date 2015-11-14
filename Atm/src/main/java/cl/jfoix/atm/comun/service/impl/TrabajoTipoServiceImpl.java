@@ -46,7 +46,7 @@ public class TrabajoTipoServiceImpl implements ITrabajoTipoService {
 			List<Filtro> filtros = new ArrayList<Filtro>();
 			filtros.add(new Filtro("estado", TipoOperacionFiltroEnum.EQUAL, true));
 			
-			return trabajoTipoDao.buscarPorFiltros(filtros, null);
+			return trabajoTipoDao.buscarPorFiltros(filtros, "descripcion asc");
 		} catch (DaoException e) {
 			e.printStackTrace();
 		}

@@ -32,7 +32,7 @@ public class SessionPhaseListener implements PhaseListener {
 		FacesContext context = event.getFacesContext();
 		String viewid = context.getViewRoot() == null ? "" : context.getViewRoot().getViewId();
 		log.debug("[afterPhase] viewId= " + viewid);
-		if(!loggedIn(context) && (!viewid.equals("/login.xhtml") && !viewid.equals("/login.jsf"))){
+		if(!loggedIn(context) && (!viewid.equals("/login.xhtml") && !viewid.equals("/login.jsf") && (!viewid.equals("/login_lm.xhtml") && !viewid.equals("/login_lm.jsf")))){
 			String loginUrl = context.getExternalContext().encodeActionURL(context.getApplication().getViewHandler().getActionURL(context, "/login.xhtml"));
 			try {
 				context.getExternalContext().redirect(loginUrl);

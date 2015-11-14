@@ -22,6 +22,9 @@ public class OrdenTrabajoSolicitudProducto implements Serializable{
 	
 	@Column(name="cantidad")
 	private Double cantidad;
+	
+	@Column(name="cantidadAgregada")
+	private Double cantidadAgregada;
 
 	@Column(name="estado")
 	private Boolean estado;
@@ -102,5 +105,19 @@ public class OrdenTrabajoSolicitudProducto implements Serializable{
 	 */
 	public void setEstado(Boolean estado) {
 		this.estado = estado;
+	}
+
+	/**
+	 * @return the cantidadAgregada
+	 */
+	public Double getCantidadAgregada() {
+		return cantidadAgregada;
+	}
+
+	/**
+	 * @param cantidadAgregada the cantidadAgregada to set
+	 */
+	public void setCantidadAgregada(Double cantidadAgregada) {
+		this.cantidadAgregada = cantidadAgregada;
 	}
 }
